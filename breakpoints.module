@@ -27,7 +27,7 @@ function breakpoints_permission() {
  * Import breakpoints from all enabled themes.
  */
 function breakpoints_enable() {
-  config_install_default_config('breakpoints');
+  config_install_default_config('module', 'breakpoints');
   $themes = list_themes();
   breakpoints_themes_enabled(array_keys($themes));
 }

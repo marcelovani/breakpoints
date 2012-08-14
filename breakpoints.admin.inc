@@ -213,11 +213,9 @@ function theme_breakpoints_admin_breakpoints_table($variables) {
     $row = array();
     if ($key != 'new') {
       $row[] = drupal_render($form[$key]['name']);
-      $row[] = '';
     }
     else {
       $row[] = drupal_render($form[$key]['name']);
-      $row[] = drupal_render($form[$key]['machine_name']);
     }
     $row[] = drupal_render($form[$key]['breakpoint']);
     $row[] = drupal_render($form[$key]['multipliers']);
@@ -254,18 +252,18 @@ function theme_breakpoints_admin_breakpoints_table($variables) {
 
   if (empty($form['#group_name'])) {
     $header = array(
-      array('data' => t('Name'), 'colspan' => 2),
+      t('Name'),
       t('Breakpoint, @media ...'),
       t('Multipliers'),
       t('Source'),
       t('Status'),
-      array('data' => t('Operations'), 'colspan' => 3),
+      array('data' => t('Operations'), 'colspan' => 2),
       t('Weight'),
     );
   }
   else {
     $header = array(
-      array('data' => t('Name'), 'colspan' => 2),
+      t('Name'),
       t('Breakpoint, @media ...'),
       t('Multipliers'),
       t('Source'),
