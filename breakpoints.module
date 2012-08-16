@@ -103,17 +103,6 @@ function breakpoints_menu() {
     'weight' => 10,
   );
 
-  $items['admin/config/media/breakpoints/create_style'] = array(
-    'title' => 'Add responsive style',
-    'description' => 'Add a responsive image style',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_add_style_form'),
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 30,
-  );
-
   $items['admin/config/media/breakpoints/groups'] = array(
     'title' => 'Groups',
     'type' => MENU_DEFAULT_LOCAL_TASK,

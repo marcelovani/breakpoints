@@ -340,7 +340,7 @@ function breakpoints_admin_breakpoints_submit($form, &$form_state) {
         }
       }
     }
-    
+
     if (!$global_group) {
       $group = breakpoints_breakpoint_group_load($group_name);
       if ($group) {
@@ -383,69 +383,6 @@ function breakpoints_admin_breakpoint_actions_form_submit($form, &$form_state) {
       break;
   }
   $form_state['redirect'] = 'admin/config/media/breakpoints/' . $theme_key;
-}
-
-function breakpoints_add_style_form($form, &$form_state) {
-  module_load_include('inc', 'image', 'image.admin');
-  $form['style'] = array(
-    '#title' => t('Image style'),
-    '#type' => 'select',
-    '#options' => image_style_options(FALSE),
-    '#required' => TRUE,
-    '#description' => t('This image style will be cloned to create the responsive style'),
-  );
-
-  $form['base_name'] = array(
-    '#type' => 'textfield',
-    '#size' => '64',
-    '#title' => t('Image style base name'),
-    '#description' => t('The name is used in URLs for generated images. Use only lowercase alphanumeric characters, underscores (_), and hyphens (-).'),
-    '#element_validate' => array('image_style_name_validate'),
-    '#required' => TRUE,
-  );
-  $breakpoints = breakpoints_breakpoint_load_all_active();
-  $options = array();
-  foreach ($breakpoints as $breakpoint) {
-    $options[$breakpoint->breakpoint] = $breakpoint->name . ' (' . $breakpoint->breakpoint . ')';
-  }
-  $form['breakpoints'] = array(
-    '#title' => t('breakpoints'),
-    '#type' => 'checkboxes',
-    '#options' => $options,
-    '#default_value' => drupal_map_assoc(array_keys($options)),
-    '#description' => t('Select the breakpoints to create an image style for'),
-    '#required' => TRUE,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Create'),
-  );
-  return $form;
-}
-
-function breakpoints_add_style_form_validate($form, &$form_state) {
-  foreach (array_filter($form_state['values']['breakpoints']) as $breakpoint) {
-    if (image_style_load($form_state['values']['base_name'] . $breakpoint)) {
-      form_set_error('breakpoints', t('An image style with the name !name already exists', array('!name' => $form_state['values']['base_name'] . $breakpoint)));
-    }
-  }
-}
-
-function breakpoints_add_style_form_submit($form, &$form_state) {
-  $base = image_style_load($form_state['values']['style']);
-  if (!isset($base['effects'])) {
-    $base['effects'] = array();
-  }
-  foreach (array_filter($form_state['values']['breakpoints']) as $breakpoint) {
-    $new_style = array(
-      'name' => $form_state['values']['base_name'] . $breakpoint,
-      'effects' => $base['effects'],
-    );
-    image_style_save($new_style);
-  }
-  $form_state['redirect'] = 'admin/config/media/image-styles';
-  drupal_set_message(t('The new styles have been created'));
 }
 
 function breakpoints_admin_breakpoint_group_edit_form($form, &$form_state, $machine_name = '') {
