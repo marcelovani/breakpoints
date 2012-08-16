@@ -103,6 +103,13 @@ function breakpoints_menu() {
     'weight' => 10,
   );
 
+  $items['admin/config/media/breakpoints/%/%'] = array(
+    'page arguments' => array('breakpoints_admin_breakpoint_actions_form', 4, 5),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints.admin.inc',
+  );
+
   $items['admin/config/media/breakpoints/groups'] = array(
     'title' => 'Groups',
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -146,13 +153,6 @@ function breakpoints_menu() {
       $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/delete'] = array(
         'title' => 'Delete ' . $breakpoint_group->name,
         'page arguments' => array('breakpoints_admin_breakpoint_group_delete_form', $breakpoint_group->machine_name),
-        'type' => MENU_CALLBACK,
-        'access arguments' => array('administer breakpoints'),
-        'file' => 'breakpoints.admin.inc',
-        'weight' => 15,
-      );
-      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/%/%'] = array(
-        'page arguments' => array('breakpoints_admin_breakpoint_actions_form', $breakpoint_group->machine_name, 6, 7),
         'type' => MENU_CALLBACK,
         'access arguments' => array('administer breakpoints'),
         'file' => 'breakpoints.admin.inc',
