@@ -33,7 +33,7 @@ abstract class BreakpointsTestBase extends WebTestBase {
     $assert_group = t('Breakpoints API');
 
     // Verify breakpoints_breakpoint_load_by_fullkey().
-    $load_breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint->machine_name);
+    $load_breakpoint = breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($breakpoint));
     foreach ($properties as $property) {
       $this->assertEqual($load_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoints_breakpoint_load_by_fullkey: Proper ' . $property . ' for breakpoint %breakpoint.', $t_args), $assert_group);
     }

@@ -53,10 +53,10 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
     breakpoints_breakpoint_save($breakpoint);
     $this->verifyBreakpoint($breakpoint);
     $breakpoints = breakpoints_breakpoint_load_all_active();
-    $this->assertFalse(isset($breakpoints[$breakpoint->machine_name]), t('breakpoints_breakpoint_load_all_active: Disabled breakpoints aren\'t loaded.'), t('Breakpoints API'));
+    $this->assertFalse(isset($breakpoints[breakpoints_breakpoint_config_name($breakpoint)]), t('breakpoints_breakpoint_load_all_active: Disabled breakpoints aren\'t loaded.'), t('Breakpoints API'));
 
     // Delete the breakpoint.
     breakpoints_breakpoint_delete($breakpoint);
-    $this->assertFalse(breakpoints_breakpoint_load_by_fullkey($breakpoint->machine_name), t('breakpoints_breakpoint_load_by_fullkey: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));
+    $this->assertFalse(breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($breakpoint)), t('breakpoints_breakpoint_load_by_fullkey: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));
   }
 }
