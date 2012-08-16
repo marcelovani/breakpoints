@@ -74,12 +74,12 @@ function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_na
   );
 
   $breakpoints = array();
-  $breakpoint_group = breakpoints_breakpoint_group_load($breakpoint_group_name);
   if ($global) {
     $breakpoints = breakpoints_breakpoint_load_all();
   }
   else {
     $weight = 0;
+    $breakpoint_group = breakpoints_breakpoint_group_load($breakpoint_group_name);
     foreach ($breakpoint_group->breakpoints as $breakpoint_name) {
       $breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint_name);
       if ($breakpoint) {
