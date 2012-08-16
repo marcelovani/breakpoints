@@ -43,11 +43,12 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
         '2x' => 0,
       );
       breakpoints_breakpoint_save($breakpoint);
-      $breakpoints[$breakpoint->machine_name] = $breakpoint;
+      $breakpoints[] = $breakpoint;
     }
     // Add a breakpoint group with minimum data only.
     $group = new stdClass();
     $group->name = $this->randomName();
+    $group->type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
     $group->machine_name = drupal_strtolower($group->name);
     $group->breakpoints = array();
     breakpoints_breakpoint_group_save($group);

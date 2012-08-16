@@ -38,17 +38,16 @@ class BreakpointsAdminTest extends BreakpointsTestBase {
   function testBreakpointAdmin() {
     // Add breakpoint.
     $this->drupalGet('admin/config/media/breakpoints');
-    $name = $this->randomName();
+    $name = drupal_strtolower($this->randomName());
     $mediaquery = '(min-width: 600px)';
     $edit = array(
       'breakpoints[new][name]' => $name,
-      'breakpoints[new][machine_name]' => drupal_strtolower($name),
       'breakpoints[new][breakpoint]' => $mediaquery,
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    $machine_name = BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.user.' . drupal_strtolower($name);
+    $machine_name = 'breakpoints.' . BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.user.' . $name;
     // Verify the breakpoint was saved and verify default weight of the breakpoint.
     $this->drupalGet('admin/config/media/breakpoints');
     $this->assertFieldByName("breakpoints[$machine_name][weight]", 0, t('Breakpoint weight was saved.'));
