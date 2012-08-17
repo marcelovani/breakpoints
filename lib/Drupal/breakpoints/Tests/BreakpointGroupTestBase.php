@@ -34,7 +34,7 @@ abstract class BreakpointGroupTestBase extends WebTestBase {
     // Verify breakpoints_breakpoint_group_load().
     $load_group = breakpoints_breakpoint_group_load($group->machine_name);
     foreach ($properties as $property) {
-      $this->assertEqual($load_group->{$property}, $group->{$property}, print_r($load_group->{$property}, true) . print_r($group->{$property}, true) . t('breakpoints_breakpoint_group_load: Proper ' . $property . ' for breakpoint group %group.', $t_args), $assert_group);
+      $this->assertEqual($load_group->{$property}, $group->{$property}, t('breakpoints_breakpoint_group_load: Proper ' . $property . ' for breakpoint group %group.', $t_args), $assert_group);
     }
   }
 }
