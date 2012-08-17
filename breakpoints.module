@@ -104,6 +104,27 @@ function breakpoints_menu() {
     'weight' => 10,
   );
 
+  $items['admin/config/media/breakpoints/multipliers'] = array(
+    'title' => 'Multipliers',
+    'description' => 'Manage multipliers',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('breakpoints_multipliers_form'),
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 20,
+  );
+
+  $items['admin/config/media/breakpoints/multipliers/%/delete'] = array(
+    'title' => '',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('breakpoints_admin_multiplier_delete_form', 5),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints.admin.inc',
+    'weight' => 15,
+  );
+
   $items['admin/config/media/breakpoints/%/%'] = array(
     'page arguments' => array('breakpoints_admin_breakpoint_actions_form', 4, 5),
     'type' => MENU_CALLBACK,
@@ -179,13 +200,12 @@ function breakpoints_settings() {
 /**
  * Save general settings.
  */
-function breakpoints_settings_save($default_breakpoint, $block_enabled) {
+function breakpoints_settings_save($multipliers) {
   $config = config('breakpoints');
   if ($config->isNew()) {
     return FALSE;
   }
-  $config->set('default_breakpoint', $default_breakpoint);
-  $config->set('block_enabled', $block_enabled);
+  $config->set('multipliers', $multipliers);
   $config->save();
 }
 
@@ -546,6 +566,10 @@ function breakpoints_breakpoint_group_delete_by_fullkey($key) {
 function breakpoints_theme() {
   return array(
     'breakpoints_admin_breakpoints_table' => array(
+      'render element' => 'form',
+      'theme_key' => NULL,
+    ),
+    'breakpoints_multipliers_table_form' => array(
       'render element' => 'form',
       'theme_key' => NULL,
     ),
