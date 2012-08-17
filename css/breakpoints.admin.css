@@ -4,3 +4,6 @@ tr.odd.breakpoints-status-disabled {
 tr.even.breakpoints-status-disabled {
   background: none repeat scroll 0 0 #ff9999;
 }
+a.breakpoints-group-operations-link {
+  margin-right: 1em;
+}

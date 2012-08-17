@@ -180,6 +180,14 @@ function breakpoints_menu() {
         'file' => 'breakpoints.admin.inc',
         'weight' => 15,
       );
+      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/duplicate'] = array(
+        'title' => 'Duplicate ' . $breakpoint_group->name,
+        'page arguments' => array('breakpoints_admin_breakpoint_group_duplicate_form', $breakpoint_group->machine_name),
+        'type' => MENU_CALLBACK,
+        'access arguments' => array('administer breakpoints'),
+        'file' => 'breakpoints.admin.inc',
+        'weight' => 15,
+      );
     }
   }
 
@@ -634,6 +642,19 @@ function breakpoints_breakpoints_group_revert(&$group) {
   breakpoints_breakpoints_group_reload($group);
   $group->overridden = 0;
   breakpoints_breakpoint_group_save($group);
+}
+
+/**
+ * Duplicate a group.
+ */
+function breakpoints_breakpoints_group_duplicate($group, $new_name, $new_machine_name) {
+  $new_group = breakpoints_breakpoint_group_empty_object();
+  $new_group->machine_name = $new_machine_name;
+  $new_group->name = $new_name;
+  $new_group->type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+  $new_group->breakpoints = $group->breakpoints;
+  breakpoints_breakpoint_group_save($new_group);
+  return $new_group;
 }
 
 /**
