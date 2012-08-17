@@ -49,6 +49,7 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
     $group = new stdClass();
     $group->name = $this->randomName();
     $group->type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+    $group->overridden = FALSE;
     $group->machine_name = drupal_strtolower($group->name);
     $group->breakpoints = array();
     breakpoints_breakpoint_group_save($group);

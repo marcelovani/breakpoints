@@ -628,8 +628,7 @@ function breakpoints_breakpoints_group_override($group) {
       }
 
       // Add to the group and delete old breakpoint.
-      unset($group->breakpoints[$key]);
-      $group->breakpoints[] = breakpoints_breakpoint_config_name($breakpoint);
+      $group->breakpoints[$key] = breakpoints_breakpoint_config_name($breakpoint);
       breakpoints_breakpoint_delete($old_breakpoint);
     }
   }
