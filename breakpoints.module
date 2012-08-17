@@ -441,6 +441,7 @@ function breakpoints_breakpoint_group_empty_array() {
     'name' => '',
     'breakpoints' => array(),
     'type' => 'custom',
+    'overridden' => FALSE,
   );
 }
 
@@ -504,6 +505,7 @@ function breakpoints_breakpoint_group_save($breakpoint_group) {
   $config->set('machine_name', $breakpoint_group->machine_name);
   $config->set('name', $breakpoint_group->name);
   $config->set('type', $breakpoint_group->type);
+  $config->set('overridden', $breakpoint_group->overridden);
   $config->set('breakpoints', $breakpoint_group->breakpoints); // weight + key
   $config->save();
   if ($is_new) {
@@ -549,3 +551,101 @@ function breakpoints_theme() {
   );
 }
 
+/**
+ * Reload the breakpoints as defined by the group.
+ */
+function breakpoints_breakpoints_group_reload(&$group) {
+  switch ($group->type) {
+    case BREAKPOINTS_SOURCE_TYPE_THEME:
+      // delete all breakpoints defined by this theme.
+      $breakpoints = breakpoints_breakpoint_load_all_theme($group->machine_name);
+      foreach ($breakpoints as $breakpoint) {
+        breakpoints_breakpoint_delete($breakpoint, $group->machine_name);
+      }
+
+      // reload all breakpoints from theme.info.
+      $reloaded_group = breakpoints_breakpoints_group_reload_from_theme($group->machine_name);
+      $group->breakpoints = $reloaded_group->breakpoints;
+      breakpoints_breakpoint_group_save($group);
+      break;
+  }
+}
+
+function breakpoints_breakpoints_group_reload_from_theme($theme_key) {
+  // Clear caches so theme.info is fresh.
+  system_rebuild_theme_data();
+  drupal_theme_rebuild();
+
+  $themes = list_themes();
+  if (isset($themes[$theme_key]->info['breakpoints'])) {
+    $weight = 0;
+    $theme_settings = $themes[$theme_key]->info['breakpoints'];
+    // Build a group for each theme
+    $breakpoint_group = breakpoints_breakpoint_group_empty_object();
+    $breakpoint_group->machine_name = $theme_key;
+    $breakpoint_group->name = $themes[$theme_key]->info['name'];
+    $breakpoint_group->type = BREAKPOINTS_SOURCE_TYPE_THEME;
+    foreach ($theme_settings as $name => $media_query) {
+      $breakpoint = breakpoints_breakpoint_empty_object();
+      $breakpoint->name = $name;
+      $breakpoint->breakpoint = $media_query;
+      $breakpoint->source = $theme_key;
+      $breakpoint->source_type = 'theme';
+      $breakpoint->theme = '';
+      $breakpoint->status = TRUE;
+      $breakpoint->weight = $weight++;
+      $breakpoint->machine_name = breakpoints_breakpoint_config_name($breakpoint);
+      breakpoints_breakpoint_save($breakpoint);
+      $breakpoint_group->breakpoints[] = $breakpoint->machine_name;
+    }
+    return $breakpoint_group;
+  }
+}
+
+/**
+ * Revert the breakpoints of a group.
+ */
+function breakpoints_breakpoints_group_revert(&$group) {
+  breakpoints_breakpoints_group_reload($group);
+  $group->overridden = 0;
+  breakpoints_breakpoint_group_save($group);
+}
+
+/**
+ * Override the breakpoints of a group.
+ */
+function breakpoints_breakpoints_group_override($group) {
+  foreach ($group->breakpoints as $key => $breakpoint_name) {
+    $breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint_name);
+    $old_breakpoint = clone $breakpoint;
+    if ($breakpoint->source_type == BREAKPOINTS_SOURCE_TYPE_THEME && $breakpoint->source == $group->machine_name) {
+      $breakpoint->source_type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+
+      // make sure it doesn't already exists.
+      if (breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($breakpoint)) === FALSE) {
+        $breakpoint = breakpoints_breakpoint_save($breakpoint);
+      }
+
+      // Add to the group and delete old breakpoint.
+      unset($group->breakpoints[$key]);
+      $group->breakpoints[] = breakpoints_breakpoint_config_name($breakpoint);
+      breakpoints_breakpoint_delete($old_breakpoint);
+    }
+  }
+  $group->overridden = 1;
+  breakpoints_breakpoint_group_save($group);
+}
+
+/**
+ * Export breakpoints ready for theme.info inclusion.
+ */
+function breakpoints_breakpoints_group_exporttotheme(&$group) {
+  $export = array();
+  foreach ($group->breakpoints as $breakpoint_name) {
+    $breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint_name);
+    if ($breakpoint && $breakpoint->status) {
+      $export[$breakpoint->name] = $breakpoint->breakpoint;
+    }
+  }
+  return $export;
+}

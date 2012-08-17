@@ -9,6 +9,16 @@
  * Admin form
  */
 function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_name = '') {
+  $form = array();
+
+  // In case of an export to theme, there will be a variable exported_breakpoints
+  if (isset($form_state['exported_breakpoints']) && !empty($form_state['exported_breakpoints'])) {
+    $form['exported_breakpoints'] = array(
+      '#title' => t('Copy/Paste the following inside your theme.info file.'),
+      '#type' => 'textarea',
+      '#default_value' => $form_state['exported_breakpoints'],
+    );
+  }
 
   // Global is the same as no group name
   $global = FALSE;
@@ -18,8 +28,6 @@ function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_na
   }
 
   $form_state['group_name'] = $breakpoint_group_name;
-
-  $form = array();
 
   $settings = breakpoints_settings();
   $multipliers = array();
@@ -168,28 +176,88 @@ function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_na
     '#value' => t('Save'),
   );
 
-  if (!$global) {
-    $form['buttons']['editlink'] = array(
-      '#type' => 'markup',
-      '#markup' => l(
-        t('Edit group breakpoints'), 'admin/config/media/breakpoints/groups/' . $breakpoint_group_name . '/edit',
-        array(
-          'query' => drupal_get_destination(),
-          'attributes' => array('class' => array('breakpoints-group-operations-link', 'breakpoints-group-operations-edit-link')),
-        )
-      ),
-    );
-    if ($breakpoint_group->type == BREAKPOINTS_SOURCE_TYPE_CUSTOM) {
-      $form['buttons']['deletelink'] = array(
-        '#type' => 'markup',
-        '#markup' => l(
-          t('Delete this group'), 'admin/config/media/breakpoints/groups/' . $breakpoint_group_name . '/delete',
-          array(
-            'query' => array('destination' => 'admin/config/media/breakpoints/groups'),
-            'attributes' => array('class' => array('breakpoints-group-operations-link', 'breakpoints-group-operations-delete-link')),
-          )
-        ),
-      );
+if (!$global) {
+    switch ($breakpoint_group->type) {
+      case BREAKPOINTS_SOURCE_TYPE_THEME:
+        if (!$breakpoint_group->overridden) {
+          $form['buttons']['override'] = array(
+            '#type' => 'submit',
+            '#value' => t('Override theme breakpoints'),
+            '#submit' => array('breakpoints_admin_breakpoints_submit_override'),
+          );
+          $form['buttons']['reload'] = array(
+            '#type' => 'submit',
+            '#value' => t('Reload theme breakpoints'),
+            '#submit' => array('breakpoints_admin_breakpoints_submit_reload'),
+          );
+        }
+        else {
+          $form['buttons']['exporttotheme'] = array(
+            '#type' => 'submit',
+            '#value' => t('Export breakpoints to theme'),
+            '#submit' => array('breakpoints_admin_breakpoints_submit_exporttotheme'),
+          );
+          $form['buttons']['revert'] = array(
+            '#type' => 'submit',
+            '#value' => t('Revert theme breakpoints'),
+            '#submit' => array('breakpoints_admin_breakpoints_submit_revert'),
+          );
+          $form['buttons']['editlink'] = array(
+            '#type' => 'markup',
+            '#markup' => l(
+              t('Edit group breakpoints'), 'admin/config/media/breakpoints/groups/' . $breakpoint_group_name . '/edit',
+              array(
+                'query' => drupal_get_destination(),
+                'attributes' => array('class' => array('breakpoints-group-operations-link', 'breakpoints-group-operations-edit-link')),
+              )
+            ),
+          );
+        }
+        break;
+      case BREAKPOINTS_SOURCE_TYPE_MODULE:
+        $form['buttons']['exporttotheme'] = array(
+          '#type' => 'submit',
+          '#value' => t('Export breakpoints to theme'),
+          '#submit' => array('breakpoints_admin_breakpoints_submit_exporttotheme'),
+        );
+        $form['buttons']['editlink'] = array(
+          '#type' => 'markup',
+          '#markup' => l(
+            t('Edit group breakpoints'), 'admin/config/media/breakpoints/groups/' . $breakpoint_group_name . '/edit',
+            array(
+              'query' => drupal_get_destination(),
+              'attributes' => array('class' => array('breakpoints-group-operations-link', 'breakpoints-group-operations-edit-link')),
+            )
+          ),
+        );
+        break;
+      case BREAKPOINTS_SOURCE_TYPE_CUSTOM:
+        $form['buttons']['exporttotheme'] = array(
+          '#type' => 'submit',
+          '#value' => t('Export breakpoints to theme'),
+          '#submit' => array('breakpoints_admin_breakpoints_submit_exporttotheme'),
+        );
+        $form['buttons']['editlink'] = array(
+          '#type' => 'markup',
+          '#markup' => l(
+            t('Edit group breakpoints'), 'admin/config/media/breakpoints/groups/' . $breakpoint_group_name . '/edit',
+            array(
+              'query' => drupal_get_destination(),
+              'attributes' => array('class' => array('breakpoints-group-operations-link', 'breakpoints-group-operations-edit-link')),
+            )
+          ),
+        );
+        $form['buttons']['deletelink'] = array(
+          '#type' => 'markup',
+          '#markup' => l(
+            t('Delete this group'), 'admin/config/media/breakpoints/groups/' . $breakpoint_group_name . '/delete',
+            array(
+              'query' => array('destination' => 'admin/config/media/breakpoints/groups'),
+              'attributes' => array('class' => array('breakpoints-group-operations-link', 'breakpoints-group-operations-delete-link')),
+            )
+          ),
+        );
+        break;
     }
   }
 
@@ -227,7 +295,7 @@ function theme_breakpoints_admin_breakpoints_table($variables) {
         $row[] = l($breakpoint->status ? t('Disable') : t('Enable'), 'admin/config/media/breakpoints/' . ($breakpoint->status ? 'disable' : 'enable') . '/' . $key, $link_attributes);
       }
       if (empty($form['#group_name'])) {
-        if ($breakpoint->source == 'user') {
+        if ($breakpoint->source_type == BREAKPOINTS_SOURCE_TYPE_CUSTOM) {
           $row[] = l(t('Delete'), 'admin/config/media/breakpoints/delete/' . $key, $link_attributes);
         }
         else {
@@ -283,13 +351,15 @@ function theme_breakpoints_admin_breakpoints_table($variables) {
  */
 function breakpoints_admin_breakpoints_validate($form, &$form_state) {
   if (strpos($form_state['triggering_element']['#id'], 'remove') === FALSE) {
-    $breakpoints = $form_state['values']['breakpoints'];
-    if (!empty($breakpoints)) {
-      foreach ($breakpoints as $key => $breakpointdata) {
-        if (!empty($breakpointdata['name'])) {
-          // Breakpoint is required.
-          if (empty($breakpointdata['breakpoint']) && $breakpointdata['breakpoint'] !== '0') {
-            form_set_error('breakpoints][' . $key . '][breakpoint', 'Breakpoint field is required');
+    if (isset($form_state['values']['breakpoints'])) {
+      $breakpoints = $form_state['values']['breakpoints'];
+      if (!empty($breakpoints)) {
+        foreach ($breakpoints as $key => $breakpointdata) {
+          if (!empty($breakpointdata['name'])) {
+            // Breakpoint is required.
+            if (empty($breakpointdata['breakpoint']) && $breakpointdata['breakpoint'] !== '0') {
+              form_set_error('breakpoints][' . $key . '][breakpoint', 'Breakpoint field is required');
+            }
           }
         }
       }
@@ -479,6 +549,70 @@ function breakpoints_admin_breakpoint_group_edit_form_submit($form, &$form_state
     $existing_group = breakpoints_breakpoint_group_load($name);
     $existing_group->breakpoints = $breakpoints;
     breakpoints_breakpoint_group_save($existing_group);
+  }
+}
+
+/**
+ * Admin form submit - Override theme breakpoints.
+ */
+function breakpoints_admin_breakpoints_submit_override($form, &$form_state) {
+  $group_name = $form_state['group_name'];
+  $global_group = $group_name == '';
+  if (!$global_group) {
+    $group = breakpoints_breakpoint_group_load($group_name);
+    if ($group) {
+      breakpoints_breakpoints_group_override($group);
+    }
+  }
+}
+
+/**
+ * Admin form submit - Revert theme breakpoints.
+ */
+function breakpoints_admin_breakpoints_submit_revert($form, &$form_state) {
+  $group_name = $form_state['group_name'];
+  $global_group = $group_name == '';
+  if (!$global_group) {
+    $group = breakpoints_breakpoint_group_load($group_name);
+    if ($group) {
+      breakpoints_breakpoints_group_revert($group);
+    }
+  }
+}
+
+/**
+ * Admin form submit - Reload theme breakpoints.
+ */
+function breakpoints_admin_breakpoints_submit_reload($form, &$form_state) {
+  $group_name = $form_state['group_name'];
+  $global_group = $group_name == '';
+  if (!$global_group) {
+    $group = breakpoints_breakpoint_group_load($group_name);
+    if ($group) {
+      breakpoints_breakpoints_group_reload($group);
+    }
+  }
+}
+
+/**
+ * Admin form submit - Export breakpoints to theme.
+ */
+function breakpoints_admin_breakpoints_submit_exporttotheme($form, &$form_state) {
+  $group_name = $form_state['group_name'];
+  $global_group = $group_name == '';
+  if (!$global_group) {
+    $group = breakpoints_breakpoint_group_load($group_name);
+    if ($group) {
+      $breakpoints = breakpoints_breakpoints_group_exporttotheme($group);
+      if ($breakpoints) {
+        $export = array();
+        foreach ($breakpoints as $breakpoint_name => $breakpoint) {
+          $export[] = 'breakpoints[' . $breakpoint_name . '] = ' . $breakpoint;
+        }
+        $form_state['exported_breakpoints'] = implode("\n", $export);
+        $form_state['rebuild'] = TRUE;
+      }
+    }
   }
 }
 
