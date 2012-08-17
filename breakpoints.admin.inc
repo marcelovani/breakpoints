@@ -316,7 +316,7 @@ function theme_breakpoints_admin_breakpoints_table($variables) {
       'data' => $row,
       'class' => array('draggable', $class),
     );
-   }
+  }
 
   if (empty($form['#group_name'])) {
     $header = array(
@@ -509,7 +509,7 @@ function breakpoints_admin_breakpoint_group_edit_form($form, &$form_state, $mach
   if (!$is_new && $group->type == BREAKPOINTS_SOURCE_TYPE_CUSTOM) {
     $form['buttons']['deletelink'] = array(
       '#type' => 'markup',
-      '#markup' => l('Delete this group', 'admin/config/media/breakpoints/groups/' . $group->machine_name . '/delete', array(
+      '#markup' => l(t('Delete this group'), 'admin/config/media/breakpoints/groups/' . $group->machine_name . '/delete', array(
         'query' => drupal_get_destination(),
       )),
     );
