@@ -808,7 +808,7 @@ function breakpoints_admin_breakpoint_group_duplicate_form($form, &$form_state, 
     '#size' => '64',
     '#title' => t('New group name'),
     '#required' => TRUE,
-    '#default_value' => t('Duplicate of ') . $src_group->name,
+    '#default_value' => t('Duplicate of') . ' ' . $src_group->name,
   );
 
   $form['machine_name'] = array(
