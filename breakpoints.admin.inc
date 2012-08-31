@@ -630,7 +630,7 @@ function breakpoints_add_style_form($form, &$form_state) {
   $form['style'] = array(
     '#title' => t('Image style'),
     '#type' => 'select',
-    '#options' => image_style_options(FALSE),
+    '#options' => array_filter(image_style_options(FALSE), '_breakpoints_filter_styles'),
     '#required' => TRUE,
     '#description' => t('This image style will be cloned to create the responsive style'),
   );

@@ -802,3 +802,10 @@ function breakpoints_breakpoints_group_exporttotheme(&$group) {
   }
   return $export;
 }
+
+/**
+ * array_filter callback.
+ */
+function _breakpoints_filter_styles($var) {
+  return strpos(is_array($var) ? $var['name'] : $var, RESP_IMG_STYLE_PREFIX) !== 0;
+}
