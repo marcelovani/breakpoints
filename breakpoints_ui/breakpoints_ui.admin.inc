@@ -184,7 +184,7 @@ function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group
           $form['buttons']['override'] = array(
             '#type' => 'submit',
             '#value' => t('Override theme breakpoints'),
-            '#submit' => array('breakpoints_admin_breakpoints_submit_override'),
+            '#submit' => array('breakpoints_ui_admin_breakpoints_submit_override'),
           );
           $form['buttons']['reload'] = array(
             '#type' => 'submit',
