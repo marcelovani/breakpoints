@@ -17,7 +17,7 @@ class BreakpointMultipliersTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('breakpoints', 'breakpoints_theme_test');
+  public static $modules = array('breakpoints', 'breakpoints_ui', 'breakpoints_theme_test');
 
   public static function getInfo() {
     return array(
