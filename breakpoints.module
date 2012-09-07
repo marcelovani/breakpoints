@@ -40,15 +40,11 @@ function breakpoints_themes_enabled($theme_list) {
   $themes = list_themes();
   foreach ($theme_list as $theme_key) {
     if ($themes[$theme_key]->status) {
-      $theme_breakpoints = array();
-      // @see http://drupal.org/node/1775774
-      if (function_exists('system_breakpoint_list')) {
-        $theme_breakpoints = system_breakpoint_list($theme_key);
-      }
-      else {
-        if (isset($themes[$theme_key]->info['breakpoints'])) {
-          $theme_breakpoints = $themes[$theme_key]->info['breakpoints'];
-        }
+      // Check theme_key.breakpoints.yml first
+      $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
+      // Fallback to theme_key.info
+      if (empty($theme_breakpoints) && isset($themes[$theme_key]->info['breakpoints'])) {
+        $theme_breakpoints = $themes[$theme_key]->info['breakpoints'];
       }
       if (!empty($theme_breakpoints)) {
         $weight = 0;
@@ -704,4 +700,25 @@ function breakpoints_breakpoints_group_exporttotheme(&$group) {
     }
   }
   return $export;
+}
+
+/**
+ * Get a list of available breakpoints from a specified theme.
+ *
+ * @param $theme_key
+ *   The name of a theme.
+ * @return
+ *   An array of breakpoints in the form $breakpoint['name'] = 'media query'.
+ */
+function breakpoints_get_theme_breakpoint_list($theme_key) {
+  $themes = list_themes();
+  if (!isset($themes[$theme_key])) {
+    return array();
+  }
+
+  $config = config($theme_key . '.breakpoints');
+  if ($config) {
+    return $config->get();
+  }
+  return array();
 }
