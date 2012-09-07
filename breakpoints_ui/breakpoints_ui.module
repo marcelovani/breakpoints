@@ -1,0 +1,251 @@
+<?php
+/**
+ * @file
+ * Provide structure for the administrative interface to Breakpoints.
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function breakpoints_ui_permission() {
+  return array(
+    'administer breakpoints' => array(
+      'title' => t('Administer Breakpoints'),
+      'description' => t('Administer all breakpoints'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function breakpoints_ui_menu() {
+  $items = array();
+
+  // @todo: link to all breakpoints and a list of all groups
+  // cf theme settings page
+  $items['admin/config/media/breakpoints'] = array(
+    'title' => 'Breakpoints',
+    'description' => 'Manage breakpoints',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('breakpoints_ui_admin_breakpoints'),
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints_ui.admin.inc',
+    'weight' => 10,
+  );
+
+  $items['admin/config/media/breakpoints/multipliers'] = array(
+    'title' => 'Multipliers',
+    'description' => 'Manage multipliers',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('breakpoints_ui_multipliers_form'),
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints_ui.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 20,
+  );
+
+  $items['admin/config/media/breakpoints/multipliers/%/delete'] = array(
+    'title' => '',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('breakpoints_ui_admin_multiplier_delete_form', 5),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints_ui.admin.inc',
+    'weight' => 15,
+  );
+
+  $items['admin/config/media/breakpoints/%/%'] = array(
+    'page arguments' => array('breakpoints_ui_admin_breakpoint_actions_form', 4, 5),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints_ui.admin.inc',
+  );
+
+  $items['admin/config/media/breakpoints/groups'] = array(
+    'title' => 'Groups',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  $items['admin/config/media/breakpoints/groups/global'] = array(
+    'title' => 'All breakpoints',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1,
+  );
+
+  $items['admin/config/media/breakpoints/groups/add'] = array(
+    'title' => 'Add a new group',
+    'page arguments' => array('breakpoints_ui_admin_breakpoint_group_edit_form'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints_ui.admin.inc',
+    'weight' => 99,
+  );
+
+  $breakpoint_groups = breakpoints_breakpoint_group_load_all();
+  foreach ($breakpoint_groups as $breakpoint_group_name => $breakpoint_group) {
+    if (!empty($breakpoint_group->machine_name)) {
+      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name] = array(
+        'title' => $breakpoint_group->name,
+        'page arguments' => array('breakpoints_ui_admin_breakpoints', $breakpoint_group->machine_name),
+        'type' => MENU_LOCAL_TASK,
+        'access arguments' => array('administer breakpoints'),
+        'file' => 'breakpoints_ui.admin.inc',
+        'weight' => 15,
+      );
+      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/edit'] = array(
+        'title' => 'Edit ' . $breakpoint_group->name,
+        'page arguments' => array('breakpoints_ui_admin_breakpoint_group_edit_form', $breakpoint_group->machine_name),
+        'type' => MENU_CALLBACK,
+        'access arguments' => array('administer breakpoints'),
+        'file' => 'breakpoints_ui.admin.inc',
+        'weight' => 15,
+      );
+      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/delete'] = array(
+        'title' => 'Delete ' . $breakpoint_group->name,
+        'page arguments' => array('breakpoints_ui_admin_breakpoint_group_delete_form', $breakpoint_group->machine_name),
+        'type' => MENU_CALLBACK,
+        'access arguments' => array('administer breakpoints'),
+        'file' => 'breakpoints_ui.admin.inc',
+        'weight' => 15,
+      );
+      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/duplicate'] = array(
+        'title' => 'Duplicate ' . $breakpoint_group->name,
+        'page arguments' => array('breakpoints_ui_admin_breakpoint_group_duplicate_form', $breakpoint_group->machine_name),
+        'type' => MENU_CALLBACK,
+        'access arguments' => array('administer breakpoints'),
+        'file' => 'breakpoints_ui.admin.inc',
+        'weight' => 15,
+      );
+    }
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_themes_enabled().
+ */
+function breakpoints_ui_themes_enabled() {
+  menu_router_rebuild();
+}
+
+/**
+ * Implements hook_themes_disabled().
+ */
+function breakpoints_ui_themes_disabled() {
+  menu_router_rebuild();
+}
+
+/**
+ * Implements hook_theme().
+ */
+function breakpoints_ui_theme() {
+  return array(
+    'breakpoints_admin_breakpoints_table' => array(
+      'render element' => 'form',
+      'theme_key' => NULL,
+    ),
+    'breakpoints_multipliers_table_form' => array(
+      'render element' => 'form',
+      'theme_key' => NULL,
+    ),
+  );
+}
+
+/**
+ * Theme form as table.
+ */
+function theme_breakpoints_admin_breakpoints_table($variables) {
+  $form = $variables['form'];
+  $rows = array();
+  $link_attributes = array(
+    'attributes' => array(
+      'class' => array('image-style-link'),
+    ),
+  );
+  foreach (element_children($form) as $key) {
+    $form[$key]['weight']['#attributes']['class'] = array('breakpoints-weight');
+    $row = array();
+    if ($key != 'new') {
+      $row[] = drupal_render($form[$key]['name']);
+    }
+    else {
+      $row[] = drupal_render($form[$key]['name']);
+    }
+    $row[] = drupal_render($form[$key]['breakpoint']);
+    $row[] = drupal_render($form[$key]['multipliers']);
+    if ($key != 'new') {
+      $breakpoint = $form[$key]['#breakpoint_data'];
+      $row[] = $breakpoint->source . ' (' . $breakpoint->source_type . ')';
+      $row[] = $breakpoint->status ? t('Enabled') : t('Disabled');
+      if (empty($form['#group_name'])) {
+        $row[] = l($breakpoint->status ? t('Disable') : t('Enable'), 'admin/config/media/breakpoints/' . ($breakpoint->status ? 'disable' : 'enable') . '/' . $key, $link_attributes);
+      }
+      if (empty($form['#group_name'])) {
+        if ($breakpoint->source_type == BREAKPOINTS_SOURCE_TYPE_CUSTOM) {
+          $row[] = l(t('Delete'), 'admin/config/media/breakpoints/delete/' . $key, $link_attributes);
+        }
+        else {
+          $row[] = '';
+        }
+      }
+      $class= 'breakpoints-status-' . ($breakpoint->status ? 'enabled' : 'disabled');
+    }
+    else {
+      $row[] = '';
+      $row[] = '';
+      $row[] = '';
+      $row[] = '';
+      $class = 'breakpoints-status-new';
+    }
+    $row[] = drupal_render($form[$key]['weight']);
+    $rows[] = array(
+      'data' => $row,
+      'class' => array('draggable', $class),
+    );
+  }
+
+  if (empty($form['#group_name'])) {
+    $header = array(
+      t('Name'),
+      t('Breakpoint, @media ...'),
+      t('Multipliers'),
+      t('Source'),
+      t('Status'),
+      array('data' => t('Operations'), 'colspan' => 2),
+      t('Weight'),
+    );
+  }
+  else {
+    $header = array(
+      t('Name'),
+      t('Breakpoint, @media ...'),
+      t('Multipliers'),
+      t('Source'),
+      t('Status'),
+      t('Weight'),
+    );
+  }
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'breakpoints-ui-breakpoints')));
+  drupal_add_tabledrag('breakpoints-ui-breakpoints', 'order', 'sibling', 'breakpoints-weight');
+
+  return $output;
+}
+
+/**
+ * Theme multipliers form as table.
+ */
+function theme_breakpoints_multipliers_table_form($element) {
+  $form = $element['form'];
+  $header = array(t('Multiplier'), t('Operations'));
+  foreach (element_children($form) as $multiplier) {
+    $row = array();
+    $row[] = drupal_render($form[$multiplier]);
+    $row[] = in_array($multiplier, array('new', '1x')) ? '' : l(t('Delete'), 'admin/config/media/breakpoints/multipliers/' . $multiplier . '/delete');
+    $rows[] = $row;
+  }
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}

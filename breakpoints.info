@@ -1,5 +1,5 @@
 name = Breakpoints
-description = Manage breakpoints
+description = General breakpoints functionality.
 core = 8.x
 files[] = breakpoints.module
-
+files[] = breakpoints.install

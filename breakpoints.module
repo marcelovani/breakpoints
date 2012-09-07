@@ -11,18 +11,6 @@ define('BREAKPOINTS_SOURCE_TYPE_CUSTOM', 'custom');
 define('BREAKPOINTS_GROUP', 'group');
 
 /**
- * Implements hook_permission().
- */
-function breakpoints_permission() {
-  return array(
-    'administer breakpoints' => array(
-      'title' => t('Administer Breakpoints'),
-      'description' => t('Administer all breakpoints'),
-    ),
-  );
-}
-
-/**
  * Implements hook_enable().
  * Import breakpoints from all enabled themes.
  */
@@ -74,7 +62,6 @@ function breakpoints_themes_enabled($theme_list) {
       }
     }
   }
-  menu_router_rebuild();
 }
 
 /**
@@ -90,115 +77,6 @@ function breakpoints_themes_disabled($theme_list) {
     }
     breakpoints_breakpoint_group_delete_by_name($theme_key);
   }
-  menu_router_rebuild();
-}
-
-/**
- * Implements hook_menu().
- */
-function breakpoints_menu() {
-  $items = array();
-
-  // @todo: link to all breakpoints and a list of all groups
-  // cf theme settings page
-  $items['admin/config/media/breakpoints'] = array(
-    'title' => 'Breakpoints',
-    'description' => 'Manage breakpoints',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_admin_breakpoints'),
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.admin.inc',
-    'weight' => 10,
-  );
-
-  $items['admin/config/media/breakpoints/multipliers'] = array(
-    'title' => 'Multipliers',
-    'description' => 'Manage multipliers',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_multipliers_form'),
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 20,
-  );
-
-  $items['admin/config/media/breakpoints/multipliers/%/delete'] = array(
-    'title' => '',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_admin_multiplier_delete_form', 5),
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.admin.inc',
-    'weight' => 15,
-  );
-
-  $items['admin/config/media/breakpoints/%/%'] = array(
-    'page arguments' => array('breakpoints_admin_breakpoint_actions_form', 4, 5),
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.admin.inc',
-  );
-
-  $items['admin/config/media/breakpoints/groups'] = array(
-    'title' => 'Groups',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 10,
-  );
-
-  $items['admin/config/media/breakpoints/groups/global'] = array(
-    'title' => 'All breakpoints',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -1,
-  );
-
-  $items['admin/config/media/breakpoints/groups/add'] = array(
-    'title' => 'Add a new group',
-    'page arguments' => array('breakpoints_admin_breakpoint_group_edit_form'),
-    'type' => MENU_LOCAL_TASK,
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.admin.inc',
-    'weight' => 99,
-  );
-
-  $breakpoint_groups = breakpoints_breakpoint_group_load_all();
-  foreach ($breakpoint_groups as $breakpoint_group_name => $breakpoint_group) {
-    if (!empty($breakpoint_group->machine_name)) {
-      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name] = array(
-        'title' => $breakpoint_group->name,
-        'page arguments' => array('breakpoints_admin_breakpoints', $breakpoint_group->machine_name),
-        'type' => MENU_LOCAL_TASK,
-        'access arguments' => array('administer breakpoints'),
-        'file' => 'breakpoints.admin.inc',
-        'weight' => 15,
-      );
-      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/edit'] = array(
-        'title' => 'Edit ' . $breakpoint_group->name,
-        'page arguments' => array('breakpoints_admin_breakpoint_group_edit_form', $breakpoint_group->machine_name),
-        'type' => MENU_CALLBACK,
-        'access arguments' => array('administer breakpoints'),
-        'file' => 'breakpoints.admin.inc',
-        'weight' => 15,
-      );
-      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/delete'] = array(
-        'title' => 'Delete ' . $breakpoint_group->name,
-        'page arguments' => array('breakpoints_admin_breakpoint_group_delete_form', $breakpoint_group->machine_name),
-        'type' => MENU_CALLBACK,
-        'access arguments' => array('administer breakpoints'),
-        'file' => 'breakpoints.admin.inc',
-        'weight' => 15,
-      );
-      $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name . '/duplicate'] = array(
-        'title' => 'Duplicate ' . $breakpoint_group->name,
-        'page arguments' => array('breakpoints_admin_breakpoint_group_duplicate_form', $breakpoint_group->machine_name),
-        'type' => MENU_CALLBACK,
-        'access arguments' => array('administer breakpoints'),
-        'file' => 'breakpoints.admin.inc',
-        'weight' => 15,
-      );
-    }
-  }
-
-  return $items;
 }
 
 /**
@@ -544,9 +422,7 @@ function breakpoints_breakpoint_group_save($breakpoint_group) {
   $config->set('overridden', $breakpoint_group->overridden);
   $config->set('breakpoints', $breakpoint_group->breakpoints); // weight + key
   $config->save();
-  if ($is_new) {
-    menu_router_rebuild();
-  }
+  return $is_new ? SAVED_NEW : SAVED_UPDATED;
 }
 
 /**
@@ -573,22 +449,6 @@ function breakpoints_breakpoint_group_delete_by_fullkey($key) {
   if ($config && !$config->isNew()) {
     $config->delete();
   }
-}
-
-/**
- * Implements hook_theme().
- */
-function breakpoints_theme() {
-  return array(
-    'breakpoints_admin_breakpoints_table' => array(
-      'render element' => 'form',
-      'theme_key' => NULL,
-    ),
-    'breakpoints_multipliers_table_form' => array(
-      'render element' => 'form',
-      'theme_key' => NULL,
-    ),
-  );
 }
 
 /**

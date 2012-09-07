@@ -1,0 +1,13 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the breakpoints module.
+ */
+
+/**
+ * Breakpoint module split in to two modules: Breakpoints and Breakpoints UI.
+ * Enable Breakpoints UI so that existing installations don't lose functionality.
+ */
+function breakpoints_update_8101() {
+  module_enable(array('breakpoints_ui'));
+}

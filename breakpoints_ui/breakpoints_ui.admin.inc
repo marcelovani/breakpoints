@@ -8,7 +8,7 @@
 /**
  * Admin form
  */
-function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_name = '') {
+function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group_name = '') {
   $form = array();
 
   // In case of an export to theme, there will be a variable exported_breakpoints
@@ -73,7 +73,7 @@ function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_na
     );
   }
 
-  $form['#attached']['css'][] = drupal_get_path('module', 'breakpoints') . '/css/breakpoints.admin.css';
+  $form['#attached']['css'][] = drupal_get_path('module', 'breakpoints_ui') . '/css/breakpoints_ui.admin.css';
   $form['breakpoints'] = array(
     '#type' => 'container',
     '#tree' => TRUE,
@@ -306,90 +306,9 @@ function breakpoints_admin_breakpoints($form, &$form_state, $breakpoint_group_na
 }
 
 /**
- * Theme form as table.
- */
-function theme_breakpoints_admin_breakpoints_table($variables) {
-  $form = $variables['form'];
-  $rows = array();
-  $link_attributes = array(
-    'attributes' => array(
-      'class' => array('image-style-link'),
-    ),
-  );
-  foreach (element_children($form) as $key) {
-    $form[$key]['weight']['#attributes']['class'] = array('breakpoints-weight');
-    $row = array();
-    if ($key != 'new') {
-      $row[] = drupal_render($form[$key]['name']);
-    }
-    else {
-      $row[] = drupal_render($form[$key]['name']);
-    }
-    $row[] = drupal_render($form[$key]['breakpoint']);
-    $row[] = drupal_render($form[$key]['multipliers']);
-    if ($key != 'new') {
-      $breakpoint = $form[$key]['#breakpoint_data'];
-      $row[] = $breakpoint->source . ' (' . $breakpoint->source_type . ')';
-      $row[] = $breakpoint->status ? t('Enabled') : t('Disabled');
-      if (empty($form['#group_name'])) {
-        $row[] = l($breakpoint->status ? t('Disable') : t('Enable'), 'admin/config/media/breakpoints/' . ($breakpoint->status ? 'disable' : 'enable') . '/' . $key, $link_attributes);
-      }
-      if (empty($form['#group_name'])) {
-        if ($breakpoint->source_type == BREAKPOINTS_SOURCE_TYPE_CUSTOM) {
-          $row[] = l(t('Delete'), 'admin/config/media/breakpoints/delete/' . $key, $link_attributes);
-        }
-        else {
-          $row[] = '';
-        }
-      }
-      $class= 'resp-img-status-' . ($breakpoint->status ? 'enabled' : 'disabled');
-    }
-    else {
-      $row[] = '';
-      $row[] = '';
-      $row[] = '';
-      $row[] = '';
-      $class = 'resp-img-status-new';
-    }
-    $row[] = drupal_render($form[$key]['weight']);
-    $rows[] = array(
-      'data' => $row,
-      'class' => array('draggable', $class),
-    );
-  }
-
-  if (empty($form['#group_name'])) {
-    $header = array(
-      t('Name'),
-      t('Breakpoint, @media ...'),
-      t('Multipliers'),
-      t('Source'),
-      t('Status'),
-      array('data' => t('Operations'), 'colspan' => 2),
-      t('Weight'),
-    );
-  }
-  else {
-    $header = array(
-      t('Name'),
-      t('Breakpoint, @media ...'),
-      t('Multipliers'),
-      t('Source'),
-      t('Status'),
-      t('Weight'),
-    );
-  }
-
-  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'resp-img-breakpoints')));
-  drupal_add_tabledrag('resp-img-breakpoints', 'order', 'sibling', 'breakpoints-weight');
-
-  return $output;
-}
-
-/**
  * Admin form validation.
  */
-function breakpoints_admin_breakpoints_validate($form, &$form_state) {
+function breakpoints_ui_admin_breakpoints_validate($form, &$form_state) {
   if (strpos($form_state['triggering_element']['#id'], 'remove') === FALSE) {
     if (isset($form_state['values']['breakpoints'])) {
       $breakpoints = $form_state['values']['breakpoints'];
@@ -410,7 +329,7 @@ function breakpoints_admin_breakpoints_validate($form, &$form_state) {
 /**
  * Admin form submit.
  */
-function breakpoints_admin_breakpoints_submit($form, &$form_state) {
+function breakpoints_ui_admin_breakpoints_submit($form, &$form_state) {
   $breakpoints = $form_state['values']['breakpoints'];
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
@@ -464,7 +383,7 @@ function breakpoints_admin_breakpoints_submit($form, &$form_state) {
 /**
  * Admin action form: enable, disable, delete
  */
-function breakpoints_admin_breakpoint_actions_form($form, &$form_state, $action, $breakpoint) {
+function breakpoints_ui_admin_breakpoint_actions_form($form, &$form_state, $action, $breakpoint) {
   $form_state['action'] = $action;
   $form_state['breakpoint'] = $breakpoint;
   $question = t('Are you sure you want to %action %breakpoint', array(
@@ -478,7 +397,7 @@ function breakpoints_admin_breakpoint_actions_form($form, &$form_state, $action,
 /**
  * Admin action form submit
  */
-function breakpoints_admin_breakpoint_actions_form_submit($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_actions_form_submit($form, &$form_state) {
   $action = $form_state['action'];
   $breakpoint = $form_state['breakpoint'];
   switch ($action) {
@@ -493,7 +412,7 @@ function breakpoints_admin_breakpoint_actions_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/config/media/breakpoints';
 }
 
-function breakpoints_admin_breakpoint_group_edit_form($form, &$form_state, $machine_name = '') {
+function breakpoints_ui_admin_breakpoint_group_edit_form($form, &$form_state, $machine_name = '') {
   $form = array();
   $group = breakpoints_breakpoint_group_load($machine_name);
 
@@ -547,7 +466,7 @@ function breakpoints_admin_breakpoint_group_edit_form($form, &$form_state, $mach
   );
 
   if (!$is_new && $group->type == BREAKPOINTS_SOURCE_TYPE_CUSTOM) {
-    $form['#attached']['css'][] = drupal_get_path('module', 'breakpoints') . '/css/breakpoints.admin.css';
+    $form['#attached']['css'][] = drupal_get_path('module', 'breakpoints_ui') . '/css/breakpoints_ui.admin.css';
     $form['buttons']['deletelink'] = array(
       '#type' => 'markup',
       '#markup' => l(t('Delete this group'), 'admin/config/media/breakpoints/groups/' . $group->machine_name . '/delete', array(
@@ -560,12 +479,12 @@ function breakpoints_admin_breakpoint_group_edit_form($form, &$form_state, $mach
   return $form;
 }
 
-function breakpoints_admin_breakpoint_group_edit_form_validate($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_group_edit_form_validate($form, &$form_state) {
   $name = $form_state['values']['machine_name'];
   $label = $form_state['values']['name'];
 }
 
-function breakpoints_admin_breakpoint_group_edit_form_submit($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_group_edit_form_submit($form, &$form_state) {
   $machine_name = $form_state['values']['machine_name'];
   $name = $form_state['values']['name'];
   $breakpoints = array();
@@ -597,13 +516,14 @@ function breakpoints_admin_breakpoint_group_edit_form_submit($form, &$form_state
 /**
  * Admin form submit - Override theme breakpoints.
  */
-function breakpoints_admin_breakpoints_submit_override($form, &$form_state) {
+function breakpoints_ui_admin_breakpoints_submit_override($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
     $group = breakpoints_breakpoint_group_load($group_name);
     if ($group) {
       breakpoints_breakpoints_group_override($group);
+      menu_router_rebuild();
     }
   }
 }
@@ -611,13 +531,14 @@ function breakpoints_admin_breakpoints_submit_override($form, &$form_state) {
 /**
  * Admin form submit - Revert theme breakpoints.
  */
-function breakpoints_admin_breakpoints_submit_revert($form, &$form_state) {
+function breakpoints_ui_admin_breakpoints_submit_revert($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
     $group = breakpoints_breakpoint_group_load($group_name);
     if ($group) {
       breakpoints_breakpoints_group_revert($group);
+      menu_router_rebuild();
     }
   }
 }
@@ -625,13 +546,14 @@ function breakpoints_admin_breakpoints_submit_revert($form, &$form_state) {
 /**
  * Admin form submit - Reload theme breakpoints.
  */
-function breakpoints_admin_breakpoints_submit_reload($form, &$form_state) {
+function breakpoints_ui_admin_breakpoints_submit_reload($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
     $group = breakpoints_breakpoint_group_load($group_name);
     if ($group) {
       breakpoints_breakpoints_group_reload($group);
+      menu_router_rebuild();
     }
   }
 }
@@ -639,7 +561,7 @@ function breakpoints_admin_breakpoints_submit_reload($form, &$form_state) {
 /**
  * Admin form submit - Export breakpoints to theme.
  */
-function breakpoints_admin_breakpoints_submit_exporttotheme($form, &$form_state) {
+function breakpoints_ui_admin_breakpoints_submit_exporttotheme($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
@@ -661,7 +583,7 @@ function breakpoints_admin_breakpoints_submit_exporttotheme($form, &$form_state)
 /**
  * Delete a group.
  */
-function breakpoints_admin_breakpoint_group_delete_form($form, &$form_state, $machine_name) {
+function breakpoints_ui_admin_breakpoint_group_delete_form($form, &$form_state, $machine_name) {
   $group = breakpoints_breakpoint_group_load($machine_name);
   $form_state['machine_name'] = $machine_name;
   $question = t('Are you sure you want to delete %group', array(
@@ -674,7 +596,7 @@ function breakpoints_admin_breakpoint_group_delete_form($form, &$form_state, $ma
 /**
  * Delete a group.
  */
-function breakpoints_admin_breakpoint_group_delete_form_submit($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_group_delete_form_submit($form, &$form_state) {
   $machine_name = $form_state['machine_name'];
   breakpoints_breakpoint_group_delete_by_name($machine_name);
   menu_router_rebuild();
@@ -684,7 +606,7 @@ function breakpoints_admin_breakpoint_group_delete_form_submit($form, &$form_sta
 /**
  * Multipliers administration form.
  */
-function breakpoints_multipliers_form($form, &$form_state) {
+function breakpoints_ui_multipliers_form($form, &$form_state) {
   $settings = breakpoints_settings();
   $multipliers = drupal_map_assoc($settings->multipliers);
   if (isset($multipliers['1x'])) {
@@ -723,25 +645,13 @@ function breakpoints_multipliers_form($form, &$form_state) {
 
 /**
  * Dummy function.
- * @see breakpoints_multipliers_form()
+ * @see breakpoints_ui_multipliers_form()
  */
 function _breakpoint_multipliers_exist($multiplier) {
   return FALSE;
 }
 
-function theme_breakpoints_multipliers_table_form($element) {
-  $form = $element['form'];
-  $header = array(t('Multiplier'), t('Operations'));
-  foreach (element_children($form) as $multiplier) {
-    $row = array();
-    $row[] = drupal_render($form[$multiplier]);
-    $row[] = in_array($multiplier, array('new', '1x')) ? '' : l(t('Delete'), 'admin/config/media/breakpoints/multipliers/' . $multiplier . '/delete');
-    $rows[] = $row;
-  }
-  return theme('table', array('header' => $header, 'rows' => $rows));
-}
-
-function breakpoints_multipliers_form_validate($form, $form_state) {
+function breakpoints_ui_multipliers_form_validate($form, $form_state) {
   $multipliers = $form_state['values']['multipliers'];
   $saved_multipliers = array(
     '1x' => '1x',
@@ -759,14 +669,14 @@ function breakpoints_multipliers_form_validate($form, $form_state) {
   }
 }
 
-function breakpoints_multipliers_form_submit($form, &$form_state) {
+function breakpoints_ui_multipliers_form_submit($form, &$form_state) {
   $multipliers = array_values(array_filter($form_state['values']['multipliers']));
   array_unshift($multipliers, '1x');
   breakpoints_settings_save($multipliers);
   drupal_set_message(t('Multipliers are saved.'));
 }
 
-function breakpoints_admin_multiplier_delete_form($form, &$form_state, $multiplier) {
+function breakpoints_ui_admin_multiplier_delete_form($form, &$form_state, $multiplier) {
   $path = 'admin/config/media/breakpoints/multipliers';
   if ($multiplier == '1x') {
     $form['multiplier'] = array(
@@ -781,7 +691,7 @@ function breakpoints_admin_multiplier_delete_form($form, &$form_state, $multipli
   return confirm_form($form, t('Are you sure you want to delete multiplier %multiplier', array('%multiplier' => $multiplier)), $path);
 }
 
-function breakpoints_admin_multiplier_delete_form_submit($form, &$form_state) {
+function breakpoints_ui_admin_multiplier_delete_form_submit($form, &$form_state) {
   $settings = breakpoints_settings();
   $multiplier = $form_state['values']['multiplier'];
   $multipliers = drupal_map_assoc($settings->multipliers);
@@ -796,13 +706,13 @@ function breakpoints_admin_multiplier_delete_form_submit($form, &$form_state) {
 /**
  * Duplicate group form.
  */
-function breakpoints_admin_breakpoint_group_duplicate_form($form, &$form_state, $breakpoint_group_name) {
+function breakpoints_ui_admin_breakpoint_group_duplicate_form($form, &$form_state, $breakpoint_group_name) {
   $form = array();
 
   $src_group = breakpoints_breakpoint_group_load($breakpoint_group_name);
   $form_state['#src_group'] = $src_group;
 
-  $form['#attached']['css'][] = drupal_get_path('module', 'breakpoints') . '/css/breakpoints.admin.css';
+  $form['#attached']['css'][] = drupal_get_path('module', 'breakpoints_ui') . '/css/breakpoints_ui.admin.css';
   $form['name'] = array(
     '#type' => 'textfield',
     '#size' => '64',
@@ -849,13 +759,13 @@ function breakpoints_admin_breakpoint_group_duplicate_form($form, &$form_state, 
 /**
  * Duplicate group form validate.
  */
-function breakpoints_admin_breakpoint_group_duplicate_form_validate($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_group_duplicate_form_validate($form, &$form_state) {
 }
 
 /**
  * Duplicate group form submit.
  */
-function breakpoints_admin_breakpoint_group_duplicate_form_submit($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_group_duplicate_form_submit($form, &$form_state) {
   $machine_name = $form_state['values']['machine_name'];
   $name = $form_state['values']['name'];
   $src_group = $form_state['#src_group'];
