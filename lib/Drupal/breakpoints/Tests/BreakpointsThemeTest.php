@@ -57,24 +57,36 @@ class BreakpointsThemeTest extends BreakpointGroupTestBase {
     );
     $breakpoint_group->type = 'theme';
     $breakpoint_group->overridden = 0;
+    
+    // Verify we can load this breakpoint defined by the theme.
     $this->verifyBreakpointGroup($breakpoint_group);
 
     // Override the breakpoints.
-    $this->drupalGet('admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name);
-    $this->drupalPost(NULL, array(), t('Override theme breakpoints'));
+    $overridden_group = clone $breakpoint_group;
+    breakpoints_breakpoints_group_override($overridden_group);
 
     // Verify the group is overridden.
-    $breakpoint_group->breakpoints = array(
+    $overridden_group->breakpoints = array(
       'breakpoints.custom.breakpoints_test_theme.mobile',
       'breakpoints.custom.breakpoints_test_theme.narrow',
       'breakpoints.custom.breakpoints_test_theme.wide',
       'breakpoints.custom.breakpoints_test_theme.tv',
     );
-    $breakpoint_group->overridden = 1;
+    $overridden_group->overridden = 1;
+    $this->verifyBreakpointGroup($overridden_group);
+
+    // Reload the breakpoint group from the theme.
+    breakpoints_breakpoints_group_revert($overridden_group);
+
+    // Verify the breakpoint has its original values again when loaded.
     $this->verifyBreakpointGroup($breakpoint_group);
 
-    // Verify there is no override button for this group anymore.
-    $this->drupalGet('admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name);
-    $this->assertNoFieldById('edit-override');
+    // Verify $overridden_group has been reverted to the original state as well.
+    $this->assertEqual($breakpoint_group, $overridden_group, t('breakpoints_breakpoints_group_revert: Breakpoint group variable has the right value after calling reverting the group.'), t('Breakpoints API'));
+
+    // Disable the test theme and verify the breakpoint group is deleted.
+    theme_disable(array('breakpoints_test_theme'));
+    $this->assertFalse(breakpoints_breakpoint_group_load($breakpoint_group->machine_name), t('breakpoints_breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
+
   }
 }
