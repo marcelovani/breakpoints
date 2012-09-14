@@ -57,7 +57,7 @@ class BreakpointsThemeTest extends BreakpointGroupTestBase {
     );
     $breakpoint_group->type = 'theme';
     $breakpoint_group->overridden = 0;
-    
+
     // Verify we can load this breakpoint defined by the theme.
     $this->verifyBreakpointGroup($breakpoint_group);
 
