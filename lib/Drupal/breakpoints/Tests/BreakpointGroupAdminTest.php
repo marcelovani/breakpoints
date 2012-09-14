@@ -61,10 +61,11 @@ class BreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $name = $this->randomName();
     $machine_name = drupal_strtolower($name);
     $breakpoint = reset($breakpoints);
+    $config_name = breakpoints_breakpoint_config_name($breakpoint);
     $edit = array(
       'name' => $name,
       'machine_name' => $machine_name,
-      'breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . ']' => breakpoints_breakpoint_config_name($breakpoint),
+      'breakpoints[' . $config_name . ']' => $config_name,
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));
@@ -74,29 +75,32 @@ class BreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $this->assertResponse(200, t('Breakpoint group was saved.'));
 
     // Verify the breakpoint was attached to the group.
-    $this->assertField('breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . '][name]', t('The Breakpoint was added.'));
+    $this->assertField('breakpoints[' . $config_name . '][name]', t('The Breakpoint was added.'));
 
     // Add breakpoints to the breakpoint group.
     $this->drupalGet('admin/config/media/breakpoints/groups/' . $machine_name . '/edit');
     $edit = array();
     foreach ($breakpoints as $breakpoint) {
-      $edit['breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . ']'] = breakpoints_breakpoint_config_name($breakpoint);
+      $config_name = breakpoints_breakpoint_config_name($breakpoint);
+      $edit['breakpoints[' . $config_name . ']'] = $config_name;
     }
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the breakpoints were attached to the group.
     $this->drupalGet('admin/config/media/breakpoints/groups/' . $machine_name);
     foreach ($breakpoints as $breakpoint) {
-      $this->assertField('breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . '][name]', t('The Breakpoint was added.'));
+      $config_name = breakpoints_breakpoint_config_name($breakpoint);
+      $this->assertField('breakpoints[' . $config_name . '][name]', t('The Breakpoint was added.'));
     }
 
     // Change the order breakpoints of the breakpoints within the breakpoint group.
     $breakpoint = end($breakpoints);
+    $config_name = breakpoints_breakpoint_config_name($breakpoint);
     $edit = array(
-      "breakpoints[" . breakpoints_breakpoint_config_name($breakpoint) . "][weight]" => 0,
+      "breakpoints[" . $config_name . "][weight]" => 0,
     );
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertFieldByName("breakpoints[" . breakpoints_breakpoint_config_name($breakpoint) . "][weight]", 0, t('Breakpoint weight was saved.'));
+    $this->assertFieldByName("breakpoints[" . $config_name . "][weight]", 0, t('Breakpoint weight was saved.'));
 
     // Submit the form.
     $this->drupalGet('admin/config/media/breakpoints');
@@ -104,18 +108,18 @@ class BreakpointGroupAdminTest extends BreakpointGroupTestBase {
 
     // Verify that the custom weight of the breakpoint has been retained.
     $this->drupalGet('admin/config/media/breakpoints/groups/' . $machine_name);
-    $this->assertFieldByName("breakpoints[" . breakpoints_breakpoint_config_name($breakpoint) . "][weight]", 0, t('Breakpoint weight was retained.'));
+    $this->assertFieldByName("breakpoints[" . $config_name . "][weight]", 0, t('Breakpoint weight was retained.'));
 
     // Verify that the weight has only changed within the group.
     $this->drupalGet('admin/config/media/breakpoints');
-    $this->assertFieldByName("breakpoints[" . breakpoints_breakpoint_config_name($breakpoint) . "][weight]", $breakpoint->weight, t('Breakpoint weight has only changed within the group.'));
+    $this->assertFieldByName("breakpoints[" . $config_name . "][weight]", $breakpoint->weight, t('Breakpoint weight has only changed within the group.'));
 
     // Change the multipliers of the breakpoint within the group.
     $edit = array(
-      "breakpoints[" . breakpoints_breakpoint_config_name($breakpoint) . "][multipliers][1.5x]" => "1.5x",
+      "breakpoints[" . $config_name . "][multipliers][1.5x]" => "1.5x",
     );
     $this->drupalPost(NULL, $edit, t('Save'));
-    $id = drupal_clean_css_identifier('edit-breakpoints-' . breakpoints_breakpoint_config_name($breakpoint) . '-multipliers-');
+    $id = drupal_clean_css_identifier('edit-breakpoints-' . $config_name . '-multipliers-');
     $this->assertFieldChecked($id . '15x', t('Breakpoint multipliers were saved.' . $id . '15x'));
     $this->assertNoFieldChecked($id . '2x', t('Breakpoint multipliers were saved.'));
 
@@ -138,10 +142,11 @@ class BreakpointGroupAdminTest extends BreakpointGroupTestBase {
     // Add breakpoint group.
     $this->drupalGet('admin/config/media/breakpoints/groups/add');
     $breakpoint = reset($breakpoints);
+    $config_name = breakpoints_breakpoint_config_name($breakpoint);
     $edit = array(
       'name' => $this->randomName(),
       'machine_name' => $machine_name,
-      'breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . ']' => breakpoints_breakpoint_config_name($breakpoint),
+      'breakpoints[' . $config_name . ']' => $config_name,
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));

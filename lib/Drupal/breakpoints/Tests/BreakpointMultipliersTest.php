@@ -93,13 +93,14 @@ class BreakpointMultipliersTest extends WebTestBase {
     // Verify the default multipliers are visible on the global breakpoints page.
     $this->drupalGet('admin/config/media/breakpoints');
     foreach (breakpoints_breakpoint_load_all() as $breakpoint) {
+      $config_name = breakpoints_breakpoint_config_name($breakpoint);
       foreach ($settings->multipliers as $multiplier) {
         if ($multiplier != '1x') {
-          $this->assertFieldByName('breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . '][multipliers][' . $multiplier . ']');
+          $this->assertFieldByName('breakpoints[' . $config_name . '][multipliers][' . $multiplier . ']');
         }
         else {
           // Multiplier 1x can not be disabled for any breakpoint.
-          $this->assertNoFieldByName('breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . '][multipliers][' . $multiplier . ']');
+          $this->assertNoFieldByName('breakpoints[' . $config_name . '][multipliers][' . $multiplier . ']');
         }
       }
     }
