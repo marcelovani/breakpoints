@@ -103,43 +103,6 @@ function breakpoints_settings_save($multipliers) {
 }
 
 /**
- * Load name of default breakpoint.
- */
-function breakpoints_breakpoint_default_name($theme_key = '') {
-  static $default_breakpoint = FALSE;
-  if ($default_breakpoint === FALSE) {
-    $default_breakpoint = '';
-    if ($theme_key == '') {
-      $theme_key = variable_get('theme_default', 'stark');
-    }
-    if (theme_get_setting('breakpoints_use_default', $theme_key)) {
-      $themes = list_themes();
-      if (isset($themes[$theme_key]->info['breakpoints_default_breakpoint'])) {
-        $default_breakpoint = $themes[$theme_key]->info['breakpoints_default_breakpoint'];
-      }
-    }
-    else {
-      $config = config('breakpoints');
-      if (!$config->isNew()) {
-        $default_breakpoint = $config->get('default_breakpoint');
-      }
-    }
-  }
-  return $default_breakpoint;
-}
-
-/**
- * Load default breakpoint.
- */
-function breakpoints_breakpoint_default($theme_key = '') {
-  $default_breakpoint = breakpoints_breakpoint_default_name($theme_key);
-  if ($default_breakpoint && strpos($default_breakpoint, BREAKPOINTS_SEPARATOR) !== 0) {
-    $default_breakpoint = BREAKPOINTS_SEPARATOR . $default_breakpoint;
-  }
-  return $default_breakpoint;
-}
-
-/**
  * Sort breakpoints by weight.
  */
 function _breakpoints_sort_by_weight($a, $b) {
