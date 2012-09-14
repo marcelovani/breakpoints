@@ -31,7 +31,7 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
       $breakpoint = new stdClass();
       $breakpoint->disabled = FALSE;
       $breakpoint->api_version = 1;
-      $breakpoint->name = $this->randomName();
+      $breakpoint->name = drupal_strtolower($this->randomName());
       $width = ($i + 1) * 200;
       $breakpoint->breakpoint = "(min-width: {$width}px)";
       $breakpoint->source = 'user';

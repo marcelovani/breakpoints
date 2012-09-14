@@ -130,6 +130,28 @@ function breakpoints_breakpoint_config_name($breakpoints_breakpoint) {
     return $breakpoints_breakpoint;
   }
   else {
+    // Check for illegal values in breakpoint source type.
+    if (!in_array($breakpoints_breakpoint->source_type, array(BREAKPOINTS_SOURCE_TYPE_CUSTOM, BREAKPOINTS_SOURCE_TYPE_MODULE, BREAKPOINTS_SOURCE_TYPE_THEME))) {
+      throw new Exception(
+          t(
+            'Expected one of \'@custom\', \'@module\' or \'@theme\' for breakpoint source_type property but got \'@sourcetype\'.',
+            array(
+              '@custom' => BREAKPOINTS_SOURCE_TYPE_CUSTOM,
+              '@module' => BREAKPOINTS_SOURCE_TYPE_MODULE,
+              '@theme' => BREAKPOINTS_SOURCE_TYPE_THEME,
+              '@sourcetype' => $breakpoints_breakpoint->source_type,
+            )
+          )
+      );
+    }
+    // Check for illegal characters in breakpoint source.
+    if (preg_match('/[^a-z_]+/', $breakpoints_breakpoint->source)) {
+      throw new Exception(t('Invalid value \'@source\' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.', array('@source' => $breakpoints_breakpoint->source)));
+    }
+    // Check for illegal characters in breakpoint names.
+    if (preg_match('/[^0-9a-z_\-]/', $breakpoints_breakpoint->name)) {
+      throw new Exception(t('Invalid value \'@name\' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).', array('@name' => $breakpoints_breakpoint->name)));
+    }
     return 'breakpoints'
       . '.' . $breakpoints_breakpoint->source_type
       . '.' . $breakpoints_breakpoint->source

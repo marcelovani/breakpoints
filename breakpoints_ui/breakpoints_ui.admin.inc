@@ -107,6 +107,7 @@ function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group
         '#default_value' => $breakpoint->name,
         '#disabled' => TRUE,
         '#size' => 20,
+        '#element_validate' => array('breakpoint_name_validate'),
       ),
       'breakpoint' => array(
         '#type' => 'textfield',
@@ -143,6 +144,7 @@ function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group
         '#type' => 'textfield',
         '#default_value' => '',
         '#size' => 20,
+        '#element_validate' => array('breakpoint_name_validate'),
       ),
       'breakpoint' => array(
         '#type' => 'textfield',
@@ -306,6 +308,16 @@ function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group
 }
 
 /**
+ * Element validate callback for breakpoint names.
+ */
+function breakpoint_name_validate($element, $form_state) {
+  // Check for illegal characters in breakpoint names.
+  if (preg_match('/[^0-9a-z_\-]/', $element['#value'])) {
+    form_set_error(implode('][', $element['#parents']), t('Please only use lowercase alphanumeric characters, underscores (_), and hyphens (-) for breakpoint names.'));
+  }
+}
+
+/**
  * Admin form validation.
  */
 function breakpoints_ui_admin_breakpoints_validate($form, &$form_state) {
@@ -318,6 +330,13 @@ function breakpoints_ui_admin_breakpoints_validate($form, &$form_state) {
             // Breakpoint is required.
             if (empty($breakpointdata['breakpoint']) && $breakpointdata['breakpoint'] !== '0') {
               form_set_error('breakpoints][' . $key . '][breakpoint', 'Breakpoint field is required');
+            }
+          }
+          if ($key === 'new') {
+            // Check for duplicates.
+            $name = 'breakpoints.' . BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.user.' . $breakpointdata['name'];
+            if (breakpoints_breakpoint_load_by_fullkey($name)) {
+              form_set_error('breakpoints][' . $key . '][name', t('The breakpoint name %name is already in use.', array('%name' => $breakpointdata['name'])));
             }
           }
         }
@@ -442,6 +461,7 @@ function breakpoints_ui_admin_breakpoint_group_edit_form($form, &$form_state, $m
   );
 
   $breakpoints = breakpoints_breakpoint_load_all();
+  $options = array();
   foreach ($breakpoints as $breakpoint_name => $breakpoint) {
     $options[$breakpoint_name] = $breakpoint->name . ' [' . $breakpoint->breakpoint . ']';
   }

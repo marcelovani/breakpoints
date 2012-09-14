@@ -29,7 +29,7 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
     $breakpoint = new stdClass();
     $breakpoint->disabled = FALSE;
     $breakpoint->api_version = 1;
-    $breakpoint->name = 'Custom';
+    $breakpoint->name = drupal_strtolower($this->randomName());
     $breakpoint->breakpoint = '(min-width: 600px)';
     $breakpoint->source = 'user';
     $breakpoint->source_type = 'custom';
