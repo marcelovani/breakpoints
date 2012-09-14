@@ -46,8 +46,7 @@ function breakpoints_themes_enabled($theme_list) {
           $breakpoint->name = $name;
           $breakpoint->breakpoint = $media_query;
           $breakpoint->source = $theme_key;
-          $breakpoint->source_type = 'theme';
-          $breakpoint->theme = '';
+          $breakpoint->source_type = BREAKPOINTS_SOURCE_TYPE_THEME;
           $breakpoint->status = TRUE;
           $breakpoint->weight = $weight++;
           breakpoints_breakpoint_save($breakpoint);
@@ -163,7 +162,7 @@ function breakpoints_breakpoint_config_name($breakpoints_breakpoint) {
  * Load a single breakpoint.
  */
 function breakpoints_breakpoint_load($name, $source, $source_type) {
-  return breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($name, $source, $source_type));
+  return breakpoints_breakpoint_load_by_fullkey('breakpoints.' . $source_type . '.' . $source . '.' . $name);
 }
 
 /**
@@ -261,13 +260,11 @@ function breakpoints_breakpoint_empty_array() {
   return array(
     'name' => '',
     'breakpoint' => '',
-    'breakpoint' => '',
     'source' => '',
     'source_type' => '',
     'theme' => '',
     'status' => '',
     'weight' => 0,
-    'theme' => '',
     'multipliers' => '',
   );
 }
@@ -313,13 +310,19 @@ function breakpoints_breakpoint_delete_by_fullkey($name) {
 
 /**
  * Toggle status of a single breakpoint.
+ * @param object|string $breakpoints_breakpoint
+ *   Either a breakpoint object or a breakpoint config name.
  */
-function breakpoints_breakpoint_toggle_status($breakpoints_breakpoint) {
+function breakpoints_breakpoint_toggle_status(&$breakpoints_breakpoint) {
   $name = breakpoints_breakpoint_config_name($breakpoints_breakpoint);
   $config = config($name);
   if ($config && !$config->isNew()) {
-    $config->set('status', !$config->get('status'));
+    $status = !$config->get('status');
+    $config->set('status', $status);
     $config->save();
+    if (is_object($breakpoints_breakpoint)) {
+      $breakpoints_breakpoint->status = $status;
+    }
   }
 }
 

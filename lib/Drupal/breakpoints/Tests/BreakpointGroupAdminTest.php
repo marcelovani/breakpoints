@@ -13,6 +13,13 @@ use stdClass;
  */
 class BreakpointGroupAdminTest extends BreakpointGroupTestBase {
 
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('breakpoints_ui');
+
   public static function getInfo() {
     return array(
       'name' => 'Breakpoint Group administration functionality',

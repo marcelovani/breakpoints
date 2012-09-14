@@ -32,7 +32,7 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
     $breakpoint->name = drupal_strtolower($this->randomName());
     $breakpoint->breakpoint = '(min-width: 600px)';
     $breakpoint->source = 'user';
-    $breakpoint->source_type = 'custom';
+    $breakpoint->source_type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
     $breakpoint->status = 1;
     $breakpoint->weight = 0;
     $breakpoint->multipliers = array(
@@ -40,7 +40,26 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
       '2x' => 0,
     );
     breakpoints_breakpoint_save($breakpoint);
+
+    $config_name = breakpoints_breakpoint_config_name($breakpoint);
     $this->verifyBreakpoint($breakpoint);
+
+    // Test breakpoints_breakpoint_load.
+    $compare_breakpoint = breakpoints_breakpoint_load($breakpoint->name, $breakpoint->source, $breakpoint->source_type);
+    $this->verifyBreakpoint($breakpoint, $compare_breakpoint);
+
+    // Test breakpoints_breakpoint_load_by_fullkey.
+    $compare_breakpoint = breakpoints_breakpoint_load_by_fullkey($config_name);
+    $this->verifyBreakpoint($breakpoint, $compare_breakpoint);
+
+    // Test breakpoints_breakpoint_load_all
+    $all_breakpoints = breakpoints_breakpoint_load_all();
+    $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoints_breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
+    $this->verifyBreakpoint($breakpoint, $all_breakpoints[$config_name]);
+
+    $all_custom_breakpoints = _breakpoints_breakpoint_load_all_by_type(BREAKPOINTS_SOURCE_TYPE_CUSTOM);
+    $this->assertTrue(isset($all_custom_breakpoints[$config_name]), t('_breakpoints_breakpoint_load_all_by_type: New @type breakpoint is present when loading all breakpoints of type @type.', array('@type' => BREAKPOINTS_SOURCE_TYPE_CUSTOM)));
+    $this->verifyBreakpoint($breakpoint, $all_custom_breakpoints[$config_name]);
 
     // Update the breakpoint.
     $breakpoint->weight = 1;
@@ -49,8 +68,7 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
     $this->verifyBreakpoint($breakpoint);
 
     // Disable the breakpoint.
-    $breakpoint->status = 0;
-    breakpoints_breakpoint_save($breakpoint);
+    breakpoints_breakpoint_toggle_status($breakpoint);
     $this->verifyBreakpoint($breakpoint);
     $breakpoints = breakpoints_breakpoint_load_all_active();
     $config_name = breakpoints_breakpoint_config_name($breakpoint);

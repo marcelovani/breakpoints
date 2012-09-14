@@ -17,7 +17,7 @@ abstract class BreakpointGroupTestBase extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('breakpoints', 'breakpoints_ui');
+  public static $modules = array('breakpoints');
 
   function  setUp() {
     parent::setUp();
@@ -26,15 +26,15 @@ abstract class BreakpointGroupTestBase extends WebTestBase {
   /**
    * Verify that a breakpoint is properly stored.
    */
-  function verifyBreakpointGroup($group) {
+  function verifyBreakpointGroup($group, $compare_group = NULL) {
     $t_args = array('%group' => $group->name);
     $properties = array('name', 'machine_name', 'breakpoints', 'overridden');
     $assert_group = t('Breakpoints API');
 
     // Verify breakpoints_breakpoint_group_load().
-    $load_group = breakpoints_breakpoint_group_load($group->machine_name);
+    $compare_group = is_null($compare_group) ? breakpoints_breakpoint_group_load($group->machine_name) : $compare_group;
     foreach ($properties as $property) {
-      $this->assertEqual($load_group->{$property}, $group->{$property}, t('breakpoints_breakpoint_group_load: Proper ' . $property . ' for breakpoint group %group.', $t_args), $assert_group);
+      $this->assertEqual($compare_group->{$property}, $group->{$property}, t('breakpoints_breakpoint_group_load: Proper ' . $property . ' for breakpoint group %group.', $t_args), $assert_group);
     }
   }
 }

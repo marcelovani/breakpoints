@@ -47,7 +47,7 @@ class BreakpointMultipliersTest extends WebTestBase {
     $this->drupalGet('admin/config/media/breakpoints/multipliers');
     $settings = breakpoints_settings();
     foreach ($settings->multipliers as $multiplier) {
-      $this->assertRaw($multiplier, t('Default multiplier %multiplier found', array('%multiplier' => $multiplier)));
+      $this->assertRaw($multiplier, t('Default multiplier %multiplier found.', array('%multiplier' => $multiplier)));
       if ($multiplier != '1x') {
         $this->assertFieldByName('multipliers[' . $multiplier . ']', $multiplier);
       }
@@ -55,7 +55,7 @@ class BreakpointMultipliersTest extends WebTestBase {
 
     // Verify the '1x' multiplier can't be deleted.
     $this->drupalGet('admin/config/media/breakpoints/multipliers/1x/delete');
-    $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted'));
+    $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted.', t('Breakpoints API')));
     $this->assertNoFieldById('edit-submit');
 
     // Add a multiplier.

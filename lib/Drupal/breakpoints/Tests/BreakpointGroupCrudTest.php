@@ -43,7 +43,8 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
         '2x' => 0,
       );
       breakpoints_breakpoint_save($breakpoint);
-      $breakpoints[] = $breakpoint;
+      $config_name = breakpoints_breakpoint_config_name($breakpoint);
+      $breakpoints[$config_name] = $breakpoint;
     }
     // Add a breakpoint group with minimum data only.
     $group = new stdClass();
@@ -59,6 +60,23 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
     $group->breakpoints = array_keys($breakpoints);
     breakpoints_breakpoint_group_save($group);
     $this->verifyBreakpointGroup($group);
+
+    // Duplicate the breakpoint group.
+    $new_group = breakpoints_breakpoint_group_empty_object();
+    $new_group->name = $this->randomName();
+    $new_group->machine_name = drupal_strtolower($new_group->name);
+    $new_group->type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+    $new_group->breakpoints = $group->breakpoints;
+    $duplicated_group = breakpoints_breakpoints_group_duplicate($group, $new_group->name, $new_group->machine_name);
+    $this->verifyBreakpointGroup($duplicated_group, $new_group);
+
+    // Export the group breakpoints ready for theme.info inclusion.
+    $expected = array();
+    foreach ($breakpoints as $breakpoint) {
+      $expected[$breakpoint->name] = $breakpoint->breakpoint;
+    }
+    $export = breakpoints_breakpoints_group_exporttotheme($group);
+    $this->assertEqual($export, $expected, t('breakpoints_breakpoints_group_exporttotheme: Exporting the breakpoint group for theme.info inclusion returns the correct array.'), t('Breakpoints API'));
 
     // Delete the breakpoint group.
     breakpoints_breakpoint_group_delete($group);

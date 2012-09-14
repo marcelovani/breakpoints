@@ -13,6 +13,13 @@ use stdClass;
  */
 class BreakpointsAdminTest extends BreakpointsTestBase {
 
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('breakpoints_ui');
+
   public static function getInfo() {
     return array(
       'name' => 'Breakpoints administration functionality',
@@ -50,14 +57,14 @@ class BreakpointsAdminTest extends BreakpointsTestBase {
     $machine_name = 'breakpoints.' . BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.user.' . $name;
     // Verify the breakpoint was saved and verify default weight of the breakpoint.
     $this->drupalGet('admin/config/media/breakpoints');
-    $this->assertFieldByName("breakpoints[$machine_name][weight]", 0, t('Breakpoint weight was saved.'));
+    $this->assertFieldByName("breakpoints[$machine_name][weight]", 0, t('Breakpoint weight was saved.'), t('Breakpoints API'));
 
     // Change the weight of the breakpoint.
     $edit = array(
       "breakpoints[$machine_name][weight]" => 5,
     );
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was saved.'));
+    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was saved.'), t('Breakpoints API'));
 
     // Submit the form.
     $this->drupalGet('admin/config/media/breakpoints');
@@ -65,7 +72,7 @@ class BreakpointsAdminTest extends BreakpointsTestBase {
 
     // Verify that the custom weight of the breakpoint has been retained.
     $this->drupalGet('admin/config/media/breakpoints');
-    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was retained.'));
+    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was retained.'), t('Breakpoints API'));
 
     // Change the multipliers of the breakpoint.
     $edit = array(
@@ -91,7 +98,7 @@ class BreakpointsAdminTest extends BreakpointsTestBase {
     $this->drupalPost(NULL, array(), t('Confirm'));
 
     // Verify that the breakpoint is disabled.
-    $this->assertLinkByHref('admin/config/media/breakpoints/enable/' . $machine_name, 0, t('Breakpoint was disabled.'));
+    $this->assertLinkByHref('admin/config/media/breakpoints/enable/' . $machine_name, 0, t('Breakpoint was disabled.'), t('Breakpoints API'));
   }
 
 }

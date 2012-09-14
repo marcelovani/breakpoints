@@ -18,7 +18,7 @@ abstract class BreakpointsTestBase extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('breakpoints', 'breakpoints_ui');
+  public static $modules = array('breakpoints');
 
   function  setUp() {
     parent::setUp();
@@ -27,15 +27,15 @@ abstract class BreakpointsTestBase extends WebTestBase {
   /**
    * Verify that a breakpoint is properly stored.
    */
-  function verifyBreakpoint($breakpoint) {
+  function verifyBreakpoint($breakpoint, $compare_breakpoint = NULL) {
     $t_args = array('%breakpoint' => $breakpoint->name);
     $properties = array('name', 'breakpoint', 'source', 'source_type', 'status', 'weight', 'multipliers');
     $assert_group = t('Breakpoints API');
 
     // Verify breakpoints_breakpoint_load_by_fullkey().
-    $load_breakpoint = breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($breakpoint));
+    $compare_breakpoint = is_null($compare_breakpoint) ? breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($breakpoint)) : $compare_breakpoint;
     foreach ($properties as $property) {
-      $this->assertEqual($load_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoints_breakpoint_load_by_fullkey: Proper ' . $property . ' for breakpoint %breakpoint.', $t_args), $assert_group);
+      $this->assertEqual($compare_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoints_breakpoint_load_by_fullkey: Proper ' . $property . ' for breakpoint %breakpoint.', $t_args), $assert_group);
     }
   }
 }

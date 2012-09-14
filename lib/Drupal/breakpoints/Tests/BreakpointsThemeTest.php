@@ -31,12 +31,6 @@ class BreakpointsThemeTest extends BreakpointGroupTestBase {
   public function  setUp() {
     parent::setUp();
     theme_enable(array('breakpoints_test_theme'));
-    // Create user.
-    $this->admin_user = $this->drupalCreateUser(array(
-      'administer breakpoints',
-    ));
-
-    $this->drupalLogin($this->admin_user);
   }
 
   /**
