@@ -74,7 +74,7 @@ class BreakpointsApiTest extends BreakpointsTestBase {
     try {
       $config_name = breakpoints_breakpoint_config_name($breakpoint);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       $exception = TRUE;
     }
     $this->assertTrue($exception, t('breakpoints_breakpoint_config_name: An exception is thrown when an invalid source_type is entered.'), t('Breakpoints API'));
@@ -88,7 +88,7 @@ class BreakpointsApiTest extends BreakpointsTestBase {
     try {
       $config_name = breakpoints_breakpoint_config_name($breakpoint);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       $exception = TRUE;
     }
     $this->assertTrue($exception, t('breakpoints_breakpoint_config_name: An exception is thrown when an invalid source is entered.'), t('Breakpoints API'));
@@ -96,13 +96,13 @@ class BreakpointsApiTest extends BreakpointsTestBase {
 
     // Try an invalid name (make sure there is at least once capital letter).
     $breakpoint->source = 'custom_module';
-    $breakpoint->name = ucfirst($this->randomName());
+    $breakpoint->name = drupal_ucfirst($this->randomName());
     $exception = FALSE;
     $config_name = '';
     try {
       $config_name = breakpoints_breakpoint_config_name($breakpoint);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       $exception = TRUE;
     }
     $this->assertTrue($exception, t('breakpoints_breakpoint_config_name: An exception is thrown when an invalid name is entered.'), t('Breakpoints API'));
@@ -115,7 +115,7 @@ class BreakpointsApiTest extends BreakpointsTestBase {
     try {
       $config_name = breakpoints_breakpoint_config_name($breakpoint);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       $exception = TRUE;
     }
     $this->assertFalse($exception, t('breakpoints_breakpoint_config_name: No exception is thrown when a valid breakpoint is passed.'), t('Breakpoints API'));

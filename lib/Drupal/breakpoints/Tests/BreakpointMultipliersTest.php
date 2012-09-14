@@ -55,7 +55,7 @@ class BreakpointMultipliersTest extends WebTestBase {
 
     // Verify the '1x' multiplier can't be deleted.
     $this->drupalGet('admin/config/media/breakpoints/multipliers/1x/delete');
-    $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted.', t('Breakpoints API')));
+    $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted.'), t('Breakpoints API'));
     $this->assertNoFieldById('edit-submit');
 
     // Add a multiplier.
