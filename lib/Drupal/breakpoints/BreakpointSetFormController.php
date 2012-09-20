@@ -19,13 +19,12 @@ class BreakpointSetFormController extends EntityFormController {
    * Overrides Drupal\Core\Entity\EntityFormController::form().
    */
   public function form(array $form, array &$form_state, EntityInterface $breakpointset) {
-    dpm($breakpointset);
     $form['label'] = array(
       '#type' => 'textfield',
       '#title' => t('Label'),
       '#maxlength' => 255,
       '#default_value' => $breakpointset->label(),
-      '#description' => t("Example: 'Banner' or 'Highlight'."),
+      '#description' => t("Example: 'Omega' or 'Custom'."),
       '#required' => TRUE,
     );
     $form['id'] = array(
@@ -38,7 +37,7 @@ class BreakpointSetFormController extends EntityFormController {
       '#disabled' => (bool) $breakpointset->id(),
     );
 
-    return parent::form($form, $form_state, $breakpoint);
+    return parent::form($form, $form_state, $breakpointset);
   }
 
   /**
@@ -71,11 +70,10 @@ class BreakpointSetFormController extends EntityFormController {
    */
   public function save(array $form, array &$form_state) {
     $breakpointset = $this->getEntity($form_state);
-    dpm($breakpointset);
     $breakpointset->save();
 
-    watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpoint->label()), WATCHDOG_NOTICE);
-    drupal_set_message(t('Breakpoint set %label saved.', array('%label' => $breakpoint->label())));
+    watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpointset->label()), WATCHDOG_NOTICE);
+    drupal_set_message(t('Breakpoint set %label saved.', array('%label' => $breakpointset->label())));
 
     $form_state['redirect'] = 'admin/config/media/breakpoints/breakpointset';
   }

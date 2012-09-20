@@ -2,46 +2,46 @@
 
 /**
  * @file
- * Administration functions to maintain a common set of bunnypoints for layouts.
+ * Administration functions to maintain a common set of breakpoints for layouts.
  */
 
 
 function breakpoints_breakpoint_page() {
-  $controller = entity_list_controller('breakpoint');
+  $controller = entity_list_controller('breakpoints_breakpoint');
   return $controller->render();
 }
 /**
- * Page callback: Presents the bunnypoint editing form.
+ * Page callback: Presents the breakpoint editing form.
  *
- * @see bunnypoint_menu()
+ * @see breakpoint_menu()
  */
-function breakpoints_breakpoint_page_edit($bunnypoint) {
-  drupal_set_title(t('<em>Edit bunnypoint</em> @label', array('@label' => $bunnypoint->label())), PASS_THROUGH);
-  return entity_get_form($bunnypoint);
+function breakpoints_breakpoint_page_edit($breakpoint) {
+  drupal_set_title(t('<em>Edit breakpoint</em> @label', array('@label' => $breakpoint->label())), PASS_THROUGH);
+  return entity_get_form($breakpoint);
 }
 
 /**
- * Page callback: Provides the new bunnypoint addition form.
+ * Page callback: Provides the new breakpoint addition form.
  *
- * @see bunnypoint_menu()
+ * @see breakpoint_menu()
  */
 function breakpoints_breakpoint_page_add() {
-  $bunnypoint = entity_create('breakpoint', array());
-  return entity_get_form($bunnypoint);
+  $breakpoint = entity_create('breakpoints_breakpoint', array());
+  return entity_get_form($breakpoint);
 }
 
 /**
- * Page callback: Form constructor for bunnypoint deletion confirmation form.
+ * Page callback: Form constructor for breakpoint deletion confirmation form.
  *
- * @see bunnypoint_menu()
+ * @see breakpoint_menu()
  */
-function breakpoints_breakpoint_delete_confirm($form, &$form_state, $bunnypoint) {
+function breakpoints_breakpoint_delete_confirm($form, &$form_state, $breakpoint) {
   // Always provide entity id in the same form key as in the entity edit form.
-  $form['id'] = array('#type' => 'value', '#value' => $bunnypoint->id());
-  $form_state['bunnypoint'] = $bunnypoint;
+  $form['id'] = array('#type' => 'value', '#value' => $breakpoint->id());
+  $form_state['breakpoint'] = $breakpoint;
   return confirm_form($form,
-    t('Are you sure you want to remove the bunnypoint %title?', array('%title' => $bunnypoint->label())),
-    'admin/structure/bunnypoints',
+    t('Are you sure you want to remove the breakpoint %title?', array('%title' => $breakpoint->label())),
+    'admin/config/media/breakpoints/breakpoint',
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
@@ -49,12 +49,12 @@ function breakpoints_breakpoint_delete_confirm($form, &$form_state, $bunnypoint)
 }
 
 /**
- * Form submission handler for bunnypoint_delete_confirm().
+ * Form submission handler for breakpoint_delete_confirm().
  */
 function breakpoints_breakpoint_delete_confirm_submit($form, &$form_state) {
-  $bunnypoint = $form_state['bunnypoint'];
-  $bunnypoint->delete();
-  drupal_set_message(t('Bunnypoint %label has been deleted.', array('%label' => $bunnypoint->label())));
-  watchdog('bunnypoint', 'Bunnypoint %label has been deleted.', array('%label' => $bunnypoint->label()), WATCHDOG_NOTICE);
-  $form_state['redirect'] = 'admin/structure/bunnypoints';
+  $breakpoint = $form_state['breakpoint'];
+  $breakpoint->delete();
+  drupal_set_message(t('Breakpoint %label has been deleted.', array('%label' => $breakpoint->label())));
+  watchdog('breakpoint', 'Breakpoint %label has been deleted.', array('%label' => $breakpoint->label()), WATCHDOG_NOTICE);
+  $form_state['redirect'] = 'admin/config/media/breakpoints/breakpoint';
 }

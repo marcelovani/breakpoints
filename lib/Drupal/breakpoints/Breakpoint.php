@@ -8,6 +8,7 @@
 namespace Drupal\breakpoints;
 
 use Drupal\config\ConfigEntityBase;
+use Exception;
 
 /**
  * Defines the Breakpoint entity.

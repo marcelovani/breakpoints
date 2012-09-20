@@ -24,9 +24,10 @@ class BreakpointFormController extends EntityFormController {
       '#title' => t('Label'),
       '#maxlength' => 255,
       '#default_value' => $breakpoint->label(),
-      '#description' => t("Example: 'Banner' or 'Highlight'."),
+      '#description' => t("Example: 'banner' or 'highlight'."),
       '#required' => TRUE,
       '#disabled' => !empty($breakpoint->id),
+      '#element_validate' => array('breakpoint_name_validate'),
     );
     $form['media_query'] = array(
       '#type' => 'textfield',
@@ -102,7 +103,7 @@ class BreakpointFormController extends EntityFormController {
     watchdog('breakpoint', 'Breakpoint @label saved.', array('@label' => $breakpoint->label()), WATCHDOG_NOTICE);
     drupal_set_message(t('Breakpoint %label saved.', array('%label' => $breakpoint->label())));
 
-    $form_state['redirect'] = 'admin/config/media/breakpoints/breakpoints';
+    $form_state['redirect'] = 'admin/config/media/breakpoints/breakpoint';
   }
 
 }

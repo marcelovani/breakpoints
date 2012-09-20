@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of Drupal\breakpoint\Breakpoint.
+ * Definition of Drupal\breakpoint\BreakpointSet.
  */
 
 namespace Drupal\breakpoints;
@@ -47,7 +47,7 @@ class BreakpointSet extends ConfigEntityBase {
    *
    * @var string
    */
-  public $source_type = \Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+  public $source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
 
   /**
    * The BreakpointSet overridden status.
