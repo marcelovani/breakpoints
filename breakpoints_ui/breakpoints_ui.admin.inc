@@ -6,9 +6,27 @@
  */
 
 /**
- * Admin form
+ * Overview of all breakpoint sets.
  */
-function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group_name = '') {
+function breakpoints_ui_admin_breakpoint_sets($form, &$form_state, $breakpoint_group_name = '') {
+}
+
+/**
+ *
+ */
+function breakpoints_ui_admin_breakpoint_breakpoint_edit_form($form, &$form_state, $breakpoint_key = '') {
+  if (!empty($breakpoint_key)) {
+    $breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint_key);
+  }
+  else {
+    $breakpoint = breakpoints_breakpoint_empty_object();
+  }
+}
+
+/**
+ * Form to add/edit a breakpoint set.
+ */
+function breakpoints_ui_admin_breakpoint_set_edit($form, &$form_state, $breakpoint_group_name = '') {
   $form = array();
 
   // In case of an export to theme, there will be a variable exported_breakpoints
@@ -186,7 +204,7 @@ function breakpoints_ui_admin_breakpoints($form, &$form_state, $breakpoint_group
           $form['buttons']['override'] = array(
             '#type' => 'submit',
             '#value' => t('Override theme breakpoints'),
-            '#submit' => array('breakpoints_ui_admin_breakpoints_submit_override'),
+            '#submit' => array('breakpoints_ui_admin_breakpoint_set_edit_submit_override'),
           );
           $form['buttons']['reload'] = array(
             '#type' => 'submit',
@@ -320,7 +338,7 @@ function breakpoint_name_validate($element, $form_state) {
 /**
  * Admin form validation.
  */
-function breakpoints_ui_admin_breakpoints_validate($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_set_edit_validate($form, &$form_state) {
   if (strpos($form_state['triggering_element']['#id'], 'remove') === FALSE) {
     if (isset($form_state['values']['breakpoints'])) {
       $breakpoints = $form_state['values']['breakpoints'];
@@ -348,7 +366,7 @@ function breakpoints_ui_admin_breakpoints_validate($form, &$form_state) {
 /**
  * Admin form submit.
  */
-function breakpoints_ui_admin_breakpoints_submit($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_set_edit_submit($form, &$form_state) {
   $breakpoints = $form_state['values']['breakpoints'];
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
@@ -536,7 +554,7 @@ function breakpoints_ui_admin_breakpoint_group_edit_form_submit($form, &$form_st
 /**
  * Admin form submit - Override theme breakpoints.
  */
-function breakpoints_ui_admin_breakpoints_submit_override($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_set_edit_submit_override($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
@@ -551,7 +569,7 @@ function breakpoints_ui_admin_breakpoints_submit_override($form, &$form_state) {
 /**
  * Admin form submit - Revert theme breakpoints.
  */
-function breakpoints_ui_admin_breakpoints_submit_revert($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_set_edit_submit_revert($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
@@ -566,7 +584,7 @@ function breakpoints_ui_admin_breakpoints_submit_revert($form, &$form_state) {
 /**
  * Admin form submit - Reload theme breakpoints.
  */
-function breakpoints_ui_admin_breakpoints_submit_reload($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_set_edit_submit_reload($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {
@@ -581,7 +599,7 @@ function breakpoints_ui_admin_breakpoints_submit_reload($form, &$form_state) {
 /**
  * Admin form submit - Export breakpoints to theme.
  */
-function breakpoints_ui_admin_breakpoints_submit_exporttotheme($form, &$form_state) {
+function breakpoints_ui_admin_breakpoint_set_edit_submit_exporttotheme($form, &$form_state) {
   $group_name = $form_state['group_name'];
   $global_group = $group_name == '';
   if (!$global_group) {

@@ -28,7 +28,7 @@ function breakpoints_ui_menu() {
     'title' => 'Breakpoints',
     'description' => 'Manage breakpoints',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_ui_admin_breakpoints'),
+    'page arguments' => array('breakpoints_ui_admin_breakpoint_sets'),
     'access arguments' => array('administer breakpoints'),
     'file' => 'breakpoints_ui.admin.inc',
     'weight' => 10,
@@ -74,10 +74,19 @@ function breakpoints_ui_menu() {
     'weight' => -1,
   );
 
+  $items['admin/config/media/breakpoints/breakpoint/add'] = array(
+    'title' => 'Add a new breakpoint',
+    'page arguments' => array('breakpoints_ui_admin_breakpoint_breakpoint_edit_form'),
+    'type' => MENU_LOCAL_ACTION,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints_ui.admin.inc',
+    'weight' => 99,
+  );
+
   $items['admin/config/media/breakpoints/groups/add'] = array(
     'title' => 'Add a new group',
     'page arguments' => array('breakpoints_ui_admin_breakpoint_group_edit_form'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_LOCAL_ACTION,
     'access arguments' => array('administer breakpoints'),
     'file' => 'breakpoints_ui.admin.inc',
     'weight' => 99,
@@ -88,7 +97,7 @@ function breakpoints_ui_menu() {
     if (!empty($breakpoint_group->machine_name)) {
       $items['admin/config/media/breakpoints/groups/' . $breakpoint_group->machine_name] = array(
         'title' => $breakpoint_group->name,
-        'page arguments' => array('breakpoints_ui_admin_breakpoints', $breakpoint_group->machine_name),
+        'page arguments' => array('breakpoints_ui_admin_breakpoint_set_edit', $breakpoint_group->machine_name),
         'type' => MENU_LOCAL_TASK,
         'access arguments' => array('administer breakpoints'),
         'file' => 'breakpoints_ui.admin.inc',
