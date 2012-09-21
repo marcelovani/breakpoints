@@ -19,6 +19,14 @@ class BreakpointSetFormController extends EntityFormController {
    * Overrides Drupal\Core\Entity\EntityFormController::form().
    */
   public function form(array $form, array &$form_state, EntityInterface $breakpointset) {
+    if ($this->operation == 'duplicate') {
+      $cloned_breakpointset = entity_create('breakpoints_breakpointset', array());
+      $cloned_breakpointset->id = '';
+      $cloned_breakpointset->label = t('Clone of ') . ' ' . $breakpointset->label();
+      $cloned_breakpointset->breakpoints = $breakpointset->breakpoints;
+      $breakpointset = $cloned_breakpointset;
+      $this->setEntity($breakpointset, $form_state);
+    }
     $form['label'] = array(
       '#type' => 'textfield',
       '#title' => t('Label'),
@@ -34,9 +42,8 @@ class BreakpointSetFormController extends EntityFormController {
         'exists' => 'breakpoints_breakpoint_load',
         'source' => array('label'),
       ),
-      '#disabled' => (bool) $breakpointset->id(),
+      '#disabled' => (bool)$breakpointset->id() && $this->operation != 'duplicate',
     );
-
     return parent::form($form, $form_state, $breakpointset);
   }
 
@@ -65,11 +72,17 @@ class BreakpointSetFormController extends EntityFormController {
   public function validate(array $form, array &$form_state) {
   }
 
+  
+  /**
+   * Overrides Drupal\Core\Entity\EntityFormController::save().
+   */
+
   /**
    * Overrides Drupal\Core\Entity\EntityFormController::save().
    */
   public function save(array $form, array &$form_state) {
     $breakpointset = $this->getEntity($form_state);
+
     $breakpointset->save();
 
     watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpointset->label()), WATCHDOG_NOTICE);

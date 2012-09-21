@@ -2,18 +2,18 @@
 
 /**
  * @file
- * Definition of Drupal\Drupal\breakpoints\BreakpointSetListController.
+ * Definition of Drupal\breakpoints\BreakpointSetListController.
  */
 
 namespace Drupal\breakpoints;
 
-use Drupal\config\EntityListControllerBase;
+use Drupal\config\ConfigEntityListController;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Provides a listing of Breakpoint sets.
  */
-class BreakpointSetListController extends EntityListControllerBase {
+class BreakpointSetListController extends ConfigEntityListController {
 
   public function __construct($entity_type, $entity_info = FALSE) {
     parent::__construct($entity_type, $entity_info);
@@ -36,19 +36,27 @@ class BreakpointSetListController extends EntityListControllerBase {
   }
 
   /**
-   * Implements Drupal\config\EntityListControllerInterface::defineOperationLinks();
+   * Overrides Drupal\config\ConfigEntityListController::getOperations();
    */
-  public function defineOperationLinks(EntityInterface $breakpointset) {
-    $path = $this->entityInfo['list path'] . '/breakpoints/group/' . $breakpointset->id();
-    $definition['edit'] = array(
-      'title' => t('Edit'),
-      'href' => "$path/edit",
+  public function getOperations(EntityInterface $entity) {
+    $operations = parent::getOperations($entity);
+    $uri = $entity->uri();
+    $operations['duplicate'] = array(
+      'title' => t('Duplicate'),
+      'href' => $uri['path'] . '/duplicate',
+      'options' => $uri['options'],
+      'weight' => 15,
     );
-    $definition['delete'] = array(
-      'title' => t('Delete'),
-      'href' => "$path/delete",
+    //@todo: override, export to theme, revert.
+    if ($entity->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
+      $operations['override'] = array(
+      'title' => t('Override'),
+      'href' => $uri['path'] . '/override',
+      'options' => $uri['options'],
+      'weight' => 15,
     );
-    return $definition;
+    }
+    return $operations;
   }
 
 }

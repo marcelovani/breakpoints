@@ -7,14 +7,13 @@
 
 namespace Drupal\breakpoints;
 
-use Drupal\config\EntityListControllerBase;
+use Drupal\config\ConfigEntityListController;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityListController;
 
 /**
  * Provides a listing of breakpoints.
  */
-class BreakpointListController extends EntityListController {
+class BreakpointListController extends ConfigEntityListController {
 
   public function __construct($entity_type, $entity_info = FALSE) {
     parent::__construct($entity_type, $entity_info);
@@ -37,19 +36,19 @@ class BreakpointListController extends EntityListController {
   }
 
   /**
-   * Implements Drupal\config\EntityListControllerInterface::defineOperationLinks();
+   * Overrides Drupal\config\ConfigEntityListController::getOperations();
    */
-  public function defineOperationLinks(EntityInterface $breakpoint) {
-    $path = $this->entityInfo['list path'] . '/breakpoints/' . $breakpoint->id();
-    $definition['edit'] = array(
-      'title' => t('Edit'),
-      'href' => "$path/edit",
+  public function getOperations(EntityInterface $entity) {
+    $operations = parent::getOperations($entity);
+    $uri = $entity->uri();
+    $action = $entity->status ? 'disable' : 'enable';
+    $operations[$action] = array(
+      'title' => t(drupal_ucfirst($action)),
+      'href' => $uri['path'] . '/' . $action,
+      'options' => $uri['options'],
+      'weight' => 15,
     );
-    $definition['delete'] = array(
-      'title' => t('Delete'),
-      'href' => "$path/delete",
-    );
-    return $definition;
+    return $operations;
   }
 
 }

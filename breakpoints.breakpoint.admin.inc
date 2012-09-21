@@ -31,30 +31,36 @@ function breakpoints_breakpoint_page_add() {
 }
 
 /**
- * Page callback: Form constructor for breakpoint deletion confirmation form.
+ * Page callback: Form constructor for breakpoint deletion/enabling/disabling confirmation form.
  *
  * @see breakpoint_menu()
  */
-function breakpoints_breakpoint_delete_confirm($form, &$form_state, $breakpoint) {
+function breakpoints_breakpoint_action_confirm($form, &$form_state, $breakpoint, $action) {
   // Always provide entity id in the same form key as in the entity edit form.
-  $form['id'] = array('#type' => 'value', '#value' => $breakpoint->id());
-  $form_state['breakpoint'] = $breakpoint;
-  return confirm_form($form,
-    t('Are you sure you want to remove the breakpoint %title?', array('%title' => $breakpoint->label())),
-    'admin/config/media/breakpoints/breakpoint',
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
+  if (in_array($action, array('delete', 'enable', 'disable'))) {
+    $form['id'] = array('#type' => 'value', '#value' => $breakpoint->id());
+    $form['action'] = array('#type' => 'value', '#value' => $action);
+    $form_state['breakpoint'] = $breakpoint;
+    $form = confirm_form($form,
+      t('Are you sure you want to @action the breakpoint %title?', array('@action' => $action, '%title' => $breakpoint->label())),
+      'admin/config/media/breakpoints/breakpoint',
+      $action == 'delete' ? t('This action cannot be undone.') : '' ,
+      t(drupal_ucfirst($action)),
+      t('Cancel')
+    );
+  }
+  return $form;
 }
 
 /**
- * Form submission handler for breakpoint_delete_confirm().
+ * Form submission handler for breakpoint_action_confirm().
  */
-function breakpoints_breakpoint_delete_confirm_submit($form, &$form_state) {
+function breakpoints_breakpoint_action_confirm_submit($form, &$form_state) {
   $breakpoint = $form_state['breakpoint'];
-  $breakpoint->delete();
-  drupal_set_message(t('Breakpoint %label has been deleted.', array('%label' => $breakpoint->label())));
-  watchdog('breakpoint', 'Breakpoint %label has been deleted.', array('%label' => $breakpoint->label()), WATCHDOG_NOTICE);
+  $action = $form_state['values']['action'];
+  $breakpoint->{$action}();
+  $verb = $action . 'd'; //enabled, disabled, deleted.
+  drupal_set_message(t('Breakpoint %label has been @action.', array('%label' => $breakpoint->label(), '@action' => $verb)));
+  watchdog('breakpoint', 'Breakpoint %label has been @action.', array('%label' => $breakpoint->label(), '@action' => $verb), WATCHDOG_NOTICE);
   $form_state['redirect'] = 'admin/config/media/breakpoints/breakpoint';
 }

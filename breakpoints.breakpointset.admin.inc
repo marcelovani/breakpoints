@@ -16,7 +16,7 @@ function breakpoints_breakpointset_page() {
 /**
  * Page callback: Presents the breakpointset editing form.
  *
- * @see breakpoint_menu()
+ * @see breakpoints_menu()
  */
 function breakpoints_breakpointset_page_edit($breakpointset) {
   drupal_set_title(t('<em>Edit breakpoint</em> @label', array('@label' => $breakpointset->label())), PASS_THROUGH);
@@ -26,7 +26,7 @@ function breakpoints_breakpointset_page_edit($breakpointset) {
 /**
  * Page callback: Provides the new breakpointset addition form.
  *
- * @see breakpoint_menu()
+ * @see breakpoints_menu()
  */
 function breakpoints_breakpointset_page_add() {
   $breakpoint = entity_create('breakpoints_breakpointset', array());
@@ -34,30 +34,53 @@ function breakpoints_breakpointset_page_add() {
 }
 
 /**
- * Page callback: Form constructor for breakpointset deletion confirmation form.
+ * Page callback: Provides the duplicate breakpointset form.
  *
- * @see breakpoint_menu()
+ * @see breakpoints_menu
  */
-function breakpoints_breakpointset_delete_confirm($form, &$form_state, $breakpointset) {
-  // Always provide entity id in the same form key as in the entity edit form.
-  $form['id'] = array('#type' => 'value', '#value' => $breakpointset->id());
-  $form_state['breakpointset'] = $breakpointset;
-  return confirm_form($form,
-    t('Are you sure you want to remove the breakpointset %title?', array('%title' => $breakpointset->label())),
-    'admin/config/media/breakpoints/breakpointset',
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
+function breakpoints_breakpoint_page_duplicate($breakpointset) {
+  drupal_set_title(t('<em>Duplicate breakpoint</em> @label', array('@label' => $breakpointset->label())), PASS_THROUGH);
+  return entity_get_form($breakpointset, 'duplicate');
 }
 
 /**
- * Form submission handler for breakpointset_delete_confirm().
+ * Page callback: Form constructor for breakpointset action confirmation form.
+ *
+ * @see breakpoints_menu()
  */
-function breakpoints_breakpointset_delete_confirm_submit($form, &$form_state) {
+function breakpoints_breakpointset_action_confirm($form, &$form_state, $breakpointset, $action) {
+  // Always provide entity id in the same form key as in the entity edit form.
+  if (in_array($action, array('delete', 'override'))) {
+    $form['id'] = array('#type' => 'value', '#value' => $breakpointset->id());
+    $form['action'] = array('#type' => 'value', '#value' => $action);
+    $form_state['breakpointset'] = $breakpointset;
+    $form = confirm_form($form,
+      t('Are you sure you want to @action the breakpointset %title?', array('@action' => $action, '%title' => $breakpointset->label())),
+      'admin/config/media/breakpoints/breakpointset',
+      $action == 'delete' ? t('This action cannot be undone.') : '',
+      t(drupal_ucfirst($action)),
+      t('Cancel')
+    );
+  }
+  return $form;
+}
+
+/**
+ * Form submission handler for breakpointset_action_confirm().
+ */
+function breakpoints_breakpointset_action_confirm_submit($form, &$form_state) {
   $breakpointset = $form_state['breakpointset'];
-  $breakpointset->delete();
-  drupal_set_message(t('Breakpointset %label has been deleted.', array('%label' => $breakpointset->label())));
-  watchdog('breakpointset', 'Breakpointset %label has been deleted.', array('%label' => $breakpointset->label()), WATCHDOG_NOTICE);
+  $action = $form_state['values']['action'];
+  $breakpointset->{$action}();
+  $verb = '';
+  switch ($action) {
+    case 'delete':
+      $verb = 'deleted';
+      break;
+    case 'override':
+      $verb = 'overridden';
+  }
+  drupal_set_message(t('Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb)));
+  watchdog('breakpointset', 'Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb), WATCHDOG_NOTICE);
   $form_state['redirect'] = 'admin/config/media/breakpoints/breakpointset';
 }

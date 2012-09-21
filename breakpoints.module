@@ -41,7 +41,7 @@ function breakpoints_themes_enabled($theme_list) {
         $weight = 0;
         // Build a group for each theme
         $breakpointset = new BreakpointSet();
-        $breakpointset->machine_name = $theme_key;
+        $breakpointset->id = $theme_key;
         $breakpointset->name = $themes[$theme_key]->info['name'];
         $breakpointset->type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
         foreach ($theme_breakpoints as $name => $media_query) {
@@ -596,8 +596,7 @@ function breakpoints_entity_info() {
     'form controller class' => array(
       'default' => 'Drupal\breakpoints\BreakpointFormController',
     ),
-    // 'list controller class' => 'Drupal\breakpoints\BreakpointListController',
-    'list controller class' => 'Drupal\config\ConfigEntityListController',
+    'list controller class' => 'Drupal\breakpoints\BreakpointListController',
     'list path' => 'admin/config/media/breakpoints/breakpoint',
     'uri callback' => 'breakpoints_breakpoint_uri',
     'config prefix' => 'breakpoints.breakpoint',
@@ -615,8 +614,9 @@ function breakpoints_entity_info() {
     'controller class' => 'Drupal\config\ConfigStorageController',
     'form controller class' => array(
       'default' => 'Drupal\breakpoints\BreakpointSetFormController',
+      'duplicate' => 'Drupal\breakpoints\BreakpointSetFormController',
     ),
-    'list controller class' => 'Drupal\config\ConfigEntityListController',
+    'list controller class' => 'Drupal\breakpoints\BreakpointSetListController',
     'list path' => 'admin/config/media/breakpoints/breakpointset',
     'uri callback' => 'breakpoints_breakpoint_set_uri',
     'config prefix' => 'breakpoints.breakpointset',
@@ -706,15 +706,16 @@ function breakpoints_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'breakpoints.breakpoint.admin.inc',
   );
-  $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint/delete'] = array(
+  $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint/%'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_breakpoint_delete_confirm', 5),
+    'page arguments' => array('breakpoints_breakpoint_action_confirm', 5, 6),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
     'type' => MENU_CALLBACK,
     'file' => 'breakpoints.breakpoint.admin.inc',
   );
+  
 
   // Breakpoint set
   $items['admin/config/media/breakpoints/breakpointset'] = array(
@@ -743,10 +744,20 @@ function breakpoints_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'breakpoints.breakpointset.admin.inc',
   );
-  $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/delete'] = array(
+  $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/duplicate'] = array(
+    'title' => 'Duplicate breakpoint set',
+    'page callback' => 'breakpoints_breakpoint_page_duplicate',
+    'page arguments' => array(5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer breakpoints'),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoints.breakpointset.admin.inc',
+  );
+  $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/%'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_breakpointset_delete_confirm', 5),
+    'page arguments' => array('breakpoints_breakpointset_action_confirm', 5, 6),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
     'type' => MENU_CALLBACK,

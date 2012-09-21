@@ -132,4 +132,26 @@ class Breakpoint extends ConfigEntityBase {
       . '.' . $this->source
       . '.' . $this->label;
   }
+
+  /**
+   * Shortcut function to enable a breakpoint and save it.
+   * @see breakpoints_breakpoint_action_confirm_submit().
+   */
+  public function enable() {
+    if (!$this->status) {
+      $this->status = 1;
+      $this->save();
+    }
+  }
+
+  /**
+   * Shortcut function to disable a breakpoint and save it.
+   * @see breakpoints_breakpoint_action_confirm_submit().
+   */
+  public function disable() {
+    if ($this->status) {
+      $this->status = 0;
+      $this->save();
+    }
+  }
 }

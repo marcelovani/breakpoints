@@ -53,7 +53,6 @@ class BreakpointFormController extends EntityFormController {
       '#default_value' => (isset($breakpoint->multipliers) && is_array($breakpoint->multipliers)) ? $breakpoint->multipliers : array(),
       '#options' => $multipliers,
     );
-
     return parent::form($form, $form_state, $breakpoint);
   }
 
