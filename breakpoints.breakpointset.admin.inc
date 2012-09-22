@@ -50,7 +50,7 @@ function breakpoints_breakpoint_page_duplicate($breakpointset) {
  */
 function breakpoints_breakpointset_action_confirm($form, &$form_state, $breakpointset, $action) {
   // Always provide entity id in the same form key as in the entity edit form.
-  if (in_array($action, array('delete', 'override'))) {
+  if (in_array($action, array('delete', 'override', 'revert'))) {
     $form['id'] = array('#type' => 'value', '#value' => $breakpointset->id());
     $form['action'] = array('#type' => 'value', '#value' => $action);
     $form_state['breakpointset'] = $breakpointset;
@@ -79,6 +79,10 @@ function breakpoints_breakpointset_action_confirm_submit($form, &$form_state) {
       break;
     case 'override':
       $verb = 'overridden';
+      break;
+    case 'revert':
+      $verb = 'reverted';
+      break;
   }
   drupal_set_message(t('Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb)));
   watchdog('breakpointset', 'Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb), WATCHDOG_NOTICE);

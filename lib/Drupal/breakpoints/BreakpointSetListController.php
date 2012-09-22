@@ -49,12 +49,22 @@ class BreakpointSetListController extends ConfigEntityListController {
     );
     //@todo: override, export to theme, revert.
     if ($entity->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
-      $operations['override'] = array(
-      'title' => t('Override'),
-      'href' => $uri['path'] . '/override',
-      'options' => $uri['options'],
-      'weight' => 15,
-    );
+      if (!$entity->overridden) {
+        $operations['override'] = array(
+          'title' => t('Override'),
+          'href' => $uri['path'] . '/override',
+          'options' => $uri['options'],
+          'weight' => 15,
+        );
+      }
+      else {
+        $operations['revert'] = array(
+          'title' => t('Revert'),
+          'href' => $uri['path'] . '/revert',
+          'options' => $uri['options'],
+          'weight' => 15,
+        );
+      }
     }
     return $operations;
   }

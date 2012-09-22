@@ -42,8 +42,8 @@ function breakpoints_themes_enabled($theme_list) {
         // Build a group for each theme
         $breakpointset = new BreakpointSet();
         $breakpointset->id = $theme_key;
-        $breakpointset->name = $themes[$theme_key]->info['name'];
-        $breakpointset->type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+        $breakpointset->label = $themes[$theme_key]->info['name'];
+        $breakpointset->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
         foreach ($theme_breakpoints as $name => $media_query) {
           $breakpoint = new Breakpoint;
           $breakpoint->label = $name;
@@ -483,21 +483,19 @@ function breakpoints_breakpoints_group_reload_from_theme($theme_key) {
     $theme_settings = $themes[$theme_key]->info['breakpoints'];
     // Build a group for each theme
     $breakpointset = breakpoints_breakpoint_group_empty_object();
-    $breakpointset->machine_name = $theme_key;
+    $breakpointset->id = $theme_key;
     $breakpointset->name = $themes[$theme_key]->info['name'];
-    $breakpointset->type = BREAKPOINTS_SOURCE_TYPE_THEME;
+    $breakpointset->source_type = BREAKPOINTS_SOURCE_TYPE_THEME;
     foreach ($theme_settings as $name => $media_query) {
-      $breakpoint = breakpoints_breakpoint_empty_object();
-      $breakpoint->name = $name;
-      $breakpoint->breakpoint = $media_query;
+      $breakpoint = new Breakpoint;
+      $breakpoint->label = $name;
+      $breakpoint->media_query = $media_query;
       $breakpoint->source = $theme_key;
-      $breakpoint->source_type = 'theme';
-      $breakpoint->theme = '';
+      $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
       $breakpoint->status = TRUE;
       $breakpoint->weight = $weight++;
-      $breakpoint->machine_name = breakpoints_breakpoint_config_name($breakpoint);
-      breakpoints_breakpoint_save($breakpoint);
-      $breakpointset->breakpoints[] = $breakpoint->machine_name;
+      $breakpoint->save();
+      $breakpointset->breakpoints[] = $breakpoint->id();
     }
     return $breakpointset;
   }
@@ -611,7 +609,7 @@ function breakpoints_entity_info() {
   $types['breakpoints_breakpointset'] = array(
     'label' => 'Breakpoint Set',
     'entity class' => 'Drupal\breakpoints\BreakpointSet',
-    'controller class' => 'Drupal\config\ConfigStorageController',
+    'controller class' => 'Drupal\breakpoints\BreakpointSetController',
     'form controller class' => array(
       'default' => 'Drupal\breakpoints\BreakpointSetFormController',
       'duplicate' => 'Drupal\breakpoints\BreakpointSetFormController',

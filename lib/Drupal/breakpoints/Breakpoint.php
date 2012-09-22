@@ -85,7 +85,12 @@ class Breakpoint extends ConfigEntityBase {
   const BREAKPOINTS_SOURCE_TYPE_THEME = 'theme';
   const BREAKPOINTS_SOURCE_TYPE_MODULE = 'module';
   const BREAKPOINTS_SOURCE_TYPE_CUSTOM = 'custom';
-
+  /**
+   * Overrides Drupal\config\ConfigEntityBase::__construct()
+   */
+  public function __construct(array $values = array(), $entity_type = 'breakpoints_breakpoint') {
+    parent::__construct($values, $entity_type);
+  }
   public function save() {
     if (empty($this->id)) {
       $this->id = $this->build_config_name();
