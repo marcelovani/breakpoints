@@ -34,8 +34,9 @@ function breakpoints_ui_breakpointset_page_edit($breakpointset) {
  * @see breakpoints_ui_menu()
  */
 function breakpoints_ui_breakpointset_page_add() {
-  $breakpoint = entity_create('breakpoints_breakpointset', array());
-  return entity_get_form($breakpoint);
+  $breakpointset = entity_create('breakpoints_breakpointset', array());
+  $form = entity_get_form($breakpointset);
+  return $form;
 }
 
 /**
@@ -92,4 +93,12 @@ function breakpoints_ui_breakpointset_action_confirm_submit($form, &$form_state)
   drupal_set_message(t('Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb)));
   watchdog('breakpointset', 'Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb), WATCHDOG_NOTICE);
   $form_state['redirect'] = 'admin/config/media/breakpoints/breakpointset';
+}
+
+/**
+ * Ajax callback to add a new breakpoint to a breakpoint set.
+ * @see BreakpointSetFormController::form()
+ */
+function ajax_add_breakpoint_submit($form, $form_state) {
+  return $form['breakpoints_ajax'];
 }

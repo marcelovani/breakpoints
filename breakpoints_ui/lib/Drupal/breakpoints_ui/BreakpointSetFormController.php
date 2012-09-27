@@ -44,15 +44,22 @@ class BreakpointSetFormController extends EntityFormController {
     );
 
     switch($breakpointset->source_type) {
+      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_MODULE:
       case Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM:
         // Show all breakpoints part of this set.
         $breakpoints = array();
         foreach(breakpoints_breakpoint_load_all() as $breakpoint) {
           $breakpoints[$breakpoint->id] = $breakpoint->label . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
         }
-
+        $options = array_intersect_key($breakpoints, $breakpointset->breakpoints);
         // @todo allow people to change the order
-        $form['breakpoints'] = array(
+        $form['breakpoints_ajax'] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'id' => "breakpoints-checkboxes-ajax-wrapper",
+          ),
+        );
+        $form['breakpoints_ajax']['breakpoints'] = array(
           '#type' => 'checkboxes',
           '#title' => t('Breakpoints'),
           '#description' => t('Select the breakpoints that are part of this set.'),
@@ -60,8 +67,31 @@ class BreakpointSetFormController extends EntityFormController {
           '#options' => array_intersect_key($breakpoints, $breakpointset->breakpoints),
           '#default_value' => $breakpointset->breakpoints,
         );
+        $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
+        if (!empty($options)) {
+          $form['breakpoints_ajax']['add_breakpoint_action'] = array(
+            '#type' => 'actions',
+          );
+          $form['breakpoints_ajax']['add_breakpoint_action']['breakpoint'] = array(
+            '#type' => 'select',
+            '#title' => t('Add breakpoint'),
+            '#description' => t('Add a breakpoint to this set'),
+            '#options' => $options,
+          );
+          $form['breakpoints_ajax']['add_breakpoint_action']['add_breakpoint'] = array(
+            '#type' => 'submit',
+            '#value' => t('Add breakpoint'),
+            '#submit' => array(
+              array($this, 'addBreakpointSubmit'),
+            ),
+            '#ajax' => array(
+              'callback' => 'ajax_add_breakpoint_submit',
+              'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
+            ),
+          );
+          $form['add_breakpoint_action']['#attached']['css'][] = drupal_get_path('module', 'breakpoints_ui') . '/css/breakpoints_ui.breakpointset.admin.css';
+        }
         break;
-      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_MODULE:
       case Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME:
         // Show all breakpoints part of this set.
         $breakpoints = array();
@@ -110,11 +140,6 @@ class BreakpointSetFormController extends EntityFormController {
   public function validate(array $form, array &$form_state) {
   }
 
-
-  /**
-   * Overrides Drupal\Core\Entity\EntityFormController::save().
-   */
-
   /**
    * Overrides Drupal\Core\Entity\EntityFormController::save().
    */
@@ -126,6 +151,17 @@ class BreakpointSetFormController extends EntityFormController {
     drupal_set_message(t('Breakpoint set %label saved.', array('%label' => $breakpointset->label())));
 
     $form_state['redirect'] = 'admin/config/media/breakpoints/breakpointset';
+  }
+
+  /**
+   * Submit callback to add a new breakpoint to a breakpoint set.
+   * @see BreakpointSetFormController::form()
+   */
+  public function addBreakpointSubmit(array $form, array $form_state) {
+    $entity = $this->getEntity($form_state);
+    $entity->breakpoints[$form_state['values']['breakpoint']] = 1;
+    $this->setEntity($entity, $form_state);
+    $form_state['rebuild'] = TRUE;
   }
 
 }
