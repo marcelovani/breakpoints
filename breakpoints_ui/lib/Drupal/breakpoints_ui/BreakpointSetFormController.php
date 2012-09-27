@@ -20,6 +20,7 @@ class BreakpointSetFormController extends EntityFormController {
    * Overrides Drupal\Core\Entity\EntityFormController::form().
    */
   public function form(array $form, array &$form_state, EntityInterface $breakpointset) {
+    // Check if we need to duplicate the breakpoint set.
     if ($this->operation == 'duplicate') {
       $breakpointset = $breakpointset->createDuplicate();
       $this->setEntity($breakpointset, $form_state);
@@ -67,6 +68,8 @@ class BreakpointSetFormController extends EntityFormController {
           '#options' => array_intersect_key($breakpoints, $breakpointset->breakpoints),
           '#default_value' => $breakpointset->breakpoints,
         );
+
+        // Ajax form to add new breakpoints to this set.
         $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
         if (!empty($options)) {
           $form['breakpoints_ajax']['add_breakpoint_action'] = array(
@@ -94,6 +97,7 @@ class BreakpointSetFormController extends EntityFormController {
         break;
       case Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME:
         // Show all breakpoints part of this set.
+        // @todo allow people to change the order
         $breakpoints = array();
         foreach($breakpointset->breakpoints as $breakpoint_id) {
           $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
@@ -158,8 +162,9 @@ class BreakpointSetFormController extends EntityFormController {
    * @see BreakpointSetFormController::form()
    */
   public function addBreakpointSubmit(array $form, array $form_state) {
+    // @todo: mark breakpoints as dirty, user still needs to save the form.
     $entity = $this->getEntity($form_state);
-    $entity->breakpoints[$form_state['values']['breakpoint']] = 1;
+    $entity->breakpoints[$form_state['values']['breakpoint']] = $form_state['values']['breakpoint'];
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
   }

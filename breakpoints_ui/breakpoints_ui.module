@@ -47,22 +47,12 @@ function breakpoints_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
     'file' => 'breakpoints_ui.breakpoint.admin.inc',
   );
-  $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint'] = array(
-    'title' => 'Edit breakpoint',
-    'page callback' => 'breakpoints_ui_breakpoint_page_edit',
-    'page arguments' => array(5),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'file' => 'breakpoints_ui.breakpoint.admin.inc',
-  );
   $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint/edit'] = array(
     'title' => 'Edit breakpoint',
     'page callback' => 'breakpoints_ui_breakpoint_page_edit',
     'page arguments' => array(5),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
     'file' => 'breakpoints_ui.breakpoint.admin.inc',
   );
   $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint/%'] = array(
@@ -71,7 +61,6 @@ function breakpoints_ui_menu() {
     'page arguments' => array('breakpoints_ui_breakpoint_action_confirm', 5, 6),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
     'file' => 'breakpoints_ui.breakpoint.admin.inc',
   );
 
@@ -100,7 +89,6 @@ function breakpoints_ui_menu() {
     'page arguments' => array(5),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
     'file' => 'breakpoints_ui.breakpointset.admin.inc',
   );
   $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/duplicate'] = array(
@@ -108,8 +96,6 @@ function breakpoints_ui_menu() {
     'page callback' => 'breakpoints_ui_breakpoint_page_duplicate',
     'page arguments' => array(5),
     'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
     'access arguments' => array('administer breakpoints'),
     'file' => 'breakpoints_ui.breakpointset.admin.inc',
   );
@@ -119,7 +105,6 @@ function breakpoints_ui_menu() {
     'page arguments' => array('breakpoints_ui_breakpointset_action_confirm', 5, 6),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
     'file' => 'breakpoints_ui.breakpointset.admin.inc',
   );
 
@@ -138,7 +123,6 @@ function breakpoints_ui_menu() {
     'title' => '',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('breakpoints_ui_admin_multiplier_delete_form', 5),
-    'type' => MENU_CALLBACK,
     'access arguments' => array('administer breakpoints'),
     'file' => 'breakpoints_ui.multiplier.admin.inc',
     'weight' => 15,
