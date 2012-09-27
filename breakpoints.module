@@ -197,7 +197,7 @@ function breakpoints_entity_info() {
   $types['breakpoints_breakpoint'] = array(
     'label' => 'Breakpoint',
     'entity class' => 'Drupal\breakpoints\Breakpoint',
-    'controller class' => 'Drupal\config\ConfigStorageController',
+    'controller class' => 'Drupal\Core\Config\Entity\ConfigStorageController',
     'config prefix' => 'breakpoints.breakpoint',
     'entity keys' => array(
       'id' => 'id',

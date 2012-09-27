@@ -7,7 +7,7 @@
 
 namespace Drupal\breakpoints_ui;
 
-use Drupal\config\ConfigEntityListController;
+use Drupal\Core\Config\Entity\ConfigEntityListController;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
