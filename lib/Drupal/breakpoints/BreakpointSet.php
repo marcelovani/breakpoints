@@ -40,7 +40,7 @@ class BreakpointSet extends ConfigEntityBase {
    *
    * @var array
    */
-  public $breakpoints;
+  public $breakpoints = array();
 
   /**
    * The BreakpointSet source type.
@@ -84,5 +84,16 @@ class BreakpointSet extends ConfigEntityBase {
    */
   public function revert() {
     return entity_get_controller($this->entityType)->revert($this);
+  }
+
+  /**
+   * Implements EntityInterface::createDuplicate().
+   */
+  public function createDuplicate() {
+    $duplicate = new BreakpointSet();
+    $duplicate->id = '';
+    $duplicate->label = t('Clone of') . ' ' . $this->label();
+    $duplicate->breakpoints = $this->breakpoints;
+    return $duplicate;
   }
 }

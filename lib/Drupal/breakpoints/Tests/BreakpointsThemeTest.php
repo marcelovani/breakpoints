@@ -5,13 +5,13 @@
  */
 namespace Drupal\breakpoints\Tests;
 
-use Drupal\breakpoints\Tests\BreakpointGroupTestBase;
+use Drupal\breakpoints\Tests\BreakpointSetTestBase;
 use stdClass;
 
 /**
  * Test breakpoints provided by themes.
  */
-class BreakpointsThemeTest extends BreakpointGroupTestBase {
+class BreakpointsThemeTest extends BreakpointSetTestBase {
 
   /**
    * Modules to enable.

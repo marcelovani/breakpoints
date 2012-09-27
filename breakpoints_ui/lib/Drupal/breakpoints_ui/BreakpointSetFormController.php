@@ -21,10 +21,7 @@ class BreakpointSetFormController extends EntityFormController {
    */
   public function form(array $form, array &$form_state, EntityInterface $breakpointset) {
     if ($this->operation == 'duplicate') {
-      $cloned_breakpointset = entity_create('breakpoints_breakpointset', array());
-      $cloned_breakpointset->id = '';
-      $cloned_breakpointset->label = t('Clone of ') . ' ' . $breakpointset->label();
-      $cloned_breakpointset->breakpoints = $breakpointset->breakpoints;
+      $cloned_breakpointset = $breakpointset->createDuplicate();
       $breakpointset = $cloned_breakpointset;
       $this->setEntity($breakpointset, $form_state);
     }

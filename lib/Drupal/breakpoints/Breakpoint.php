@@ -95,7 +95,7 @@ class Breakpoint extends ConfigEntityBase {
     if (empty($this->id)) {
       $this->id = $this->build_config_name();
     }
-    parent::save();
+    return parent::save();
   }
 
   /**
