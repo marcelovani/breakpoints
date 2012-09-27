@@ -7,7 +7,7 @@
 
 namespace Drupal\breakpoints;
 
-use Drupal\config\ConfigEntityBase;
+use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Exception;
 
 /**

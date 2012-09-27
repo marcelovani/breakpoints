@@ -7,7 +7,7 @@
 
 namespace Drupal\breakpoints;
 
-use Drupal\config\ConfigEntityBase;
+use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
  * Defines the BreakpointSet entity.
@@ -62,7 +62,7 @@ class BreakpointSet extends ConfigEntityBase {
   public function __construct(array $values = array(), $entity_type = 'breakpoints_breakpointset') {
     parent::__construct($values, $entity_type);
   }
-  
+
   /**
    * Override and save a breakpoint set.
    */

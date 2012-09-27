@@ -5,7 +5,7 @@
  */
 namespace Drupal\breakpoints;
 
-use Drupal\config\ConfigStorageController;
+use Drupal\Core\Config\Entity\ConfigStorageController;
 use Drupal\breakpoints\BreakpointSet;
 use Drupal\breakpoints\Breakpoint;
 
