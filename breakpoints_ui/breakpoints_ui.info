@@ -3,7 +3,4 @@ description = Proveds a user interface to manage breakpoints.
 package = Other
 core = 8.x
 
-files[] = breakpoints_ui.module
-files[] = breakpoints_ui.admin.inc
-
 dependencies[] = breakpoints

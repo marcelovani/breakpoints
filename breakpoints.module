@@ -11,7 +11,6 @@ use \Drupal\breakpoints\BreakpointSet;
 define('BREAKPOINTS_SOURCE_TYPE_THEME', 'theme');
 define('BREAKPOINTS_SOURCE_TYPE_MODULE', 'module');
 define('BREAKPOINTS_SOURCE_TYPE_CUSTOM', 'custom');
-define('BREAKPOINTS_GROUP', 'group');
 
 /**
  * Implements hook_enable().
@@ -39,7 +38,7 @@ function breakpoints_themes_enabled($theme_list) {
       }
       if (!empty($theme_breakpoints)) {
         $weight = 0;
-        // Build a group for each theme
+        // Build a breakpoint set for each theme
         $breakpointset = new BreakpointSet();
         $breakpointset->id = $theme_key;
         $breakpointset->label = $themes[$theme_key]->info['name'];
@@ -56,9 +55,15 @@ function breakpoints_themes_enabled($theme_list) {
           $breakpointset->breakpoints[] = $breakpoint->id();
         }
         $breakpointset->save();
-        $message = t('The breakpoints from theme %theme are imported and !grouplink.', array(
+        $uri = $breakpointset->uri();
+        if ($uri) {
+          $uri_options = $uri;
+          unset($uri_options['path']);
+          $uri = $uri['path'];
+        }
+        $message = t('The breakpoints from theme %theme are imported and !setlink.', array(
           '%theme' => check_plain($themes[$theme_key]->info['name']),
-          '!grouplink' => l(t('a new group is created'), 'admin/config/media/breakpoints/groups/' . $theme_key),
+          '!setlink' => module_exists('breakpoints_ui') && $uri ? l(t('a new breakpoint set is created'), $uri, $uri_options) : t('a new breakpoint set is created'),
         ));
         drupal_set_message($message, 'status');
       }
@@ -71,13 +76,21 @@ function breakpoints_themes_enabled($theme_list) {
  * Remove breakpoints from all disabled themes.
  */
 function breakpoints_themes_disabled($theme_list) {
-  $themes = list_themes();
-  foreach ($theme_list as $theme_key) {
-    $breakpoints = breakpoints_breakpoint_load_all_theme($theme_key);
-    foreach ($breakpoints as $breakpoint) {
-      breakpoints_breakpoint_delete($breakpoint, $theme_key);
+  $breakpointsets = entity_load_multiple('breakpoints_breakpointset', $theme_list);
+  foreach ($breakpointsets as $breakpointset) {
+    $breakpointset->delete();
+    // delete all breakpoints defined by this theme.
+    $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.' . BREAKPOINTS_SOURCE_TYPE_THEME . '.' . $breakpointset->id() . '.');
+    $entity_info = entity_get_info('breakpoints_breakpoint');
+
+    foreach ($names as &$name) {
+      $name = substr($name, strlen($entity_info['config prefix']) + 1);
     }
-    breakpoints_breakpoint_group_delete_by_name($theme_key);
+    $breakpoints = entity_load_multiple('breakpoints_breakpoint', $names);
+
+    foreach ($breakpoints as $breakpoint) {
+      $breakpoint->delete();
+    }
   }
 }
 
@@ -105,63 +118,6 @@ function breakpoints_settings_save($multipliers) {
 }
 
 /**
- * Sort breakpoints by weight.
- */
-function _breakpoints_sort_by_weight($a, $b) {
-  if (isset($a->weight) && isset($b->weight)) {
-    if ($a->weight == $b->weight) {
-      return 0;
-    }
-    return ($a->weight < $b->weight) ? -1 : 1;
-  }
-  return 0;
-}
-
-/**
- * Sort breakpoints by weight.
- */
-function _breakpoints_sort_by_weight_array($a, $b) {
-  return _breakpoints_sort_by_weight((object)$a, (object)$b);
-}
-
-/**
- * Construct config name.
- */
-function breakpoints_breakpoint_config_name($breakpoints_breakpoint) {
-  if (is_string($breakpoints_breakpoint)) {
-    return $breakpoints_breakpoint;
-  }
-  else {
-    // Check for illegal values in breakpoint source type.
-    if (!in_array($breakpoints_breakpoint->source_type, array(BREAKPOINTS_SOURCE_TYPE_CUSTOM, BREAKPOINTS_SOURCE_TYPE_MODULE, BREAKPOINTS_SOURCE_TYPE_THEME))) {
-      throw new Exception(
-          t(
-            'Expected one of \'@custom\', \'@module\' or \'@theme\' for breakpoint source_type property but got \'@sourcetype\'.',
-            array(
-              '@custom' => BREAKPOINTS_SOURCE_TYPE_CUSTOM,
-              '@module' => BREAKPOINTS_SOURCE_TYPE_MODULE,
-              '@theme' => BREAKPOINTS_SOURCE_TYPE_THEME,
-              '@sourcetype' => $breakpoints_breakpoint->source_type,
-            )
-          )
-      );
-    }
-    // Check for illegal characters in breakpoint source.
-    if (preg_match('/[^a-z_]+/', $breakpoints_breakpoint->source)) {
-      throw new Exception(t('Invalid value \'@source\' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.', array('@source' => $breakpoints_breakpoint->source)));
-    }
-    // Check for illegal characters in breakpoint names.
-    if (preg_match('/[^0-9a-z_\-]/', $breakpoints_breakpoint->name)) {
-      throw new Exception(t('Invalid value \'@name\' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).', array('@name' => $breakpoints_breakpoint->name)));
-    }
-    return 'breakpoints'
-      . '.' . $breakpoints_breakpoint->source_type
-      . '.' . $breakpoints_breakpoint->source
-      . '.' . $breakpoints_breakpoint->name;
-  }
-}
-
-/**
  * Element validate callback for breakpoint names.
  */
 function breakpoint_name_validate($element, $form_state) {
@@ -172,393 +128,44 @@ function breakpoint_name_validate($element, $form_state) {
 }
 
 /**
- * Load a single breakpoint.
+ * Reload breakpoint sets as they were defined in the theme.
+ * @param string $theme_key
+ * @return BreakpointSet
  */
-function xxx_breakpoints_breakpoint_load($name, $source, $source_type) {
-  return breakpoints_breakpoint_load_by_fullkey('breakpoints.' . $source_type . '.' . $source . '.' . $name);
-}
-
-/**
- * Load a single breakpoint using the full config key.
- */
-function breakpoints_breakpoint_load_by_fullkey($name) {
-  $config = config($name);
-  if ($config->isNew()) {
-    return FALSE;
-  }
-  $data = $config->get();
-  $data += breakpoints_breakpoint_empty_array();
-  return (object)$data;
-}
-
-/**
- * Load all breakpoints.
- */
-function xxx_breakpoints_breakpoint_load_all($theme_key = '') {
-  $breakpoints_user = breakpoints_breakpoint_load_all_custom();
-  $breakpoints_module = breakpoints_breakpoint_load_all_module();
-  $breakpoints_theme = breakpoints_breakpoint_load_all_theme($theme_key);
-  $breakpoints = array_merge($breakpoints_theme, $breakpoints_module, $breakpoints_user);
-  uasort($breakpoints, '_breakpoints_sort_by_weight');
-  return $breakpoints;
-}
-
-/**
- * Load all enabled breakpoints.
- */
-function breakpoints_breakpoint_load_all_active($theme_key = '') {
-  $breakpoints = breakpoints_breakpoint_load_all($theme_key);
-  $enabled = array();
-  if (!empty($breakpoints)) {
-    foreach ($breakpoints as $breakpoint_name => $breakpoint) {
-      if ($breakpoint->status) {
-        $enabled[$breakpoint_name] = $breakpoint;
-      }
-    }
-  }
-  return $enabled;
-}
-
-/**
- * Load all breakpoints by source type.
- */
-function _breakpoints_breakpoint_load_all_by_type($source_type, $source = '') {
-  $breakpoints = array();
-  // $name has to end in a dot.
-  $name = 'breakpoints.' . $source_type . '.';
-  if (isset($source) && !empty($source)) {
-    $name .= $source . '.';
-  }
-  $breakpoint_names = config_get_storage_names_with_prefix($name);
-  foreach ($breakpoint_names as $breakpoint_name) {
-    $breakpoints[$breakpoint_name] = breakpoints_breakpoint_load_by_fullkey($breakpoint_name);
-  }
-  uasort($breakpoints, '_breakpoints_sort_by_weight');
-  return $breakpoints;
-}
-
-/**
- * Load all custom breakpoints.
- */
-function breakpoints_breakpoint_load_all_custom() {
-  $breakpoints = _breakpoints_breakpoint_load_all_by_type(BREAKPOINTS_SOURCE_TYPE_CUSTOM);
-  return $breakpoints;
-}
-
-/**
- * Load all user defined breakpoints.
- */
-function breakpoints_breakpoint_load_all_module() {
-  return _breakpoints_breakpoint_load_all_by_type(BREAKPOINTS_SOURCE_TYPE_MODULE);
-}
-
-/**
- * Load all breakpoints from the theme.
- */
-function breakpoints_breakpoint_load_all_theme($theme_key = '') {
-  return _breakpoints_breakpoint_load_all_by_type(BREAKPOINTS_SOURCE_TYPE_THEME, $theme_key);
-}
-
-/**
- * Empty breakpoint object.
- */
-function breakpoints_breakpoint_empty_object() {
-  return (object)breakpoints_breakpoint_empty_array();
-}
-
-/**
- * Empty breakpoint array.
- */
-function breakpoints_breakpoint_empty_array() {
-  return array(
-    'name' => '',
-    'breakpoint' => '',
-    'source' => '',
-    'source_type' => '',
-    'theme' => '',
-    'status' => '',
-    'weight' => 0,
-    'multipliers' => '',
-  );
-}
-
-/**
- * Save a single breakpoint.
- */
-function breakpoints_breakpoint_save($breakpoints_breakpoint) {
-  $name = breakpoints_breakpoint_config_name($breakpoints_breakpoint);
-  $config = config($name);
-
-  $config->set('name', $breakpoints_breakpoint->name);
-  $config->set('breakpoint', $breakpoints_breakpoint->breakpoint);
-  $config->set('source', $breakpoints_breakpoint->source);
-  $config->set('source_type', $breakpoints_breakpoint->source_type);
-  $config->set('status', $breakpoints_breakpoint->status);
-  $config->set('weight', $breakpoints_breakpoint->weight);
-  $config->set('multipliers', $breakpoints_breakpoint->multipliers);
-  $config->save();
-
-  $data = $config->get();
-  $data += breakpoints_breakpoint_empty_array();
-  return (object)$data;
-}
-
-/**
- * Delete a single breakpoint.
- */
-function breakpoints_breakpoint_delete($breakpoint) {
-  $name = breakpoints_breakpoint_config_name($breakpoint);
-  return breakpoints_breakpoint_delete_by_fullkey($name);
-}
-
-/**
- * Delete a single breakpoint.
- */
-function breakpoints_breakpoint_delete_by_fullkey($name) {
-  $config = config($name);
-  if ($config && !$config->isNew()) {
-    $config->delete();
-  }
-}
-
-/**
- * Toggle status of a single breakpoint.
- * @param object|string $breakpoints_breakpoint
- *   Either a breakpoint object or a breakpoint config name.
- */
-function breakpoints_breakpoint_toggle_status(&$breakpoints_breakpoint) {
-  $name = breakpoints_breakpoint_config_name($breakpoints_breakpoint);
-  $config = config($name);
-  if ($config && !$config->isNew()) {
-    $status = !$config->get('status');
-    $config->set('status', $status);
-    $config->save();
-    if (is_object($breakpoints_breakpoint)) {
-      $breakpoints_breakpoint->status = $status;
-    }
-  }
-}
-
-
-/**
- * Empty breakpoint group object.
- */
-function breakpoints_breakpoint_group_empty_object() {
-  return (object)breakpoints_breakpoint_group_empty_array();
-}
-
-/**
- * Empty breakpoint group array.
- */
-function breakpoints_breakpoint_group_empty_array() {
-  return array(
-    'machine_name' => '',
-    'name' => '',
-    'breakpoints' => array(),
-    'type' => 'custom',
-    'overridden' => FALSE,
-  );
-}
-
-/**
- * Check if a group name already exists.
- */
-function breakpoints_breakpoint_group_name_exists($machine_name) {
-  // Check for reserved words.
-  if ($machine_name == 'global' || $machine_name == 'add') {
-    return TRUE;
-  }
-  // Check if group name is used before.
-  $group_check = breakpoints_breakpoint_group_load($machine_name);
-  if ($group_check && isset($group_check->machine_name) && !empty($group_check->machine_name)) {
-    return TRUE;
-  }
-  return FALSE;
-}
-
-/**
- * Load all breakpoint groups.
- */
-function breakpoints_breakpoint_group_load_all() {
-  $breakpointsets = array();
-  $name = 'breakpoints.' . BREAKPOINTS_GROUP . '.';
-  $breakpointset_names = config_get_storage_names_with_prefix($name);
-  foreach ($breakpointset_names as $breakpointset_name) {
-    $breakpointsets[$breakpointset_name] = breakpoints_breakpoint_group_load_by_fullkey($breakpointset_name);
-  }
-  return $breakpointsets;
-}
-
-/**
- * Load a single breakpoint group.
- */
-function breakpoints_breakpoint_group_load($machine_name) {
-  $name = 'breakpoints.' . BREAKPOINTS_GROUP . '.' . $machine_name;
-  return breakpoints_breakpoint_group_load_by_fullkey($name);
-}
-
-/**
- * Load a single breakpoint group using the full config key.
- */
-function breakpoints_breakpoint_group_load_by_fullkey($name) {
-  $config = config($name);
-  if ($config->isNew()) {
-    return FALSE;
-  }
-  $data = $config->get();
-  return (object)$data;
-}
-
-/**
- * Save a single breakpoint group.
- */
-function breakpoints_breakpoint_group_save($breakpointset) {
-  $name = 'breakpoints.' . BREAKPOINTS_GROUP . '.' . $breakpointset->machine_name;
-  $config = config($name);
-  $is_new = $config->isNew();
-
-  $config->set('machine_name', $breakpointset->machine_name);
-  $config->set('name', $breakpointset->name);
-  $config->set('type', $breakpointset->type);
-  $config->set('overridden', $breakpointset->overridden);
-  $config->set('breakpoints', $breakpointset->breakpoints); // weight + key
-  $config->save();
-  return $is_new ? SAVED_NEW : SAVED_UPDATED;
-}
-
-/**
- * Delete a single breakpoint group.
- */
-function breakpoints_breakpoint_group_delete($breakpointset) {
-  $name = 'breakpoints.' . BREAKPOINTS_GROUP . '.' . $breakpointset->machine_name;
-  return breakpoints_breakpoint_group_delete_by_fullkey($name);
-}
-
-/**
- * Delete a single breakpoint group by fullkey.
- */
-function breakpoints_breakpoint_group_delete_by_name($machine_name) {
-  $name = 'breakpoints.' . BREAKPOINTS_GROUP . '.' . $machine_name;
-  return breakpoints_breakpoint_group_delete_by_fullkey($name);
-}
-
-/**
- * Delete a single breakpoint group by fullkey.
- */
-function breakpoints_breakpoint_group_delete_by_fullkey($key) {
-  $config = config($key);
-  if ($config && !$config->isNew()) {
-    $config->delete();
-  }
-}
-
-/**
- * Reload the breakpoints as defined by the group.
- */
-function breakpoints_breakpoints_group_reload(&$group) {
-  switch ($group->type) {
-    case BREAKPOINTS_SOURCE_TYPE_THEME:
-      // delete all breakpoints defined by this theme.
-      $breakpoints = breakpoints_breakpoint_load_all_theme($group->machine_name);
-      foreach ($breakpoints as $breakpoint) {
-        breakpoints_breakpoint_delete($breakpoint, $group->machine_name);
-      }
-
-      // reload all breakpoints from theme.info.
-      $reloaded_group = breakpoints_breakpoints_group_reload_from_theme($group->machine_name);
-      $group->breakpoints = $reloaded_group->breakpoints;
-      breakpoints_breakpoint_group_save($group);
-      break;
-  }
-}
-
-function breakpoints_breakpoints_group_reload_from_theme($theme_key) {
+function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
   // Clear caches so theme.info is fresh.
   system_rebuild_theme_data();
   drupal_theme_rebuild();
 
   $themes = list_themes();
-  if (isset($themes[$theme_key]->info['breakpoints'])) {
-    $weight = 0;
-    $theme_settings = $themes[$theme_key]->info['breakpoints'];
-    // Build a group for each theme
-    $breakpointset = breakpoints_breakpoint_group_empty_object();
-    $breakpointset->id = $theme_key;
-    $breakpointset->name = $themes[$theme_key]->info['name'];
-    $breakpointset->source_type = BREAKPOINTS_SOURCE_TYPE_THEME;
-    foreach ($theme_settings as $name => $media_query) {
-      $breakpoint = new Breakpoint;
-      $breakpoint->label = $name;
-      $breakpoint->media_query = $media_query;
-      $breakpoint->source = $theme_key;
-      $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
-      $breakpoint->status = TRUE;
-      $breakpoint->weight = $weight++;
-      $breakpoint->save();
-      $breakpointset->breakpoints[] = $breakpoint->id();
+  if ($themes[$theme_key]->status) {
+    // Check theme_key.breakpoints.yml first
+    $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
+    // Fallback to theme_key.info
+    if (empty($theme_breakpoints) && isset($themes[$theme_key]->info['breakpoints'])) {
+      $theme_breakpoints = $themes[$theme_key]->info['breakpoints'];
+    }
+    if (!empty($theme_breakpoints)) {
+      $weight = 0;
+      // Build a set for each theme
+      $breakpointset = new BreakpointSet();
+      $breakpointset->id = $theme_key;
+      $breakpointset->label = $themes[$theme_key]->info['name'];
+      $breakpointset->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+      foreach ($theme_breakpoints as $name => $media_query) {
+        $breakpoint = new Breakpoint;
+        $breakpoint->label = $name;
+        $breakpoint->media_query = $media_query;
+        $breakpoint->source = $theme_key;
+        $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+        $breakpoint->status = TRUE;
+        $breakpoint->weight = $weight++;
+        $breakpointset->breakpoints[] = $breakpoint->get_config_name();
+      }
     }
     return $breakpointset;
   }
-}
-
-/**
- * Revert the breakpoints of a group.
- */
-function breakpoints_breakpoints_group_revert(&$group) {
-  breakpoints_breakpoints_group_reload($group);
-  $group->overridden = 0;
-  breakpoints_breakpoint_group_save($group);
-}
-
-/**
- * Duplicate a group.
- */
-function breakpoints_breakpoints_group_duplicate($group, $new_name, $new_machine_name) {
-  $new_group = breakpoints_breakpoint_group_empty_object();
-  $new_group->machine_name = $new_machine_name;
-  $new_group->name = $new_name;
-  $new_group->type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
-  $new_group->breakpoints = $group->breakpoints;
-  breakpoints_breakpoint_group_save($new_group);
-  return $new_group;
-}
-
-/**
- * Override the breakpoints of a group.
- */
-function breakpoints_breakpoints_group_override($group) {
-  foreach ($group->breakpoints as $key => $breakpoint_name) {
-    $breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint_name);
-    $old_breakpoint = clone $breakpoint;
-    if ($breakpoint->source_type == BREAKPOINTS_SOURCE_TYPE_THEME && $breakpoint->source == $group->machine_name) {
-      $breakpoint->source_type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
-
-      // make sure it doesn't already exists.
-      if (breakpoints_breakpoint_load_by_fullkey(breakpoints_breakpoint_config_name($breakpoint)) === FALSE) {
-        $breakpoint = breakpoints_breakpoint_save($breakpoint);
-      }
-
-      // Add to the group and delete old breakpoint.
-      $group->breakpoints[$key] = breakpoints_breakpoint_config_name($breakpoint);
-      breakpoints_breakpoint_delete($old_breakpoint);
-    }
-  }
-  $group->overridden = 1;
-  breakpoints_breakpoint_group_save($group);
-}
-
-/**
- * Export breakpoints ready for theme.info inclusion.
- */
-function breakpoints_breakpoints_group_exporttotheme(&$group) {
-  $export = array();
-  foreach ($group->breakpoints as $breakpoint_name) {
-    $breakpoint = breakpoints_breakpoint_load_by_fullkey($breakpoint_name);
-    if ($breakpoint && $breakpoint->status) {
-      $export[$breakpoint->name] = $breakpoint->breakpoint;
-    }
-  }
-  return $export;
+  return FALSE;
 }
 
 /**
@@ -591,12 +198,6 @@ function breakpoints_entity_info() {
     'label' => 'Breakpoint',
     'entity class' => 'Drupal\breakpoints\Breakpoint',
     'controller class' => 'Drupal\config\ConfigStorageController',
-    'form controller class' => array(
-      'default' => 'Drupal\breakpoints\BreakpointFormController',
-    ),
-    'list controller class' => 'Drupal\breakpoints\BreakpointListController',
-    'list path' => 'admin/config/media/breakpoints/breakpoint',
-    'uri callback' => 'breakpoints_breakpoint_uri',
     'config prefix' => 'breakpoints.breakpoint',
     'entity keys' => array(
       'id' => 'id',
@@ -610,13 +211,6 @@ function breakpoints_entity_info() {
     'label' => 'Breakpoint Set',
     'entity class' => 'Drupal\breakpoints\BreakpointSet',
     'controller class' => 'Drupal\breakpoints\BreakpointSetController',
-    'form controller class' => array(
-      'default' => 'Drupal\breakpoints\BreakpointSetFormController',
-      'duplicate' => 'Drupal\breakpoints\BreakpointSetFormController',
-    ),
-    'list controller class' => 'Drupal\breakpoints\BreakpointSetListController',
-    'list path' => 'admin/config/media/breakpoints/breakpointset',
-    'uri callback' => 'breakpoints_breakpoint_set_uri',
     'config prefix' => 'breakpoints.breakpointset',
     'entity keys' => array(
       'id' => 'id',
@@ -656,132 +250,4 @@ function breakpoints_breakpoint_load($id) {
 function breakpoints_breakpoint_load_all() {
   $breakpoints = entity_load_multiple('breakpoints_breakpoint');
   return $breakpoints;
-}
-
-/**
- * Implements hook_menu().
- */
-function breakpoints_menu() {
-  $items = array();
-  $items['admin/config/media/breakpoints'] = array(
-    'title' => t('Manage breakpoints'),
-    'description' => t('Manage breakpoints and breakpoint sets.'),
-    'page callback' => 'breakpoints_admin_block_page',
-    'access arguments' => array('administer breakpoints'),
-  );
-  $items['admin/config/media/breakpoints/breakpoint'] = array(
-    'title' => 'Breakpoints',
-    'page callback' => 'breakpoints_breakpoint_page',
-    'description' => 'Manage breakpoints',
-    'access arguments' => array('administer breakpoints'),
-    'weight' => 10,
-    'file' => 'breakpoints.breakpoint.admin.inc',
-    'type' => MENU_SUGGESTED_ITEM,
-  );
-  $items['admin/config/media/breakpoints/breakpoint/add'] = array(
-    'title' => 'Add breakpoint',
-    'page callback' => 'breakpoints_breakpoint_page_add',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_LOCAL_ACTION,
-    'file' => 'breakpoints.breakpoint.admin.inc',
-  );
-  $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint'] = array(
-    'title' => 'Edit breakpoint',
-    'page callback' => 'breakpoints_breakpoint_page_edit',
-    'page arguments' => array(5),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'file' => 'breakpoints.breakpoint.admin.inc',
-  );
-  $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint/edit'] = array(
-    'title' => 'Edit breakpoint',
-    'page callback' => 'breakpoints_breakpoint_page_edit',
-    'page arguments' => array(5),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'file' => 'breakpoints.breakpoint.admin.inc',
-  );
-  $items['admin/config/media/breakpoints/breakpoint/%breakpoints_breakpoint/%'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_breakpoint_action_confirm', 5, 6),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'file' => 'breakpoints.breakpoint.admin.inc',
-  );
-  
-
-  // Breakpoint set
-  $items['admin/config/media/breakpoints/breakpointset'] = array(
-    'title' => 'Breakpoint Sets',
-    'description' => 'Manage breakpoint sets',
-    'access arguments' => array('administer breakpoints'),
-    'weight' => 10,
-    'page callback' => 'breakpoints_breakpointset_page',
-    'file' => 'breakpoints.breakpointset.admin.inc',
-    'type' => MENU_SUGGESTED_ITEM,
-  );
-  $items['admin/config/media/breakpoints/breakpointset/add'] = array(
-    'title' => 'Add breakpoint set',
-    'page callback' => 'breakpoints_breakpointset_page_add',
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_LOCAL_ACTION,
-    'file' => 'breakpoints.breakpointset.admin.inc',
-  );
-  $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/edit'] = array(
-    'title' => 'Edit breakpoint set',
-    'page callback' => 'breakpoints_breakpointset_page_edit',
-    'page arguments' => array(5),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'file' => 'breakpoints.breakpointset.admin.inc',
-  );
-  $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/duplicate'] = array(
-    'title' => 'Duplicate breakpoint set',
-    'page callback' => 'breakpoints_breakpoint_page_duplicate',
-    'page arguments' => array(5),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer breakpoints'),
-    'file' => 'breakpoints.breakpointset.admin.inc',
-  );
-  $items['admin/config/media/breakpoints/breakpointset/%breakpoints_breakpointset/%'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('breakpoints_breakpointset_action_confirm', 5, 6),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
-    'type' => MENU_CALLBACK,
-    'file' => 'breakpoints.breakpointset.admin.inc',
-  );
-
-  return $items;
-}
-
-function breakpoints_breakpoint_uri(Breakpoint $breakpoint) {
-  return array(
-    'path' => 'admin/config/media/breakpoints/breakpoint/' . $breakpoint->id(),
-  );
-}
-
-function breakpoints_breakpoint_set_uri(BreakpointSet $breakpointset) {
-  return array(
-    'path' => 'admin/config/media/breakpoints/breakpointset/' . $breakpointset->id(),
-  );
-}
-
-function breakpoints_admin_block_page() {
-  $content = array(
-    menu_get_item('admin/config/media/breakpoints/breakpoint'),
-    menu_get_item('admin/config/media/breakpoints/breakpointset'),
-  );
-  return theme('admin_block_content', array('content' => $content));
-
 }

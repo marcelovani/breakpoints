@@ -71,7 +71,7 @@ class BreakpointSet extends ConfigEntityBase {
   }
 
   /**
-   * Revert a breakpoint group after it has been overridden.
+   * Revert a breakpoint set after it has been overridden.
    */
   public function revert() {
     return entity_get_controller($this->entityType)->revert($this);

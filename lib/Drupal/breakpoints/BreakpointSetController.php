@@ -23,18 +23,17 @@ class BreakpointSetController extends ConfigStorageController{
     }
     foreach ($breakpointset->breakpoints as $key => $breakpoint_name) {
       $breakpoint = breakpoints_breakpoint_load($breakpoint_name);
-      $old_breakpoint = $breakpoint->createDuplicate();
+      $new_breakpoint = get_object_vars($breakpoint);
+      unset($new_breakpoint['id']);
+      unset($new_breakpoint['uuid']);
+
       if ($breakpoint->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME && $breakpoint->source == $breakpointset->id()) {
-        $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+        $new_breakpoint['source_type'] = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+        $new_breakpoint = new Breakpoint($new_breakpoint);
+        $new_breakpoint->save();
 
-        // make sure it doesn't already exists.
-        if (breakpoints_breakpoint_load($breakpoint->get_config_name()) === FALSE) {
-          $breakpoint->save();
-        }
-
-        // Add to the group and delete old breakpoint.
-        $breakpointset->breakpoints[$key] = $breakpoint->get_config_name();
-        $old_breakpoint->delete();
+        // Add to the set.
+        $breakpointset->breakpoints[$key] = $new_breakpoint->get_config_name();
       }
     }
     $breakpointset->overridden = TRUE;
@@ -43,23 +42,19 @@ class BreakpointSetController extends ConfigStorageController{
   }
 
   /**
-   * Revert a breakpoint group after it has been overridden.
+   * Revert a breakpoint set after it has been overridden.
    */
   public function revert(BreakpointSet $breakpointset) {
     if (!$breakpointset->overridden || !$breakpointset->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
       return FALSE;
     }
-    // delete all breakpoints defined by this theme.
-    $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.custom.' . $breakpointset->id() . '.');
-    $breakpoints = entity_load_multiple('breakpoints_breakpoint', array($names));
-    foreach ($breakpoints as $breakpoint) {
-      $breakpoint->delete();
-    }
 
     // reload all breakpoints from theme.info.
-    $reloaded_group = breakpoints_breakpoints_group_reload_from_theme($breakpointset->id());
-    $breakpointset->breakpoints = $reloaded_group->breakpoints;
-    $breakpointset->overridden = FALSE;
-    $breakpointset->save();
+    $reloaded_set = breakpoints_breakpoints_set_reload_from_theme($breakpointset->id());
+    if ($reloaded_set) {
+      $breakpointset->breakpoints = $reloaded_set->breakpoints;
+      $breakpointset->overridden = FALSE;
+      $breakpointset->save();
+    }
   }
 }
