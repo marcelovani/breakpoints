@@ -64,6 +64,15 @@ class BreakpointSet extends ConfigEntityBase {
   }
 
   /**
+   * Overrides Drupal\Core\Entity::save().
+   */
+  public function save() {
+    // Remove unset breakpoints.
+    $this->breakpoints = array_filter($this->breakpoints);
+    parent::save();
+  }
+
+  /**
    * Override and save a breakpoint set.
    */
   public function override() {

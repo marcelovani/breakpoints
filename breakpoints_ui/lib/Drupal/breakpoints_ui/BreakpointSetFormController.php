@@ -9,6 +9,7 @@ namespace Drupal\breakpoints_ui;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
+use Drupal\breakpoints\Breakpoint;
 
 /**
  * Form controller for the breakpoint set edit/add forms.
@@ -27,6 +28,7 @@ class BreakpointSetFormController extends EntityFormController {
       $breakpointset = $cloned_breakpointset;
       $this->setEntity($breakpointset, $form_state);
     }
+
     $form['label'] = array(
       '#type' => 'textfield',
       '#title' => t('Label'),
@@ -44,6 +46,46 @@ class BreakpointSetFormController extends EntityFormController {
       ),
       '#disabled' => (bool)$breakpointset->id() && $this->operation != 'duplicate',
     );
+
+    switch($breakpointset->source_type) {
+      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM:
+        // Show all breakpoints part of this set.
+        $breakpoints = array();
+        foreach(breakpoints_breakpoint_load_all() as $breakpoint) {
+          $breakpoints[$breakpoint->id] = $breakpoint->label . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
+        }
+
+        // @todo allow people to change the order
+        $form['breakpoints'] = array(
+          '#type' => 'checkboxes',
+          '#title' => t('Breakpoints'),
+          '#description' => t('Select the breakpoints that are part of this set.'),
+          '#tree' => TRUE,
+          '#options' => array_intersect_key($breakpoints, $breakpointset->breakpoints),
+          '#default_value' => $breakpointset->breakpoints,
+        );
+        break;
+      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_MODULE:
+      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME:
+        // Show all breakpoints part of this set.
+        $breakpoints = array();
+        foreach($breakpointset->breakpoints as $breakpoint_id) {
+          $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
+          $breakpoints[$breakpoint->id] = $breakpoint->label . ' [' . $breakpoint->media_query . ']';
+        }
+
+        $form['breakpoints'] = array(
+          '#type' => 'checkboxes',
+          '#title' => t('Breakpoints'),
+          '#description' => t('The following breakpoints are part of this set.'),
+          '#tree' => TRUE,
+          '#options' => $breakpoints,
+          '#default_value' => $breakpointset->breakpoints,
+          '#disabled' => TRUE,
+        );
+        break;
+    }
+
     return parent::form($form, $form_state, $breakpointset);
   }
 
@@ -72,7 +114,7 @@ class BreakpointSetFormController extends EntityFormController {
   public function validate(array $form, array &$form_state) {
   }
 
-  
+
   /**
    * Overrides Drupal\Core\Entity\EntityFormController::save().
    */
@@ -82,7 +124,6 @@ class BreakpointSetFormController extends EntityFormController {
    */
   public function save(array $form, array &$form_state) {
     $breakpointset = $this->getEntity($form_state);
-
     $breakpointset->save();
 
     watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpointset->label()), WATCHDOG_NOTICE);
