@@ -52,7 +52,7 @@ class BreakpointSetFormController extends EntityFormController {
         foreach(breakpoints_breakpoint_load_all() as $breakpoint) {
           $breakpoints[$breakpoint->id] = $breakpoint->label . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
         }
-        $options = array_intersect_key($breakpoints, $breakpointset->breakpoints);
+        $added_breakpoints = array_intersect_key($breakpoints, $breakpointset->breakpoints);
         // @todo allow people to change the order
         $form['breakpoints_ajax'] = array(
           '#type' => 'container',
@@ -60,16 +60,53 @@ class BreakpointSetFormController extends EntityFormController {
             'id' => "breakpoints-checkboxes-ajax-wrapper",
           ),
         );
-        $form['breakpoints_ajax']['breakpoints'] = array(
+        $form['breakpoints_ajax']['table'] = array(
+          '#type' => 'tableselect',
+          '#attributes' => array(
+            'id' => 'breakpointset-add-breakpoint-table',
+          ),
+          '#js_select' => TRUE,
+          '#empty' => t('No breakpoints added.'),
+          '#default_value' => $breakpointset->breakpoints,
+        );
+        foreach ($added_breakpoints as $key => $breakpoint) {
+          $form['breakpoints_ajax']['table']['#options'][$key] = array(
+            'breakpoint' => $breakpoint,
+            'weight' => array(
+              'data' => array(
+                '#type' => 'select',
+                '#title' => t('Weight'),
+                '#description' => t('Select the weight of this breakpoint in this set.'),
+                '#options' => range(0, count($added_breakpoints)),
+                '#attributes' => array('class' => array('weight')),
+              ),
+            ),
+            '#attributes' => array(
+              'class' => array('draggable'),
+            ),
+          );
+        }
+        $form['breakpoints_ajax']['table']['#header'] = array(
+          'breakpoint' => t('Breakpoint'),
+          'weight' => t('Weight'),
+        );
+        drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
+        /*$form['breakpoints_ajax']['table']['breakpoints'] = array(
           '#type' => 'checkboxes',
           '#title' => t('Breakpoints'),
           '#description' => t('Select the breakpoints that are part of this set.'),
           '#tree' => TRUE,
-          '#options' => array_intersect_key($breakpoints, $breakpointset->breakpoints),
+          '#options' => $options,
           '#default_value' => $breakpointset->breakpoints,
         );
 
         // Ajax form to add new breakpoints to this set.
+        $form['breakpoints_ajax']['table']['weight'] = array(
+          '#type' => 'select',
+          '#title' => t('Weight'),
+          '#description' => t('Select the weight of this breakpoint in this set.'),
+          '#options' => range(0, count($options)),
+        );*/
         $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
         if (!empty($options)) {
           $form['breakpoints_ajax']['add_breakpoint_action'] = array(

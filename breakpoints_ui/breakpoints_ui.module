@@ -141,6 +141,11 @@ function breakpoints_ui_theme() {
       'theme_key' => NULL,
       'file' => 'breakpoints_ui.multiplier.admin.inc'
     ),
+    'breakpoints_ui_add_breakpoints_table_form' => array(
+      'render element' => 'form',
+      'theme_key' => NULL,
+      'file' => 'breakpoints_ui.breakpointset.admin.inc',
+    )
   );
 }
 
