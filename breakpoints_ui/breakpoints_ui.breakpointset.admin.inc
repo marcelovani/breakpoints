@@ -100,7 +100,7 @@ function breakpoints_ui_breakpointset_action_confirm_submit($form, &$form_state)
  * @see BreakpointSetFormController::form()
  */
 function ajax_add_breakpoint_submit($form, $form_state) {
-  return $form['breakpoints_ajax'];
+  return $form['breakpoints_fieldset'];
 }
 
 /**
