@@ -110,7 +110,7 @@ class BreakpointSetFormController extends EntityFormController {
           'remove' => t('Remove'),
         );
         drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
-        
+
         $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
         if (!empty($options)) {
           $form['breakpoints_ajax']['add_breakpoint_action'] = array(
@@ -205,13 +205,12 @@ class BreakpointSetFormController extends EntityFormController {
   public function addBreakpointSubmit(array $form, array $form_state) {
     // @todo: mark breakpoints as dirty, user still needs to save the form.
     $entity = $this->getEntity($form_state);
-    $breakpoints = $form_state['values']['breakpoints'];
-    $entity->breakpoints = drupal_map_assoc(array_keys($breakpoints));
-    //$entity->breakpoints[$form_state['values']['breakpoint']] = $form_state['values']['breakpoint'];
+    $breakpoint = $form_state['values']['breakpoints_ajax']['add_breakpoint_action']['breakpoint'];
+    $entity->breakpoints += array($breakpoint => breakpoints_breakpoint_load($breakpoint));
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
   }
-  
+
   /**
    * Submit callback to add a new breakpoint to a breakpoint set.
    * @see BreakpointSetFormController::form()
