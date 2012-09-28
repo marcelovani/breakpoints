@@ -223,7 +223,16 @@ class BreakpointSetFormController extends EntityFormController {
    */
   public function save(array $form, array &$form_state) {
     $breakpointset = $this->getEntity($form_state);
-    dpm($breakpointset);
+    $breakpoints = $form_state['values']['breakpoints'];
+    $this->_sort_breakpoints($breakpointset, $breakpoints);
+    foreach ($breakpointset->breakpoints as $breakpoint_id => $breakpoint) {
+      // Config will recognize this is an existing breakpoint by its id.
+      $breakpointobject = breakpoints_breakpoint_load($breakpoint_id);
+      foreach ($breakpoint as $property => $value) {
+        $breakpointobject->{$property} = $value;
+      }
+      $breakpointobject->save();
+    }
     $breakpointset->save();
 
     watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpointset->label()), WATCHDOG_NOTICE);
@@ -240,6 +249,8 @@ class BreakpointSetFormController extends EntityFormController {
     // @todo: mark breakpoints as dirty, user still needs to save the form.
     $entity = $this->getEntity($form_state);
     $breakpoint = $form_state['values']['breakpoint'];
+    $breakpoints = $form_state['values']['breakpoints'];
+    $this->_sort_breakpoints($entity, $breakpoints);
     $entity->breakpoints += array($breakpoint => breakpoints_breakpoint_load($breakpoint));
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
@@ -251,10 +262,25 @@ class BreakpointSetFormController extends EntityFormController {
    */
   public function removeBreakpointSubmit(array $form, array $form_state) {
     $entity = $this->getEntity($form_state);
-    $diff = array($form_state['triggering_element']['#breakpoint']);
-    $entity->breakpoints = array_diff($entity->breakpoints, $diff);
+    $breakpoints = $form_state['values']['breakpoints'];
+    $this->_sort_breakpoints($entity, $breakpoints);
+    $diff = drupal_map_assoc(array($form_state['triggering_element']['#breakpoint']));
+    $entity->breakpoints = array_diff_key($entity->breakpoints, $diff);
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
+  }
+  
+  private function _sort_breakpoints(&$entity, $breakpoints) {
+    // Sort the breakpoints in the right order.
+    uasort($breakpoints, 'drupal_sort_weight');
+    $breakpoints_order = array_keys($breakpoints);
+    $entity_breakpoints = $entity->breakpoints;
+    $entity->breakpoints = array();
+    foreach ($breakpoints_order as $breakpoint_id) {
+      $entity->breakpoints[$breakpoint_id] = $entity_breakpoints[$breakpoint_id];
+    }
+    // make sure we don't lose any data
+    $entity->breakpoints += $entity_breakpoints;
   }
 
 }
