@@ -25,7 +25,6 @@ class BreakpointSetFormController extends EntityFormController {
       $breakpointset = $breakpointset->createDuplicate();
       $this->setEntity($breakpointset, $form_state);
     }
-
     $form['label'] = array(
       '#type' => 'textfield',
       '#title' => t('Label'),
