@@ -61,7 +61,7 @@ class BreakpointSetFormController extends EntityFormController {
           ),
         );
         $form['breakpoints_ajax']['table'] = array(
-          '#type' => 'tableselect',
+          '#theme' => 'table',
           '#attributes' => array(
             'id' => 'breakpointset-add-breakpoint-table',
           ),
@@ -70,43 +70,38 @@ class BreakpointSetFormController extends EntityFormController {
           '#default_value' => $breakpointset->breakpoints,
         );
         foreach ($added_breakpoints as $key => $breakpoint) {
-          $form['breakpoints_ajax']['table']['#options'][$key] = array(
-            'breakpoint' => $breakpoint,
-            'weight' => array(
-              'data' => array(
-                '#type' => 'select',
-                '#title' => t('Weight'),
-                '#description' => t('Select the weight of this breakpoint in this set.'),
-                '#options' => range(0, count($added_breakpoints)),
-                '#attributes' => array('class' => array('weight')),
+          $form['breakpoints_ajax']['table']['#rows'][$key] = array(
+            'class' => array('draggable'),
+            'data' => array(
+              'breakpoint' => $breakpoint,
+              'weight' => array(
+                'data' => array(
+                  '#type' => 'select',
+                  '#title' => t('Weight'),
+                  '#description' => t('Select the weight of this breakpoint in this set.'),
+                  '#options' => range(0, count($added_breakpoints)),
+                  '#attributes' => array('class' => array('weight')),
+                ),
               ),
-            ),
-            '#attributes' => array(
-              'class' => array('draggable'),
+              'remove_' . drupal_clean_css_identifier($key) => array(
+                'data' => array(
+                  '#type' => 'submit',
+                  '#value' => t('Remove'),
+                  '#submit' => array(
+                    array($this, 'removeBreakpointSubmit'),
+                  ),
+                ),
+              ),
             ),
           );
         }
         $form['breakpoints_ajax']['table']['#header'] = array(
           'breakpoint' => t('Breakpoint'),
           'weight' => t('Weight'),
+          'remove' => t('Remove'),
         );
         drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
-        /*$form['breakpoints_ajax']['table']['breakpoints'] = array(
-          '#type' => 'checkboxes',
-          '#title' => t('Breakpoints'),
-          '#description' => t('Select the breakpoints that are part of this set.'),
-          '#tree' => TRUE,
-          '#options' => $options,
-          '#default_value' => $breakpointset->breakpoints,
-        );
-
-        // Ajax form to add new breakpoints to this set.
-        $form['breakpoints_ajax']['table']['weight'] = array(
-          '#type' => 'select',
-          '#title' => t('Weight'),
-          '#description' => t('Select the weight of this breakpoint in this set.'),
-          '#options' => range(0, count($options)),
-        );*/
+        
         $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
         if (!empty($options)) {
           $form['breakpoints_ajax']['add_breakpoint_action'] = array(
@@ -204,6 +199,14 @@ class BreakpointSetFormController extends EntityFormController {
     $entity->breakpoints[$form_state['values']['breakpoint']] = $form_state['values']['breakpoint'];
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
+  }
+  
+  /**
+   * Submit callback to add a new breakpoint to a breakpoint set.
+   * @see BreakpointSetFormController::form()
+   */
+  public function removeBreakpointSubmit(array $form, array $form_state) {
+    dpm('remove!');
   }
 
 }
