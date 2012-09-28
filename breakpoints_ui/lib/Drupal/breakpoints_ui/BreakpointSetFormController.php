@@ -67,7 +67,7 @@ class BreakpointSetFormController extends EntityFormController {
     foreach (array_keys($breakpointset->breakpoints) as $key) {
       $breakpoint = isset($added_breakpoints[$key]) ? $added_breakpoints[$key] : FALSE;
       if ($breakpoint) {
-        $form['breakpoints_ajax']['#rows'][$key] = array(
+        $form['breakpoints']['#rows'][$key] = array(
           'class' => array('draggable'),
           'data' => array(
             'label' => '',
