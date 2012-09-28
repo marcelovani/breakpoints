@@ -44,150 +44,122 @@ class BreakpointSetFormController extends EntityFormController {
     );
 
     $form['#tree'] = TRUE;
-    switch($breakpointset->source_type) {
-      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_MODULE:
-      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM:
-        // Show all breakpoints part of this set.
-
-        $added_breakpoints = $breakpointset->breakpoints;
-        // @todo allow people to change the order
-        $form['breakpoints_ajax'] = array(
-          '#type' => 'container',
-          '#attributes' => array(
-            'id' => "breakpoints-checkboxes-ajax-wrapper",
+    $added_breakpoints = $breakpointset->breakpoints;
+    $form['breakpoints'] = array(
+      '#theme' => 'table',
+      '#attributes' => array(
+        'id' => 'breakpointset-add-breakpoint-table',
+      ),
+      '#empty' => t('No breakpoints added.'),
+      '#pre_render' => array(
+        'breakpoints_ui_add_breakpoints_table_prerender'
+      ),
+    );
+    $i = 0;
+    $settings = breakpoints_settings();
+    $multipliers = array();
+    if (isset($settings->multipliers) && !empty($settings->multipliers)) {
+      $multipliers = drupal_map_assoc(array_values($settings->multipliers));
+      if (array_key_exists('1x', $multipliers)) {
+        unset($multipliers['1x']);
+      }
+    }
+    foreach (array_keys($breakpointset->breakpoints) as $key) {
+      $breakpoint = isset($added_breakpoints[$key]) ? $added_breakpoints[$key] : FALSE;
+      if ($breakpoint) {
+        $form['breakpoints_ajax']['#rows'][$key] = array(
+          'class' => array('draggable'),
+          'data' => array(
+            'label' => '',
+            'media_query' => '',
+            'multipliers' => '',
+            'weight' => '',
+            'remove' => '',
           ),
         );
-        $form['breakpoints_ajax']['table'] = array(
-          '#theme' => 'table',
-          '#attributes' => array(
-            'id' => 'breakpointset-add-breakpoint-table',
-          ),
-          '#empty' => t('No breakpoints added.'),
-          '#pre_render' => array(
-            'breakpoints_ui_add_breakpoints_table_prerender'
-          ),
+        $form['breakpoints'][$key]['label'] = array(
+          '#type' => 'textfield',
+          '#default_value' => $breakpoint->label(),
+          '#parents' => array('breakpoints', $key, 'label'),
+          '#maxlength' => 255,
+          '#size' => 20,
+          '#required' => TRUE,
         );
-        $i = 0;
-        $settings = breakpoints_settings();
-        $multipliers = array();
-        if (isset($settings->multipliers) && !empty($settings->multipliers)) {
-          $multipliers = drupal_map_assoc(array_values($settings->multipliers));
-          if (array_key_exists('1x', $multipliers)) {
-            unset($multipliers['1x']);
-          }
-        }
-        foreach (array_keys($breakpointset->breakpoints) as $key) {
-          $breakpoint = isset($added_breakpoints[$key]) ? $added_breakpoints[$key] : FALSE;
-          if ($breakpoint) {
-            $form['breakpoints_ajax']['table']['#rows'][$key] = array(
-              'class' => array('draggable'),
-              'data' => array(
-                'label' => '',
-                'media_query' => '',
-                'multipliers' => '',
-                'weight' => '',
-                'remove' => '',
-              ),
-            );
-            $form['breakpoints_ajax']['table'][$key]['label'] = array(
-              '#type' => 'textfield',
-              '#default_value' => $breakpoint->label(),
-              '#parents' => array('breakpoints', $key, 'label'),
-              '#maxlength' => 255,
-              '#required' => TRUE,
-            );
-            $form['breakpoints_ajax']['table'][$key]['media_query'] = array(
-              '#type' => 'textfield',
-              '#default_value' => $breakpoint->media_query,
-              '#maxlength' => 255,
-              '#parents' => array('breakpoints', $key, 'media_query'),
-              '#required' => TRUE,
-              '#disabled' => $breakpoint->source_type === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME,
-            );
-            $form['breakpoints_ajax']['table'][$key]['multipliers'] = array(
-              '#type' => 'checkboxes',
-              '#default_value' => (isset($breakpoint->multipliers) && is_array($breakpoint->multipliers)) ? $breakpoint->multipliers : array(),
-              '#options' => $multipliers,
-              '#parents' => array('breakpoints', $key, 'multipliers'),
-            );
-            $form['breakpoints_ajax']['table'][$key]['remove'] = array(
-              '#type' => 'submit',
-              '#value' => t('Remove'),
-              '#name' => 'breakpoints_ajax[' . implode('][', array('table', $key, 'remove')) . ']',
-              '#submit' => array(
-                array($this, 'removeBreakpointSubmit'),
-              ),
-              '#breakpoint' => $key,
-              '#ajax' => array(
-                'callback' => 'ajax_add_breakpoint_submit',
-                'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
-              ),
-            );
-            $form['breakpoints_ajax']['table'][$key]['weight'] = array(
-              '#type' => 'select',
-              '#title' => t('Weight'),
-              '#description' => t('Select the weight of this breakpoint in this set.'),
-              '#options' => range(0, count($added_breakpoints)),
-              '#attributes' => array('class' => array('weight')),
-              '#parents' => array('breakpoints', $key, 'weight'),
-              '#default_value' => $i++,
-            );
-          }
-        }
-        $form['breakpoints_ajax']['table']['#header'] = array(
-          'label' => t('Label'),
-          'media_query' => t('Media query'),
-          'multipliers' => t('Multipliers'),
-          'weight' => t('Weight'),
-          'remove' => t('Remove'),
+        $form['breakpoints'][$key]['media_query'] = array(
+          '#type' => 'textfield',
+          '#default_value' => $breakpoint->media_query,
+          '#maxlength' => 255,
+          '#parents' => array('breakpoints', $key, 'media_query'),
+          '#required' => TRUE,
+          '#size' => 60,
+          '#disabled' => $breakpoint->source_type === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME,
         );
-        drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
-        $options = array_diff_key(breakpoints_ui_breakpoints_options(), $breakpointset->breakpoints);
-        
-        if (!empty($options)) {
-          $form['breakpoints_ajax']['add_breakpoint_action'] = array(
-            '#type' => 'actions',
-          );
-          $form['breakpoints_ajax']['add_breakpoint_action']['breakpoint'] = array(
-            '#type' => 'select',
-            '#title' => t('Add breakpoint'),
-            '#description' => t('Add a breakpoint to this set'),
-            '#options' => $options,
-            '#parents' => array('breakpoint'),
-          );
-          $form['breakpoints_ajax']['add_breakpoint_action']['add_breakpoint'] = array(
-            '#type' => 'submit',
-            '#value' => t('Add breakpoint'),
-            '#submit' => array(
-              array($this, 'addBreakpointSubmit'),
-            ),
-            '#ajax' => array(
-              'callback' => 'ajax_add_breakpoint_submit',
-              'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
-            ),
-          );
-          $form['add_breakpoint_action']['#attached']['css'][] = drupal_get_path('module', 'breakpoints_ui') . '/css/breakpoints_ui.breakpointset.admin.css';
-        }
-        break;
-      case Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME:
-        // Show all breakpoints part of this set.
-        // @todo allow people to change the order
-        $breakpoints = array();
-        foreach($breakpointset->breakpoints as $breakpoint_id) {
-          $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
-          $breakpoints[$breakpoint->id] = $breakpoint->label . ' [' . $breakpoint->media_query . ']';
-        }
-
-        $form['breakpoints'] = array(
+        $form['breakpoints'][$key]['multipliers'] = array(
           '#type' => 'checkboxes',
-          '#title' => t('Breakpoints'),
-          '#description' => t('The following breakpoints are part of this set.'),
-          '#tree' => TRUE,
-          '#options' => $breakpoints,
-          '#default_value' => $breakpointset->breakpoints,
-          '#disabled' => TRUE,
+          '#default_value' => (isset($breakpoint->multipliers) && is_array($breakpoint->multipliers)) ? $breakpoint->multipliers : array(),
+          '#options' => $multipliers,
+          '#parents' => array('breakpoints', $key, 'multipliers'),
         );
-        break;
+        $form['breakpoints'][$key]['remove'] = array(
+          '#type' => 'submit',
+          '#value' => t('Remove'),
+          '#name' => 'breakpoints[' . implode('][', array('table', $key, 'remove')) . ']',
+          '#submit' => array(
+            array($this, 'removeBreakpointSubmit'),
+          ),
+          '#breakpoint' => $key,
+          '#ajax' => array(
+            'callback' => 'ajax_add_breakpoint_submit',
+            'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
+          ),
+        );
+        $form['breakpoints'][$key]['weight'] = array(
+          '#type' => 'select',
+          '#title' => t('Weight'),
+          '#description' => t('Select the weight of this breakpoint in this set.'),
+          '#options' => range(0, count($added_breakpoints)),
+          '#attributes' => array('class' => array('weight')),
+          '#parents' => array('breakpoints', $key, 'weight'),
+          '#default_value' => $i++,
+        );
+      }
+    }
+    $form['breakpoints']['#header'] = array(
+      'label' => t('Label'),
+      'media_query' => t('Media query'),
+      'multipliers' => t('Multipliers'),
+      'weight' => t('Weight'),
+      'remove' => t('Remove'),
+    );
+    drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
+
+    if ($breakpointset->source_type != Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
+      $options = array_diff_key(breakpoints_ui_breakpoints_options(), $breakpointset->breakpoints);
+
+      if (!empty($options)) {
+        $form['add_breakpoint_action'] = array(
+          '#type' => 'actions',
+        );
+        $form['add_breakpoint_action']['breakpoint'] = array(
+          '#type' => 'select',
+          '#title' => t('Add existing breakpoint'),
+          '#description' => t('Add an existing breakpoint to this set'),
+          '#options' => $options,
+          '#parents' => array('breakpoint'),
+        );
+        $form['add_breakpoint_action']['add_breakpoint'] = array(
+          '#type' => 'submit',
+          '#value' => t('Add breakpoint'),
+          '#submit' => array(
+            array($this, 'addBreakpointSubmit'),
+          ),
+          '#ajax' => array(
+            'callback' => 'ajax_add_breakpoint_submit',
+            'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
+          ),
+        );
+        $form['add_breakpoint_action']['#attached']['css'][] = drupal_get_path('module', 'breakpoints_ui') . '/css/breakpoints_ui.breakpointset.admin.css';
+      }
     }
 
     return parent::form($form, $form_state, $breakpointset);
@@ -269,7 +241,7 @@ class BreakpointSetFormController extends EntityFormController {
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
   }
-  
+
   private function _sort_breakpoints(&$entity, $breakpoints) {
     // Sort the breakpoints in the right order.
     uasort($breakpoints, 'drupal_sort_weight');
