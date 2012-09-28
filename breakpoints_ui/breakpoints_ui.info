@@ -4,3 +4,4 @@ package = Other
 core = 8.x
 
 dependencies[] = breakpoints
+configure = admin/config/media/breakpoints
