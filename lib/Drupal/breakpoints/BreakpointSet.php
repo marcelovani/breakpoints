@@ -61,6 +61,7 @@ class BreakpointSet extends ConfigEntityBase {
    */
   public function __construct(array $values = array(), $entity_type = 'breakpoints_breakpointset') {
     parent::__construct($values, $entity_type);
+    $this->_load_all_breakpoints();
   }
 
   /**
@@ -69,7 +70,10 @@ class BreakpointSet extends ConfigEntityBase {
   public function save() {
     // Remove unset breakpoints.
     $this->breakpoints = array_filter($this->breakpoints);
+    // Only save the keys, but return the full objects.
+    $this->breakpoints = array_keys($this->breakpoints);
     parent::save();
+    $this->_load_all_breakpoints();
   }
 
   /**
@@ -95,5 +99,20 @@ class BreakpointSet extends ConfigEntityBase {
     $duplicate->label = t('Clone of') . ' ' . $this->label();
     $duplicate->breakpoints = $this->breakpoints;
     return $duplicate;
+  }
+
+  /**
+   * Load all breakpoints, remove non-existing ones.
+   */
+  private function _load_all_breakpoints() {
+    foreach(array_keys($this->breakpoints) as $breakpoint_id) {
+      $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
+      if ($breakpoint) {
+        $this->breakpoints[$breakpoint_id] = $breakpoint;
+      }
+      else {
+        unset($this->breakpoints[$breakpoint_id]);
+      }
+    }
   }
 }
