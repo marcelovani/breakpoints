@@ -50,7 +50,7 @@ class BreakpointSetFormController extends EntityFormController {
       case Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM:
         // Show all breakpoints part of this set.
 
-        $added_breakpoints = entity_load_multiple('breakpoints_breakpoint', array_keys($breakpointset->breakpoints));
+        $added_breakpoints = $breakpointset->breakpoints;
         // @todo allow people to change the order
         $form['breakpoints_ajax'] = array(
           '#type' => 'container',
@@ -143,15 +143,8 @@ class BreakpointSetFormController extends EntityFormController {
           'remove' => t('Remove'),
         );
         drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
-<<<<<<< HEAD
-
-=======
-        $breakpoints = array();
-        foreach(breakpoints_breakpoint_load_all() as $breakpoint) {
-          $breakpoints[$breakpoint->id] = $breakpoint->label . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
-        }
->>>>>>> UI Improvements
-        $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
+        $options = array_diff_key(breakpoints_ui_breakpoints_options(), $breakpointset->breakpoints);
+        
         if (!empty($options)) {
           $form['breakpoints_ajax']['add_breakpoint_action'] = array(
             '#type' => 'actions',
@@ -231,6 +224,7 @@ class BreakpointSetFormController extends EntityFormController {
    */
   public function save(array $form, array &$form_state) {
     $breakpointset = $this->getEntity($form_state);
+    dpm($breakpointset);
     $breakpointset->save();
 
     watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpointset->label()), WATCHDOG_NOTICE);
@@ -246,15 +240,8 @@ class BreakpointSetFormController extends EntityFormController {
   public function addBreakpointSubmit(array $form, array $form_state) {
     // @todo: mark breakpoints as dirty, user still needs to save the form.
     $entity = $this->getEntity($form_state);
-<<<<<<< HEAD
-    $breakpoint = $form_state['values']['breakpoints_ajax']['add_breakpoint_action']['breakpoint'];
+    $breakpoint = $form_state['values']['breakpoint'];
     $entity->breakpoints += array($breakpoint => breakpoints_breakpoint_load($breakpoint));
-=======
-    $breakpoints = $form_state['values']['breakpoints'];
-    uasort($breakpoints, 'drupal_sort_weight');
-    $entity->breakpoints = drupal_map_assoc(array_keys($breakpoints));
-    $entity->breakpoints[$form_state['values']['breakpoint']] = $form_state['values']['breakpoint'];
->>>>>>> UI Improvements
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
   }

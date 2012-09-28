@@ -197,3 +197,13 @@ function breakpoints_ui_entity_info_alter(&$entity_info) {
   $entity_info['breakpoints_breakpointset']['list path'] = 'admin/config/media/breakpoints/breakpointset';
   $entity_info['breakpoints_breakpointset']['uri callback'] = 'breakpoints_breakpoint_set_uri';
 }
+
+function breakpoints_ui_breakpoints_options() {
+  $options = array();
+  $breakpoints = breakpoints_breakpoint_load_all();
+  foreach ($breakpoints as $breakpoint) {
+    $options[$breakpoint->id()] = $breakpoint->label() . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
+  }
+  
+  return $options;
+}
