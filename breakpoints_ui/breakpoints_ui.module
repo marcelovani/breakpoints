@@ -115,7 +115,6 @@ function breakpoints_ui_menu() {
     'page arguments' => array('breakpoints_ui_multipliers_form'),
     'access arguments' => array('administer breakpoints'),
     'file' => 'breakpoints_ui.multiplier.admin.inc',
-    'type' => MENU_LOCAL_TASK,
     'weight' => 20,
   );
 
