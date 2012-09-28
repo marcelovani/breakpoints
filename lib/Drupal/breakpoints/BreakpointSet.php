@@ -103,7 +103,7 @@ class BreakpointSet extends ConfigEntityBase {
    * Load all breakpoints, remove non-existing ones.
    */
   private function _load_all_breakpoints() {
-    foreach(array_keys($this->breakpoints) as $breakpoint_id) {
+    foreach(array_values($this->breakpoints) as $breakpoint_id) {
       $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
       if ($breakpoint) {
         $this->breakpoints[$breakpoint_id] = $breakpoint;
