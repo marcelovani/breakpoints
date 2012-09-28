@@ -38,7 +38,7 @@ class BreakpointSetFormController extends EntityFormController {
       '#type' => 'machine_name',
       '#default_value' => $breakpointset->id(),
       '#machine_name' => array(
-        'exists' => 'breakpoints_breakpoint_load',
+        'exists' => 'breakpoints_breakpointset_load',
         'source' => array('label'),
       ),
       '#disabled' => (bool)$breakpointset->id() && $this->operation != 'duplicate',
@@ -49,11 +49,8 @@ class BreakpointSetFormController extends EntityFormController {
       case Breakpoint::BREAKPOINTS_SOURCE_TYPE_MODULE:
       case Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM:
         // Show all breakpoints part of this set.
-        $breakpoints = array();
-        foreach(breakpoints_breakpoint_load_all() as $breakpoint) {
-          $breakpoints[$breakpoint->id] = $breakpoint->label . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
-        }
-        $added_breakpoints = array_intersect_key($breakpoints, $breakpointset->breakpoints);
+
+        $added_breakpoints = entity_load_multiple('breakpoints_breakpoint', array_keys($breakpointset->breakpoints));
         // @todo allow people to change the order
         $form['breakpoints_ajax'] = array(
           '#type' => 'container',
@@ -72,45 +69,88 @@ class BreakpointSetFormController extends EntityFormController {
           ),
         );
         $i = 0;
-        foreach ($added_breakpoints as $key => $breakpoint) {
-          $form['breakpoints_ajax']['table']['#rows'][$key] = array(
-            'class' => array('draggable'),
-            'data' => array(
-              'breakpoint' => $breakpoint,
-              'weight' => '',
-              'remove' => '',
-            ),
-          );
-          $form['breakpoints_ajax']['table']['remove'][$key] = array(
-            '#type' => 'submit',
-            '#value' => t('Remove'),
-            '#name' => 'breakpoints_ajax[' . implode('][', array('table', $key, 'remove')) . ']',
-            '#submit' => array(
-              array($this, 'removeBreakpointSubmit'),
-            ),
-            '#breakpoint' => $key,
-            '#ajax' => array(
-              'callback' => 'ajax_add_breakpoint_submit',
-              'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
-            ),
-          );
-          $form['breakpoints_ajax']['table']['weight'][$key] = array(
-            '#type' => 'select',
-            '#title' => t('Weight'),
-            '#description' => t('Select the weight of this breakpoint in this set.'),
-            '#options' => range(0, count($added_breakpoints)),
-            '#attributes' => array('class' => array('weight')),
-            '#parents' => array('breakpoints', $key),
-            '#default_value' => $i++,
-          );
+        $settings = breakpoints_settings();
+        $multipliers = array();
+        if (isset($settings->multipliers) && !empty($settings->multipliers)) {
+          $multipliers = drupal_map_assoc(array_values($settings->multipliers));
+          if (array_key_exists('1x', $multipliers)) {
+            unset($multipliers['1x']);
+          }
+        }
+        foreach (array_keys($breakpointset->breakpoints) as $key) {
+          $breakpoint = isset($added_breakpoints[$key]) ? $added_breakpoints[$key] : FALSE;
+          if ($breakpoint) {
+            $form['breakpoints_ajax']['table']['#rows'][$key] = array(
+              'class' => array('draggable'),
+              'data' => array(
+                'label' => '',
+                'media_query' => '',
+                'multipliers' => '',
+                'weight' => '',
+                'remove' => '',
+              ),
+            );
+            $form['breakpoints_ajax']['table'][$key]['label'] = array(
+              '#type' => 'textfield',
+              '#default_value' => $breakpoint->label(),
+              '#parents' => array('breakpoints', $key, 'label'),
+              '#maxlength' => 255,
+              '#required' => TRUE,
+            );
+            $form['breakpoints_ajax']['table'][$key]['media_query'] = array(
+              '#type' => 'textfield',
+              '#default_value' => $breakpoint->media_query,
+              '#maxlength' => 255,
+              '#parents' => array('breakpoints', $key, 'media_query'),
+              '#required' => TRUE,
+              '#disabled' => $breakpoint->source_type === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME,
+            );
+            $form['breakpoints_ajax']['table'][$key]['multipliers'] = array(
+              '#type' => 'checkboxes',
+              '#default_value' => (isset($breakpoint->multipliers) && is_array($breakpoint->multipliers)) ? $breakpoint->multipliers : array(),
+              '#options' => $multipliers,
+              '#parents' => array('breakpoints', $key, 'multipliers'),
+            );
+            $form['breakpoints_ajax']['table'][$key]['remove'] = array(
+              '#type' => 'submit',
+              '#value' => t('Remove'),
+              '#name' => 'breakpoints_ajax[' . implode('][', array('table', $key, 'remove')) . ']',
+              '#submit' => array(
+                array($this, 'removeBreakpointSubmit'),
+              ),
+              '#breakpoint' => $key,
+              '#ajax' => array(
+                'callback' => 'ajax_add_breakpoint_submit',
+                'wrapper' => 'breakpoints-checkboxes-ajax-wrapper',
+              ),
+            );
+            $form['breakpoints_ajax']['table'][$key]['weight'] = array(
+              '#type' => 'select',
+              '#title' => t('Weight'),
+              '#description' => t('Select the weight of this breakpoint in this set.'),
+              '#options' => range(0, count($added_breakpoints)),
+              '#attributes' => array('class' => array('weight')),
+              '#parents' => array('breakpoints', $key, 'weight'),
+              '#default_value' => $i++,
+            );
+          }
         }
         $form['breakpoints_ajax']['table']['#header'] = array(
-          'breakpoint' => t('Breakpoint'),
+          'label' => t('Label'),
+          'media_query' => t('Media query'),
+          'multipliers' => t('Multipliers'),
           'weight' => t('Weight'),
           'remove' => t('Remove'),
         );
         drupal_add_tabledrag('breakpointset-add-breakpoint-table', 'order', 'siblig', 'weight');
+<<<<<<< HEAD
 
+=======
+        $breakpoints = array();
+        foreach(breakpoints_breakpoint_load_all() as $breakpoint) {
+          $breakpoints[$breakpoint->id] = $breakpoint->label . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
+        }
+>>>>>>> UI Improvements
         $options = array_diff_key($breakpoints, $breakpointset->breakpoints);
         if (!empty($options)) {
           $form['breakpoints_ajax']['add_breakpoint_action'] = array(
@@ -121,6 +161,7 @@ class BreakpointSetFormController extends EntityFormController {
             '#title' => t('Add breakpoint'),
             '#description' => t('Add a breakpoint to this set'),
             '#options' => $options,
+            '#parents' => array('breakpoint'),
           );
           $form['breakpoints_ajax']['add_breakpoint_action']['add_breakpoint'] = array(
             '#type' => 'submit',
@@ -205,8 +246,15 @@ class BreakpointSetFormController extends EntityFormController {
   public function addBreakpointSubmit(array $form, array $form_state) {
     // @todo: mark breakpoints as dirty, user still needs to save the form.
     $entity = $this->getEntity($form_state);
+<<<<<<< HEAD
     $breakpoint = $form_state['values']['breakpoints_ajax']['add_breakpoint_action']['breakpoint'];
     $entity->breakpoints += array($breakpoint => breakpoints_breakpoint_load($breakpoint));
+=======
+    $breakpoints = $form_state['values']['breakpoints'];
+    uasort($breakpoints, 'drupal_sort_weight');
+    $entity->breakpoints = drupal_map_assoc(array_keys($breakpoints));
+    $entity->breakpoints[$form_state['values']['breakpoint']] = $form_state['values']['breakpoint'];
+>>>>>>> UI Improvements
     $this->setEntity($entity, $form_state);
     $form_state['rebuild'] = TRUE;
   }

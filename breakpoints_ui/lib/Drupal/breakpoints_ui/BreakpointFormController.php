@@ -25,10 +25,18 @@ class BreakpointFormController extends EntityFormController {
       '#title' => t('Label'),
       '#maxlength' => 255,
       '#default_value' => $breakpoint->label(),
-      '#description' => t("Example: 'banner' or 'highlight'."),
+      '#description' => t("Example: 'Banner' or 'Highlight'."),
+      '#required' => TRUE,
+    );
+    $form['name'] = array(
+      '#type' => 'machine_name',
+      '#default_value' => $breakpoint->name,
+      '#machine_name' => array(
+        'exists' => 'breakpoints_breakpoint_load',
+        'source' => array('label'),
+      ),
       '#required' => TRUE,
       '#disabled' => !empty($breakpoint->id),
-      '#element_validate' => array('breakpoint_name_validate'),
     );
     $form['media_query'] = array(
       '#type' => 'textfield',

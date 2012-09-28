@@ -31,7 +31,7 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
     for ($i = 0; $i <= 3; $i++) {
       $width = ($i + 1) * 200;
       $values = array(
-        'label' => drupal_strtolower($this->randomName()),
+        'name' => drupal_strtolower($this->randomName()),
         'weight' => $i,
         'media_query' => "(min-width: {$width}px)",
       );

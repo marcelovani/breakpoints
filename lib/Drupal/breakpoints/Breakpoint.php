@@ -16,7 +16,7 @@ use Exception;
 class Breakpoint extends ConfigEntityBase {
 
   /**
-   * The breakpoint ID (machine name).
+   * The breakpoint ID (config name).
    *
    * @var string
    */
@@ -30,6 +30,13 @@ class Breakpoint extends ConfigEntityBase {
   public $uuid;
 
   /**
+   * The breakpoint name (machine name).
+   *
+   * @var string
+   */
+  public $name;
+  
+ /**
    * The breakpoint label.
    *
    * @var string
@@ -95,6 +102,9 @@ class Breakpoint extends ConfigEntityBase {
     if (empty($this->id)) {
       $this->id = $this->build_config_name();
     }
+    if (empty($this->label)) {
+      $this->label = ucfirst($this->name);
+    }
     return parent::save();
   }
 
@@ -104,7 +114,7 @@ class Breakpoint extends ConfigEntityBase {
   public function get_config_name() {
     return $this->source_type
       . '.' . $this->source
-      . '.' . $this->label;
+      . '.' . $this->name;
   }
 
   /**
@@ -130,12 +140,12 @@ class Breakpoint extends ConfigEntityBase {
       throw new Exception(t('Invalid value \'@source\' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.', array('@source' => $this->source)));
     }
     // Check for illegal characters in breakpoint names.
-    if (preg_match('/[^0-9a-z_\-]/', $this->label)) {
-      throw new Exception(t('Invalid value \'@label\' for breakpoint label property. Breakpoint label property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).', array('@label' => $this->label)));
+    if (preg_match('/[^0-9a-z_\-]/', $this->name)) {
+      throw new Exception(t('Invalid value \'@name\' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).', array('@name' => $this->name)));
     }
     return $this->source_type
       . '.' . $this->source
-      . '.' . $this->label;
+      . '.' . $this->name;
   }
 
   /**

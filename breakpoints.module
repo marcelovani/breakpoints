@@ -45,7 +45,8 @@ function breakpoints_themes_enabled($theme_list) {
         $breakpointset->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
         foreach ($theme_breakpoints as $name => $media_query) {
           $breakpoint = new Breakpoint;
-          $breakpoint->label = $name;
+          $breakpoint->name = $name;
+          $breakpoint->label = ucfirst($name);
           $breakpoint->media_query = $media_query;
           $breakpoint->source = $theme_key;
           $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
@@ -118,16 +119,6 @@ function breakpoints_settings_save($multipliers) {
 }
 
 /**
- * Element validate callback for breakpoint names.
- */
-function breakpoint_name_validate($element, $form_state) {
-  // Check for illegal characters in breakpoint names.
-  if (preg_match('/[^0-9a-z_\-]/', $element['#value'])) {
-    form_set_error(implode('][', $element['#parents']), t('Please only use lowercase alphanumeric characters, underscores (_), and hyphens (-) for breakpoint names.'));
-  }
-}
-
-/**
  * Reload breakpoint sets as they were defined in the theme.
  * @param string $theme_key
  * @return BreakpointSet
@@ -154,7 +145,8 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
       $breakpointset->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
       foreach ($theme_breakpoints as $name => $media_query) {
         $breakpoint = new Breakpoint;
-        $breakpoint->label = $name;
+        $breakpoint->name = $name;
+        $breakpoint->label = ucfirst($name);
         $breakpoint->media_query = $media_query;
         $breakpoint->source = $theme_key;
         $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;

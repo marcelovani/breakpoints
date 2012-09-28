@@ -108,9 +108,10 @@ function ajax_add_breakpoint_submit($form, $form_state) {
  * @see BreakpointSetFormController::form()
  */
 function breakpoints_ui_add_breakpoints_table_prerender($form) {
-  foreach(element_children($form['remove']) as $child) {
-    $form['#rows'][$child]['data']['remove'] = drupal_render($form['remove'][$child]);
-    $form['#rows'][$child]['data']['weight'] = drupal_render($form['weight'][$child]);
+  foreach(element_children($form) as $breakpoint_id) {
+    foreach (element_children($form[$breakpoint_id]) as $breakpoint_field) {
+      $form['#rows'][$breakpoint_id]['data'][$breakpoint_field] = drupal_render($form[$breakpoint_id][$breakpoint_field]);
+    }
   }
   return $form;
 }
