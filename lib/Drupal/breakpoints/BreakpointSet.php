@@ -68,10 +68,8 @@ class BreakpointSet extends ConfigEntityBase {
    * Overrides Drupal\Core\Entity::save().
    */
   public function save() {
-    // Remove unset breakpoints.
-    $this->breakpoints = array_filter($this->breakpoints);
     // Only save the keys, but return the full objects.
-    $this->breakpoints = array_keys($this->breakpoints);
+    $this->breakpoints = drupal_map_assoc(array_keys($this->breakpoints));
     parent::save();
     $this->_load_all_breakpoints();
   }
