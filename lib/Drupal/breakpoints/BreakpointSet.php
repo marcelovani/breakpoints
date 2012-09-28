@@ -69,7 +69,7 @@ class BreakpointSet extends ConfigEntityBase {
    */
   public function save() {
     // Only save the keys, but return the full objects.
-    $this->breakpoints = drupal_map_assoc(array_keys($this->breakpoints));
+    $this->breakpoints = array_keys($this->breakpoints);
     parent::save();
     $this->_load_all_breakpoints();
   }
@@ -103,13 +103,12 @@ class BreakpointSet extends ConfigEntityBase {
    * Load all breakpoints, remove non-existing ones.
    */
   private function _load_all_breakpoints() {
-    foreach(array_values($this->breakpoints) as $breakpoint_id) {
+    $breakpoints = $this->breakpoints;
+    $this->breakpoints = array();
+    foreach($breakpoints as $breakpoint_id) {
       $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
       if ($breakpoint) {
         $this->breakpoints[$breakpoint_id] = $breakpoint;
-      }
-      else {
-        unset($this->breakpoints[$breakpoint_id]);
       }
     }
   }
