@@ -100,6 +100,9 @@ class BreakpointFormController extends EntityFormController {
         form_set_error('label', t('The breakpoint label %label is already in use.', array('%label' => $form_state['values']['label'])));
       }
     }
+    if (!$breakpoint->isValidMediaQuery($form_state['values']['media_query'])) {
+      form_set_error('media_query', t('Illegal media query'));
+    }
   }
 
   /**

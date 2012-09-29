@@ -35,7 +35,7 @@ class Breakpoint extends ConfigEntityBase {
    * @var string
    */
   public $name;
-  
+
  /**
    * The breakpoint label.
    *
@@ -105,6 +105,9 @@ class Breakpoint extends ConfigEntityBase {
     if (empty($this->label)) {
       $this->label = ucfirst($this->name);
     }
+    if (!$this->isValid()) {
+      throw new Exception(t('Invalid media query detected.', array('@query_part' => $query_part)));
+    }
     return parent::save();
   }
 
@@ -168,5 +171,73 @@ class Breakpoint extends ConfigEntityBase {
       $this->status = 0;
       $this->save();
     }
+  }
+
+  /**
+   * Check if the media__query is valid.
+   * @see isValidMediaQuery().
+   */
+  public function isValid() {
+    return $this::isValidMediaQuery($this->media_query);
+  }
+
+  /**
+   * Check if a media_query is valid.
+   * @see http://www.w3.org/TR/css3-mediaqueries/.
+   * @see http://www.w3.org/Style/CSS/Test/MediaQueries/20120229/reports/implement-report.html.
+   */
+  static function isValidMediaQuery($media_query) {
+    $media_features = array(
+      'width' => 'length', 'min-width' => 'length', 'max-width' => 'length',
+      'height' => 'length', 'min-height' => 'length', 'max-height' => 'length',
+      'device-width' => 'length', 'min-device-width' => 'length', 'max-device-width' => 'length',
+      'device-height' => 'length', 'min-device-height' => 'length', 'max-device-height' => 'length',
+      'orientation' => array('portrait', 'landscape'),
+      'aspect-ratio' => 'ratio', 'min-aspect-ratio' => 'ratio', 'max-aspect-ratio' => 'ratio',
+      'device-aspect-ratio' => 'ratio', 'min-device-aspect-ratio' => 'ratio', 'max-device-aspect-ratio' => 'ratio',
+      'color' => 'integer', 'min-color' => 'integer', 'max-color' => 'integer',
+      'color-index' => 'integer', 'min-color-index' => 'integer', 'max-color-index' => 'integer',
+      'monochrome' => 'integer', 'min-monochrome' => 'integer', 'max-monochrome' => 'integer',
+      'resolution' => 'resolution', 'min-resolution' => 'resolution', 'max-resolution' => 'resolution',
+      'scan' => array('progressive', 'interlace'),
+      'grid' => 'integer',
+    );
+    if ($media_query) {
+      // @todo: strip comments, new lines, ....
+      // Check media_query_list: S* [media_query [ ',' S* media_query ]* ]?
+      $parts = explode(',', trim($media_query));
+      foreach ($parts as $part) {
+        // Split on ' and '
+        $query_parts = explode(' and ', trim($part));
+        $media_type_found = FALSE;
+        foreach ($query_parts as $query_part) {
+          $matches = array();
+          // Check expression: '(' S* media_feature S* [ ':' S* expr ]? ')' S*
+          if (preg_match('/\(([\w\-]+)(: (\w+))?\)/', trim($query_part), $matches)) {
+            // Single expression.
+            if (isset($matches[1]) && !isset($matches[2])) {
+              if (!array_key_exists($matches[1], $media_features)) {
+                return FALSE;
+              }
+            }
+            // Full expression.
+            elseif (isset($matches[3]) && !isset($matches[4])) {
+              if (!array_key_exists($matches[1], $media_features)) {
+                return FALSE;
+              }
+            }
+          }
+          // Check [ONLY | NOT]? S* media_type
+          elseif (preg_match('/((?:only|not))? ([\w\-]+)/i', trim($query_part), $matches)) {
+            $media_type_found = TRUE;
+          }
+          else {
+            throw new Exception(t('Invalid value \'@query_part\' for breakpoint media query property.', array('@query_part' => $query_part)));
+          }
+        }
+      }
+      return TRUE;
+    }
+    return FALSE;
   }
 }
