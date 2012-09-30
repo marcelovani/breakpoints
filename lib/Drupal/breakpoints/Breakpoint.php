@@ -213,7 +213,7 @@ class Breakpoint extends ConfigEntityBase {
         foreach ($query_parts as $query_part) {
           $matches = array();
           // Check expression: '(' S* media_feature S* [ ':' S* expr ]? ')' S*
-          if (preg_match('/^\(([\w\-]+)(: ([\w\-]+))?\)/', trim($query_part), $matches)) {
+          if (preg_match('/^\(([\w\-]+)(:\s?([\w\-]+))?\)/', trim($query_part), $matches)) {
             // Single expression.
             if (isset($matches[1]) && !isset($matches[2])) {
               if (!array_key_exists($matches[1], $media_features)) {
@@ -236,7 +236,7 @@ class Breakpoint extends ConfigEntityBase {
                 switch ($media_features[$matches[1]]) {
                   case 'length':
                     $length_matches = array();
-                    if (preg_match('/^(\-)?(\d+)?((?:|em|ex|px|cm|mm|in|pt|pc|deg|rad|grad|ms|s|hz|khz))$/i', trim($value), $length_matches)) {
+                    if (preg_match('/^(\-)?(\d+)?((?:|em|ex|px|cm|mm|in|pt|pc|deg|rad|grad|ms|s|hz|khz|dpi|dpcm))$/i', trim($value), $length_matches)) {
                       // Only -0 is allowed.
                       if ($length_matches[1] === '-' && $length_matches[2] !== '0') {
                         return FALSE;

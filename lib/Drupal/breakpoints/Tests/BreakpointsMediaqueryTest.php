@@ -27,6 +27,17 @@ class BreakpointsMediaqueryTest extends UnitTestBase {
    */
   function testValidMediaQueries() {
     $media_queries = array(
+      // Bartik
+      '(min-width: 0px)',
+      'all and (min-width: 560px) and (max-width:850px)',
+      'all and (min-width: 851px)',
+      // Seven
+      '(min-width: 0em)',
+      'screen and (min-width: 40em)',
+      // Stark
+      '(min-width: 0px)',
+      'all and (min-width: 480px) and (max-width: 959px)',
+      'all and (min-width: 960px)',
       '(orientation)',
       'all and (orientation)',
       'not all and (orientation)',
