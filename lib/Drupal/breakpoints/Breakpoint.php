@@ -228,7 +228,10 @@ class Breakpoint extends ConfigEntityBase {
             }
           }
           // Check [ONLY | NOT]? S* media_type
-          elseif (preg_match('/((?:only|not))? ([\w\-]+)/i', trim($query_part), $matches)) {
+          elseif (preg_match('/((?:only|not))?([\w\-]+)/i', trim($query_part), $matches)) {
+            if ($media_type_found) {
+              throw new Exception(t('Only when media type allowed.'));
+            }
             $media_type_found = TRUE;
           }
           else {
