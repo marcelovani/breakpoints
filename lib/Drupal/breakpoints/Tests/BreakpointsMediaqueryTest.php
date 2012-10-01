@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointsCrudTest.
+ * Definition of Drupal\breakpoints\Tests\BreakpointsMediaqueryTest.
  */
 namespace Drupal\breakpoints\Tests;
 

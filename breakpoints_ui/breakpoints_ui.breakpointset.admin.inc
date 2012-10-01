@@ -5,11 +5,11 @@ use \Drupal\breakpoints\BreakpointSet;
 
 /**
  * @file
- * Administration functions to maintain a common set of breakpointsets for layouts.
+ * Administration functions to maintain a common set of breakpoint sets.
  */
 
 /**
- * Page callback: Presents the breakpointset list page.
+ * Page callback: Presents the breakpoint set list page.
  *
  * @see breakpoints_ui_menu()
  */
@@ -19,7 +19,7 @@ function breakpoints_ui_breakpointset_page() {
 }
 
 /**
- * Page callback: Presents the breakpointset editing form.
+ * Page callback: Presents the breakpoint set editing form.
  *
  * @see breakpoints_ui_menu()
  */
@@ -29,7 +29,7 @@ function breakpoints_ui_breakpointset_page_edit($breakpointset) {
 }
 
 /**
- * Page callback: Provides the new breakpointset addition form.
+ * Page callback: Provides the new breakpoint set addition form.
  *
  * @see breakpoints_ui_menu()
  */
@@ -40,7 +40,7 @@ function breakpoints_ui_breakpointset_page_add() {
 }
 
 /**
- * Page callback: Provides the duplicate breakpointset form.
+ * Page callback: Provides the duplicate breakpoint set form.
  *
  * @see breakpoints_ui_menu()
  */
@@ -50,7 +50,7 @@ function breakpoints_ui_breakpoint_page_duplicate($breakpointset) {
 }
 
 /**
- * Page callback: Form constructor for breakpointset action confirmation form.
+ * Page callback: Form constructor for breakpoint set action confirmation form.
  *
  * @see breakpoints_ui_menu()
  */
@@ -61,7 +61,7 @@ function breakpoints_ui_breakpointset_action_confirm($form, &$form_state, $break
     $form['action'] = array('#type' => 'value', '#value' => $action);
     $form_state['breakpointset'] = $breakpointset;
     $form = confirm_form($form,
-      t('Are you sure you want to @action the breakpointset %title?', array('@action' => $action, '%title' => $breakpointset->label())),
+      t('Are you sure you want to @action the breakpoint set %title?', array('@action' => $action, '%title' => $breakpointset->label())),
       'admin/config/media/breakpoints/breakpointset',
       $action == 'delete' ? t('This action cannot be undone.') : '',
       t(drupal_ucfirst($action)),
@@ -90,8 +90,8 @@ function breakpoints_ui_breakpointset_action_confirm_submit($form, &$form_state)
       $verb = 'reverted';
       break;
   }
-  drupal_set_message(t('Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb)));
-  watchdog('breakpointset', 'Breakpointset %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb), WATCHDOG_NOTICE);
+  drupal_set_message(t('Breakpoint set %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb)));
+  watchdog('breakpointset', 'Breakpoint set %label has been @action.', array('%label' => $breakpointset->label(), '@action' => $verb), WATCHDOG_NOTICE);
   $form_state['redirect'] = 'admin/config/media/breakpoints/breakpointset';
 }
 

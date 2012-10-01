@@ -21,7 +21,7 @@ abstract class BreakpointsTestBase extends WebTestBase {
    */
   public static $modules = array('breakpoints');
 
-  function  setUp() {
+  function setUp() {
     parent::setUp();
   }
 

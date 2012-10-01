@@ -1,29 +1,24 @@
 <?php
 
-use \Drupal\breakpoints\Breakpoint;
-use \Drupal\breakpoints\BreakpointSet;
-
 /**
  * @file
  * Breakpoints
  */
 
-define('BREAKPOINTS_SOURCE_TYPE_THEME', 'theme');
-define('BREAKPOINTS_SOURCE_TYPE_MODULE', 'module');
-define('BREAKPOINTS_SOURCE_TYPE_CUSTOM', 'custom');
+use \Drupal\breakpoints\Breakpoint;
+use \Drupal\breakpoints\BreakpointSet;
 
 /**
  * Implements hook_enable().
  * Import breakpoints from all enabled themes.
  */
 function breakpoints_enable() {
-  config_install_default_config('module', 'breakpoints');
   $themes = list_themes();
   breakpoints_themes_enabled(array_keys($themes));
 }
 
 /**
- * Implements hook_themes_enabled();
+ * Implements hook_themes_enabled().
  * Import breakpoints from all new enabled themes.
  */
 function breakpoints_themes_enabled($theme_list) {
@@ -32,10 +27,6 @@ function breakpoints_themes_enabled($theme_list) {
     if ($themes[$theme_key]->status) {
       // Check theme_key.breakpoints.yml first
       $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
-      // Fallback to theme_key.info
-      if (empty($theme_breakpoints) && isset($themes[$theme_key]->info['breakpoints'])) {
-        $theme_breakpoints = $themes[$theme_key]->info['breakpoints'];
-      }
       if (!empty($theme_breakpoints)) {
         $weight = 0;
         // Build a breakpoint set for each theme
@@ -73,7 +64,7 @@ function breakpoints_themes_enabled($theme_list) {
 }
 
 /**
- * Implements hook_themes_disabled();
+ * Implements hook_themes_disabled().
  * Remove breakpoints from all disabled themes.
  */
 function breakpoints_themes_disabled($theme_list) {
@@ -108,6 +99,9 @@ function breakpoints_settings() {
 
 /**
  * Save general settings.
+ *
+ * @param array $multipliers
+ *   array containing multipliers.
  */
 function breakpoints_settings_save($multipliers) {
   $config = config('breakpoints');
@@ -120,7 +114,9 @@ function breakpoints_settings_save($multipliers) {
 
 /**
  * Reload breakpoint sets as they were defined in the theme.
+ *
  * @param string $theme_key
+ *
  * @return BreakpointSet
  */
 function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
@@ -130,12 +126,7 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
 
   $themes = list_themes();
   if ($themes[$theme_key]->status) {
-    // Check theme_key.breakpoints.yml first
     $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
-    // Fallback to theme_key.info
-    if (empty($theme_breakpoints) && isset($themes[$theme_key]->info['breakpoints'])) {
-      $theme_breakpoints = $themes[$theme_key]->info['breakpoints'];
-    }
     if (!empty($theme_breakpoints)) {
       $weight = 0;
       // Build a set for each theme
@@ -165,7 +156,8 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
  * Get a list of available breakpoints from a specified theme.
  *
  * @param $theme_key
- *   The name of a theme.
+ *   The name of the theme.
+ *
  * @return
  *   An array of breakpoints in the form $breakpoint['name'] = 'media query'.
  */
@@ -199,7 +191,7 @@ function breakpoints_entity_info() {
     ),
   );
 
-  // Breakpoint set
+  // Breakpointset
   $types['breakpoints_breakpointset'] = array(
     'label' => 'Breakpoint Set',
     'entity class' => 'Drupal\breakpoints\BreakpointSet',
@@ -223,7 +215,7 @@ function breakpoints_breakpointset_load($id) {
 }
 
 /**
- * Load all breakpooint sets.
+ * Load all breakpoint sets.
  */
 function breakpoints_breakpointset_load_all() {
   $breakpointsets = entity_load_multiple('breakpoints_breakpointset');

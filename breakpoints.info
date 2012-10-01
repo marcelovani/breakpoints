@@ -1,5 +1,7 @@
 name = Breakpoints
-description = General breakpoints functionality.
+description = Manage breakpoints and breakpoint sets.
+package = Core
+version = VERSION
 core = 8.x
 files[] = breakpoints.module
 files[] = breakpoints.install
