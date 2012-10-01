@@ -90,37 +90,6 @@ class BreakpointMultipliersTest extends WebTestBase {
     $this->assertFieldByName('multipliers[' . $updated_multiplier . ']', $updated_multiplier);
     $new_multiplier = $updated_multiplier;
 
-    // Verify the default multipliers are visible on the global breakpoints page.
-    $this->drupalGet('admin/config/media/breakpoints');
-    foreach (breakpoints_breakpoint_load_all() as $breakpoint) {
-      $config_name = breakpoints_breakpoint_config_name($breakpoint);
-      foreach ($settings->multipliers as $multiplier) {
-        if ($multiplier != '1x') {
-          $this->assertFieldByName('breakpoints[' . $config_name . '][multipliers][' . $multiplier . ']');
-        }
-        else {
-          // Multiplier 1x can not be disabled for any breakpoint.
-          $this->assertNoFieldByName('breakpoints[' . $config_name . '][multipliers][' . $multiplier . ']');
-        }
-      }
-    }
-
-    // Enable a multiplier for a breakpoint and verify if it's enabled on all pages.
-    $edit = array(
-      'breakpoints[breakpoints.theme.breakpoints_test_theme.narrow][multipliers][1.5x]' => 1,
-      'breakpoints[breakpoints.theme.breakpoints_test_theme.narrow][multipliers][' . $new_multiplier . ']' => 1,
-    );
-    $this->drupalPost(NULL, $edit, t('Save'));
-
-    // Verify the checkbox for the enabled multipliers is checked on the global breakpoints page.
-    $this->assertFieldChecked('edit-breakpoints-breakpointsthemebreakpoints-test-themenarrow-multipliers-15x');
-    $this->assertFieldChecked('edit-breakpoints-breakpointsthemebreakpoints-test-themenarrow-multipliers-' . drupal_clean_css_identifier($new_multiplier));
-
-    // Verify the checkbox for the enabled multipliers is checked on the breakpoints page of a group.
-    $this->drupalGet('admin/config/media/breakpoints/groups/breakpoints_test_theme');
-    $this->assertFieldChecked('edit-breakpoints-breakpointsthemebreakpoints-test-themenarrow-multipliers-15x');
-    $this->assertFieldChecked('edit-breakpoints-breakpointsthemebreakpoints-test-themenarrow-multipliers-' . drupal_clean_css_identifier($new_multiplier));
-
     // Delete a multiplier.
     $this->drupalGet('admin/config/media/breakpoints/multipliers/' . $new_multiplier . '/delete');
     $this->drupalPost(NULL, array(), t('Confirm'));
@@ -134,10 +103,5 @@ class BreakpointMultipliersTest extends WebTestBase {
     $settings = breakpoints_settings();
     $this->assertFalse(in_array($new_multiplier, $settings->multipliers), t('Multiplier %multiplier was deleted.', array('%multiplier' => $new_multiplier)));
 
-    // Verify the deleted multiplier is no longer visible on the breakpoints page.
-    $this->drupalGet('admin/config/media/breakpoints');
-    foreach (breakpoints_breakpoint_load_all() as $breakpoint) {
-      $this->assertNoFieldByName('breakpoints[' . breakpoints_breakpoint_config_name($breakpoint) . '][multipliers][' . $new_multiplier . ']');
-    }
   }
 }

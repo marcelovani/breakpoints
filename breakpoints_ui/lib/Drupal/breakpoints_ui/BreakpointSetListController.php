@@ -48,7 +48,6 @@ class BreakpointSetListController extends ConfigEntityListController {
       'options' => $uri['options'],
       'weight' => 15,
     );
-    //@todo: override, export to theme, revert.
     if ($entity->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
       if (!$entity->overridden) {
         $operations['override'] = array(
