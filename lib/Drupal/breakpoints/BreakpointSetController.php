@@ -21,19 +21,16 @@ class BreakpointSetController extends ConfigStorageController{
     if (!$breakpointset->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
       return FALSE;
     }
-    foreach ($breakpointset->breakpoints as $key => $breakpoint_name) {
-      $breakpoint = breakpoints_breakpoint_load($breakpoint_name);
-      $new_breakpoint = get_object_vars($breakpoint);
-      unset($new_breakpoint['id']);
-      unset($new_breakpoint['uuid']);
-
+    foreach ($breakpointset->breakpoints as $key => $breakpoint) {
       if ($breakpoint->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME && $breakpoint->source == $breakpointset->id()) {
-        $new_breakpoint['source_type'] = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
-        $new_breakpoint = new Breakpoint($new_breakpoint);
+        $new_breakpoint = $breakpoint->createDuplicate();
+        $new_breakpoint->id = '';
+        $new_breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
         $new_breakpoint->save();
 
-        // Add to the set.
-        $breakpointset->breakpoints[$key] = $new_breakpoint->get_config_name();
+        // Remove old one, add new one.
+        unset($breakpointset->breakpoints[$key]);
+        $breakpointset->breakpoints[$new_breakpoint->id] = $new_breakpoint;
       }
     }
     $breakpointset->overridden = TRUE;
@@ -56,5 +53,6 @@ class BreakpointSetController extends ConfigStorageController{
       $breakpointset->overridden = FALSE;
       $breakpointset->save();
     }
+    return $breakpointset;
   }
 }

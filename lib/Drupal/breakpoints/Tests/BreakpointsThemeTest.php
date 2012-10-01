@@ -6,7 +6,8 @@
 namespace Drupal\breakpoints\Tests;
 
 use Drupal\breakpoints\Tests\BreakpointSetTestBase;
-use stdClass;
+use Drupal\breakpoints\BreakpointSet;
+use Drupal\breakpoints\Breakpoint;
 
 /**
  * Test breakpoints provided by themes.
@@ -38,49 +39,45 @@ class BreakpointsThemeTest extends BreakpointSetTestBase {
    */
   public function testThemeBreakpoints() {
     // Verify the breakpoint group for breakpoints_test_theme was created.
-    $breakpoint_group = new stdClass();
-    $breakpoint_group->disabled = FALSE; /* Edit this to true to make a default breakpoint_group disabled initially */
-    $breakpoint_group->api_version = 1;
-    $breakpoint_group->machine_name = 'breakpoints_test_theme';
-    $breakpoint_group->name = 'Breakpoints test theme';
-    $breakpoint_group->breakpoints = array(
-      'breakpoints.theme.breakpoints_test_theme.mobile',
-      'breakpoints.theme.breakpoints_test_theme.narrow',
-      'breakpoints.theme.breakpoints_test_theme.wide',
-      'breakpoints.theme.breakpoints_test_theme.tv',
+    $breakpoint_set_obj = new BreakpointSet();
+    $breakpoint_set_obj->label = 'Breakpoints test theme';
+    $breakpoint_set_obj->id = 'breakpoints_test_theme';
+    $breakpoint_set_obj->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+    $breakpoint_set_obj->breakpoints = array(
+      'theme.breakpoints_test_theme.mobile' => array(),
+      'theme.breakpoints_test_theme.narrow' => array(),
+      'theme.breakpoints_test_theme.wide' => array(),
+      'theme.breakpoints_test_theme.tv' => array(),
     );
-    $breakpoint_group->type = 'theme';
-    $breakpoint_group->overridden = 0;
+    $breakpoint_set_obj->overridden = 0;
 
     // Verify we can load this breakpoint defined by the theme.
-    $this->verifyBreakpointGroup($breakpoint_group);
+    $this->verifyBreakpointSet($breakpoint_set_obj);
 
     // Override the breakpoints.
-    $overridden_group = clone $breakpoint_group;
-    breakpoints_breakpoints_group_override($overridden_group);
+    $overridden_set = clone $breakpoint_set_obj;
+    $breakpoint_set = breakpoints_breakpointset_load('breakpoints_test_theme');
+    $breakpoint_set = $breakpoint_set->override();
 
     // Verify the group is overridden.
-    $overridden_group->breakpoints = array(
-      'breakpoints.custom.breakpoints_test_theme.mobile',
-      'breakpoints.custom.breakpoints_test_theme.narrow',
-      'breakpoints.custom.breakpoints_test_theme.wide',
-      'breakpoints.custom.breakpoints_test_theme.tv',
+    $overridden_set->breakpoints = array(
+      'custom.breakpoints_test_theme.mobile' => array(),
+      'custom.breakpoints_test_theme.narrow' => array(),
+      'custom.breakpoints_test_theme.wide' => array(),
+      'custom.breakpoints_test_theme.tv' => array(),
     );
-    $overridden_group->overridden = 1;
-    $this->verifyBreakpointGroup($overridden_group);
+    $overridden_set->overridden = 1;
+    $this->verifyBreakpointSet($overridden_set);
 
-    // Reload the breakpoint group from the theme.
-    breakpoints_breakpoints_group_revert($overridden_group);
+    // Revert the breakpoint set.
+    $breakpoint_set = breakpoints_breakpointset_load('breakpoints_test_theme');
+    $breakpoint_set = $breakpoint_set->revert();
 
-    // Verify the breakpoint has its original values again when loaded.
-    $this->verifyBreakpointGroup($breakpoint_group);
-
-    // Verify $overridden_group has been reverted to the original state as well.
-    $this->assertEqual($breakpoint_group, $overridden_group, t('breakpoints_breakpoints_group_revert: Breakpoint group variable has the right value after calling reverting the group.'), t('Breakpoints API'));
+    // Verify the breakpointset has its original values again when loaded.
+    $this->verifyBreakpointSet($breakpoint_set_obj);
 
     // Disable the test theme and verify the breakpoint group is deleted.
     theme_disable(array('breakpoints_test_theme'));
-    $this->assertFalse(breakpoints_breakpoint_group_load($breakpoint_group->machine_name), t('breakpoints_breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
-
+    $this->assertFalse(breakpoints_breakpointset_load('breakpoints_test_theme'), t('breakpoints_breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
   }
 }

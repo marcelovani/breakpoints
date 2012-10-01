@@ -31,7 +31,7 @@ class BreakpointsApiTest extends BreakpointsTestBase {
         'label' => drupal_strtolower($this->randomName()),
         'source' => 'custom_module',
         // Try an invalid source_type.
-        'source_type' => $this->randomName(),
+        'source_type' => 'oops',
       )
     );
 
@@ -57,9 +57,9 @@ class BreakpointsApiTest extends BreakpointsTestBase {
     $this->assertTrue($exception, t('breakpoints_breakpoint_config_name: An exception is thrown when an invalid source is entered.'), t('Breakpoints API'));
     $this->assertEqual((string)$breakpoint->id(), '', t('breakpoints_breakpoint_config_name: No id is set when an invalid source_type is entered.'), t('Breakpoints API'));
 
-    // Try an invalid label (make sure there is at least once capital letter).
+    // Try an invalid name (make sure there is at least once capital letter).
     $breakpoint->source = 'custom_module';
-    $breakpoint->label = drupal_ucfirst($this->randomName());
+    $breakpoint->name = drupal_ucfirst($this->randomName());
     $exception = FALSE;
     try {
       $breakpoint->save();
@@ -71,17 +71,16 @@ class BreakpointsApiTest extends BreakpointsTestBase {
     $this->assertEqual((string)$breakpoint->id(), '', t('breakpoints_breakpoint_config_name: No id is set when an invalid source_type is entered.'), t('Breakpoints API'));
 
     // Try a valid breakpoint.
-    $breakpoint->label = drupal_strtolower($this->randomName());
+    $breakpoint->name = drupal_strtolower($this->randomName());
+    $breakpoint->media_query = 'all';
     $exception = FALSE;
-    $save = FALSE;
     try {
-      $save = $breakpoint->save();
+      $breakpoint->save();
     }
     catch (Exception $e) {
       $exception = TRUE;
     }
     $this->assertFalse($exception, t('breakpoints_breakpoint_config_name: No exception is thrown when a valid breakpoint is passed.'), t('Breakpoints API'));
-    $this->assertEqual($breakpoint->id(), Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.custom_module.' . $breakpoint->label, t('breakpoints_breakpoint_config_name: A id is set when a valid breakpoint is passed.'), t('Breakpoints API'));
-    $this->assertIdentical($save, SAVED_NEW, t('breakpoints_breakpoint_config_name: The correct value is returned when saving a new breakpoint'), t('Breakpoints API'));
+    $this->assertEqual($breakpoint->id(), Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.custom_module.' . $breakpoint->name, t('breakpoints_breakpoint_config_name: A id is set when a valid breakpoint is passed.'), t('Breakpoints API'));
   }
 }

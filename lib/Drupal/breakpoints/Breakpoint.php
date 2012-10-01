@@ -106,7 +106,7 @@ class Breakpoint extends ConfigEntityBase {
       $this->label = ucfirst($this->name);
     }
     if (!$this->isValid()) {
-      throw new Exception(t('Invalid media query detected.', array('@query_part' => $query_part)));
+      throw new Exception(t('Invalid media query detected.'));
     }
     return parent::save();
   }

@@ -3,7 +3,7 @@
  * @file
  * Definition of Drupal\breakpoints\Tests\BreakpointsAdminTest.
  */
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoints_ui\Tests;
 
 use Drupal\breakpoints\Tests\BreakpointsTestBase;
 use stdClass;
@@ -11,7 +11,7 @@ use stdClass;
 /**
  * Tests for breakpoints admin interface.
  */
-class BreakpointsAdminTest extends BreakpointsTestBase {
+class BreakpointsUIBreakpointsAdminTest extends BreakpointsTestBase {
 
   /**
    * Modules to enable.
@@ -24,7 +24,7 @@ class BreakpointsAdminTest extends BreakpointsTestBase {
     return array(
       'name' => 'Breakpoints administration functionality',
       'description' => 'Thoroughly test the administrative interface of the breakpoints module.',
-      'group' => 'Breakpoints',
+      'group' => 'Breakpoints UI',
     );
   }
 

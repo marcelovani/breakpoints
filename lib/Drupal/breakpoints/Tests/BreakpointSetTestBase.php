@@ -34,8 +34,14 @@ abstract class BreakpointSetTestBase extends WebTestBase {
 
     // Verify breakpoints_breakpoint_set_load().
     $compare_set = is_null($compare_set) ? breakpoints_breakpointset_load($set->id) : $compare_set;
+
     foreach ($properties as $property) {
-      $this->assertEqual($compare_set->{$property}, $set->{$property}, t('breakpoints_breakpoint_set_load: Proper ' . $property . ' for breakpoint set %set.', $t_args), $assert_set);
+      if (is_array($compare_set->{$property})) {
+        $this->assertEqual(array_keys($compare_set->{$property}), array_keys($set->{$property}), t('breakpoints_breakpoint_set_load: Proper ' . $property . ' for breakpoint set %set.', $t_args), $assert_set);
+      }
+      else {
+        $this->assertEqual($compare_set->{$property}, $set->{$property}, t('breakpoints_breakpoint_set_load: Proper ' . $property . ' for breakpoint set %set.', $t_args), $assert_set);
+      }
     }
   }
 }

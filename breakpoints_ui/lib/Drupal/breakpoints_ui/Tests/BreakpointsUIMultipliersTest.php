@@ -3,7 +3,7 @@
  * @file
  * Definition of Drupal\breakpoints\Tests\BreakpointMultipliersTest.
  */
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoints_ui\Tests;
 
 use Drupal\simpletest\WebTestBase;
 

@@ -152,6 +152,7 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
         $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
         $breakpoint->status = TRUE;
         $breakpoint->weight = $weight++;
+        $breakpoint->save();
         $breakpointset->breakpoints[$breakpoint->get_config_name()] = $breakpoint;
       }
     }
