@@ -8,11 +8,16 @@
 use \Drupal\breakpoints\Breakpoint;
 use \Drupal\breakpoints\BreakpointSet;
 
+define('BREAKPOINTS_SOURCE_TYPE_THEME', 'theme');
+define('BREAKPOINTS_SOURCE_TYPE_MODULE', 'module');
+define('BREAKPOINTS_SOURCE_TYPE_CUSTOM', 'custom');
+
 /**
  * Implements hook_enable().
  * Import breakpoints from all enabled themes.
  */
 function breakpoints_enable() {
+  config_install_default_config('module', 'breakpoints');
   $themes = list_themes();
   breakpoints_themes_enabled(array_keys($themes));
 }
@@ -33,14 +38,14 @@ function breakpoints_themes_enabled($theme_list) {
         $breakpointset = new BreakpointSet();
         $breakpointset->id = $theme_key;
         $breakpointset->label = $themes[$theme_key]->info['name'];
-        $breakpointset->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
-        foreach ($theme_breakpoints as $name => $media_query) {
+        $breakpointset->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+        foreach ($theme_breakpoints as $name => $mediaQuery) {
           $breakpoint = new Breakpoint;
           $breakpoint->name = $name;
           $breakpoint->label = ucfirst($name);
-          $breakpoint->media_query = $media_query;
+          $breakpoint->mediaQuery = $mediaQuery;
           $breakpoint->source = $theme_key;
-          $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+          $breakpoint->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
           $breakpoint->status = TRUE;
           $breakpoint->weight = $weight++;
           $breakpoint->save();
@@ -133,18 +138,18 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
       $breakpointset = new BreakpointSet();
       $breakpointset->id = $theme_key;
       $breakpointset->label = $themes[$theme_key]->info['name'];
-      $breakpointset->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
-      foreach ($theme_breakpoints as $name => $media_query) {
+      $breakpointset->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+      foreach ($theme_breakpoints as $name => $mediaQuery) {
         $breakpoint = new Breakpoint;
         $breakpoint->name = $name;
         $breakpoint->label = ucfirst($name);
-        $breakpoint->media_query = $media_query;
+        $breakpoint->mediaQuery = $mediaQuery;
         $breakpoint->source = $theme_key;
-        $breakpoint->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+        $breakpoint->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
         $breakpoint->status = TRUE;
         $breakpoint->weight = $weight++;
         $breakpoint->save();
-        $breakpointset->breakpoints[$breakpoint->get_config_name()] = $breakpoint;
+        $breakpointset->breakpoints[$breakpoint->getConfigName()] = $breakpoint;
       }
     }
     return $breakpointset;

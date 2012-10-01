@@ -36,7 +36,7 @@ class Breakpoint extends ConfigEntityBase {
    */
   public $name;
 
- /**
+  /**
    * The breakpoint label.
    *
    * @var string
@@ -48,7 +48,7 @@ class Breakpoint extends ConfigEntityBase {
    *
    * @var string
    */
-  public $media_query = '';
+  public $mediaQuery = '';
 
   /**
    * The breakpoint source.
@@ -62,7 +62,7 @@ class Breakpoint extends ConfigEntityBase {
    *
    * @var string
    */
-  public $source_type = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+  public $sourceType = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
 
   /**
    * The breakpoint status.
@@ -87,7 +87,6 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * The possible values for source type.
-   *
    */
   const BREAKPOINTS_SOURCE_TYPE_THEME = 'theme';
   const BREAKPOINTS_SOURCE_TYPE_MODULE = 'module';
@@ -105,7 +104,7 @@ class Breakpoint extends ConfigEntityBase {
    */
   public function save() {
     if (empty($this->id)) {
-      $this->id = $this->build_config_name();
+      $this->id = $this->buildConfigName();
     }
     if (empty($this->label)) {
       $this->label = ucfirst($this->name);
@@ -119,46 +118,50 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * Get config name.
    */
-  public function get_config_name() {
-    return $this->source_type
+  public function getConfigName() {
+    return $this->sourceType
       . '.' . $this->source
       . '.' . $this->name;
   }
 
   /**
-   * Construct config name.
+   * Build config name.
    */
-  private function build_config_name() {
+  protected function buildConfigName() {
     // Check for illegal values in breakpoint source type.
-    if (!in_array($this->source_type, array(BREAKPOINTS_SOURCE_TYPE_CUSTOM, BREAKPOINTS_SOURCE_TYPE_MODULE, BREAKPOINTS_SOURCE_TYPE_THEME))) {
+    if (!in_array($this->sourceType, array(
+        BREAKPOINTS_SOURCE_TYPE_CUSTOM,
+        BREAKPOINTS_SOURCE_TYPE_MODULE,
+        BREAKPOINTS_SOURCE_TYPE_THEME)
+      )) {
       throw new Exception(
           t(
-            'Expected one of \'@custom\', \'@module\' or \'@theme\' for breakpoint source_type property but got \'@sourcetype\'.',
+            "Expected one of '@custom', '@module' or '@theme' for breakpoint sourceType property but got '@sourcetype'.",
             array(
               '@custom' => \BREAKPOINTS_SOURCE_TYPE_CUSTOM,
               '@module' => \BREAKPOINTS_SOURCE_TYPE_MODULE,
               '@theme' => \BREAKPOINTS_SOURCE_TYPE_THEME,
-              '@sourcetype' => $this->source_type,
+              '@sourcetype' => $this->sourceType,
             )
           )
       );
     }
     // Check for illegal characters in breakpoint source.
     if (preg_match('/[^a-z_]+/', $this->source)) {
-      throw new Exception(t('Invalid value \'@source\' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.', array('@source' => $this->source)));
+      throw new Exception(t("Invalid value '@source' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.", array('@source' => $this->source)));
     }
     // Check for illegal characters in breakpoint names.
     if (preg_match('/[^0-9a-z_\-]/', $this->name)) {
-      throw new Exception(t('Invalid value \'@name\' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).', array('@name' => $this->name)));
+      throw new Exception(t("Invalid value '@name' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).", array('@name' => $this->name)));
     }
-    return $this->source_type
+    return $this->sourceType
       . '.' . $this->source
       . '.' . $this->name;
   }
 
   /**
    * Shortcut function to enable a breakpoint and save it.
-   * @see breakpoints_breakpoint_action_confirm_submit().
+   * @see breakpoints_breakpoint_action_confirm_submit()
    */
   public function enable() {
     if (!$this->status) {
@@ -169,7 +172,7 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Shortcut function to disable a breakpoint and save it.
-   * @see breakpoints_breakpoint_action_confirm_submit().
+   * @see breakpoints_breakpoint_action_confirm_submit()
    */
   public function disable() {
     if ($this->status) {
@@ -179,19 +182,19 @@ class Breakpoint extends ConfigEntityBase {
   }
 
   /**
-   * Check if the media_query is valid.
-   * @see isValidMediaQuery().
+   * Check if the mediaQuery is valid.
+   * @see isValidMediaQuery()
    */
   public function isValid() {
-    return $this::isValidMediaQuery($this->media_query);
+    return $this::isValidMediaQuery($this->mediaQuery);
   }
 
   /**
-   * Check if a media_query is valid.
-   * @see http://www.w3.org/TR/css3-mediaqueries/.
-   * @see http://www.w3.org/Style/CSS/Test/MediaQueries/20120229/reports/implement-report.html.
+   * Check if a mediaQuery is valid.
+   * @see http://www.w3.org/TR/css3-mediaqueries/
+   * @see http://www.w3.org/Style/CSS/Test/MediaQueries/20120229/reports/implement-report.html
    */
-  static function isValidMediaQuery($media_query) {
+  public static function isValidMediaQuery($media_query) {
     $media_features = array(
       'width' => 'length', 'min-width' => 'length', 'max-width' => 'length',
       'height' => 'length', 'min-height' => 'length', 'max-height' => 'length',
@@ -209,7 +212,7 @@ class Breakpoint extends ConfigEntityBase {
     );
     if ($media_query) {
       // @todo: strip comments, new lines, ....
-      // Check media_query_list: S* [media_query [ ',' S* media_query ]* ]?
+      // Check mediaQuery_list: S* [mediaQuery [ ',' S* mediaQuery ]* ]?
       $parts = explode(',', trim($media_query));
       foreach ($parts as $part) {
         // Split on ' and '
@@ -267,7 +270,7 @@ class Breakpoint extends ConfigEntityBase {
             $media_type_found = TRUE;
           }
           else {
-            throw new Exception(t('Invalid value \'@query_part\' for breakpoint media query property.', array('@query_part' => $query_part)));
+            throw new Exception(t("Invalid value '@query_part' for breakpoint media query property.", array('@query_part' => $query_part)));
           }
         }
       }

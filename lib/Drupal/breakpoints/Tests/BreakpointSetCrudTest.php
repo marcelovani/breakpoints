@@ -3,6 +3,7 @@
  * @file
  * Definition of Drupal\breakpoints\Tests\BreakpointSetCrudTest.
  */
+
 namespace Drupal\breakpoints\Tests;
 
 use Drupal\breakpoints\Tests\BreakpointSetTestBase;
@@ -14,6 +15,9 @@ use Drupal\breakpoints\Breakpoint;
  */
 class BreakpointSetCrudTest extends BreakpointSetTestBase {
 
+  /**
+   * Drupal\simpletest\WebTestBase\getInfo().
+   */
   public static function getInfo() {
     return array(
       'name' => 'Breakpoint Set CRUD operations',
@@ -25,7 +29,7 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
   /**
    * Test CRUD operations for breakpoint sets.
    */
-  function testBreakpointSetCrud() {
+  public function testBreakpointSetCrud() {
     // Add breakpoints.
     $breakpoints = array();
     for ($i = 0; $i <= 3; $i++) {
@@ -33,7 +37,7 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
       $values = array(
         'name' => drupal_strtolower($this->randomName()),
         'weight' => $i,
-        'media_query' => "(min-width: {$width}px)",
+        'mediaQuery' => "(min-width: {$width}px)",
       );
       $breakpoint = new Breakpoint($values);
       $breakpoint->save();
@@ -59,7 +63,7 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
     $new_set = new BreakpointSet();
     $new_set->label = t('Clone of') . ' ' . $set->label();
     $new_set->id = '';
-    $new_set->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+    $new_set->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
     $new_set->breakpoints = $set->breakpoints;
     $duplicated_set = $set->createDuplicate();
     $this->verifyBreakpointSet($duplicated_set, $new_set);

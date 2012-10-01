@@ -3,6 +3,7 @@
  * @file
  * Definition of Drupal\breakpoints\Tests\BreakpointsThemeTest.
  */
+
 namespace Drupal\breakpoints\Tests;
 
 use Drupal\breakpoints\Tests\BreakpointSetTestBase;
@@ -21,6 +22,9 @@ class BreakpointsThemeTest extends BreakpointSetTestBase {
    */
   public static $modules = array('breakpoints_theme_test');
 
+  /**
+   * Drupal\simpletest\WebTestBase\getInfo().
+   */
   public static function getInfo() {
     return array(
       'name' => 'Breakpoint Theme functionality',
@@ -29,7 +33,10 @@ class BreakpointsThemeTest extends BreakpointSetTestBase {
     );
   }
 
-  public function  setUp() {
+  /**
+   * Drupal\simpletest\WebTestBase\setUp().
+   */
+  public function setUp() {
     parent::setUp();
     theme_enable(array('breakpoints_test_theme'));
   }
@@ -38,11 +45,12 @@ class BreakpointsThemeTest extends BreakpointSetTestBase {
    * Test the breakpoints provided by a theme.
    */
   public function testThemeBreakpoints() {
+    debug(breakpoints_breakpointset_load_all());
     // Verify the breakpoint group for breakpoints_test_theme was created.
     $breakpoint_set_obj = new BreakpointSet();
     $breakpoint_set_obj->label = 'Breakpoints test theme';
     $breakpoint_set_obj->id = 'breakpoints_test_theme';
-    $breakpoint_set_obj->source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+    $breakpoint_set_obj->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
     $breakpoint_set_obj->breakpoints = array(
       'theme.breakpoints_test_theme.mobile' => array(),
       'theme.breakpoints_test_theme.narrow' => array(),

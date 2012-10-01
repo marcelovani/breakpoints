@@ -3,6 +3,7 @@
  * @file
  * Definition of Drupal\breakpoints\Tests\BreakpointsCrudTest.
  */
+
 namespace Drupal\breakpoints\Tests;
 
 use Drupal\breakpoints\Tests\BreakpointsTestBase;
@@ -13,6 +14,9 @@ use Drupal\breakpoints\Breakpoint;
  */
 class BreakpointsCrudTest extends BreakpointsTestBase {
 
+  /**
+   * Drupal\simpletest\WebTestBase\getInfo().
+   */
   public static function getInfo() {
     return array(
       'name' => 'Breakpoints CRUD operations',
@@ -24,11 +28,11 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
   /**
    * Test CRUD operations for breakpoints.
    */
-  function testBreakpointsCrud() {
+  public function testBreakpointsCrud() {
     // Add a breakpoint with minimum data only.
     $values = array(
       'label' => drupal_strtolower($this->randomName()),
-      'media_query' => '(min-width: 600px)',
+      'mediaQuery' => '(min-width: 600px)',
     );
 
     $breakpoint = new Breakpoint($values);
@@ -38,7 +42,7 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
 
     // Test breakpoints_breakpoint_load_all
     $all_breakpoints = breakpoints_breakpoint_load_all();
-    $config_name = $breakpoint->get_config_name();
+    $config_name = $breakpoint->getConfigName();
     $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoints_breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
     $this->verifyBreakpoint($breakpoint, $all_breakpoints[$config_name]);
 

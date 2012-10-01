@@ -38,14 +38,14 @@ class BreakpointFormController extends EntityFormController {
       '#required' => TRUE,
       '#disabled' => !empty($breakpoint->id),
     );
-    $form['media_query'] = array(
+    $form['mediaQuery'] = array(
       '#type' => 'textfield',
       '#title' => t('Media query'),
       '#maxlength' => 255,
-      '#default_value' => $breakpoint->media_query,
+      '#default_value' => $breakpoint->mediaQuery,
       '#description' => t("Media query without '@media'. Example: '(min-width: 320px)'."),
       '#required' => TRUE,
-      '#disabled' => $breakpoint->source_type === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME,
+      '#disabled' => $breakpoint->sourceType === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME,
     );
 
     $settings = breakpoints_settings();
@@ -100,8 +100,8 @@ class BreakpointFormController extends EntityFormController {
         form_set_error('label', t('The breakpoint label %label is already in use.', array('%label' => $form_state['values']['label'])));
       }
     }
-    if (!$breakpoint->isValidMediaQuery($form_state['values']['media_query'])) {
-      form_set_error('media_query', t('Illegal media query'));
+    if (!$breakpoint->isValidMediaQuery($form_state['values']['mediaQuery'])) {
+      form_set_error('mediaQuery', t('Illegal media query'));
     }
   }
 

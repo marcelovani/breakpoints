@@ -1,8 +1,9 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointsMediaqueryTest.
+ * Definition of Drupal\breakpoints\Tests\BreakpointsMediaQueryTest.
  */
+
 namespace Drupal\breakpoints\Tests;
 
 use Drupal\simpletest\UnitTestBase;
@@ -12,8 +13,11 @@ use Exception;
 /**
  * Tests for media queries in breakpoints.
  */
-class BreakpointsMediaqueryTest extends UnitTestBase {
+class BreakpointsMediaQueryTest extends UnitTestBase {
 
+  /**
+   * Drupal\simpletest\WebTestBase\getInfo().
+   */
   public static function getInfo() {
     return array(
       'name' => 'Breakpoints media query tests',
@@ -25,16 +29,16 @@ class BreakpointsMediaqueryTest extends UnitTestBase {
   /**
    * Test valid media queries.
    */
-  function testValidMediaQueries() {
+  public function testValidMediaQueries() {
     $media_queries = array(
-      // Bartik
+      // Bartik breakpoints.
       '(min-width: 0px)',
       'all and (min-width: 560px) and (max-width:850px)',
       'all and (min-width: 851px)',
-      // Seven
+      // Seven breakpoints.
       '(min-width: 0em)',
       'screen and (min-width: 40em)',
-      // Stark
+      // Stark breakpoints.
       '(min-width: 0px)',
       'all and (min-width: 480px) and (max-width: 959px)',
       'all and (min-width: 960px)',
@@ -51,7 +55,7 @@ class BreakpointsMediaqueryTest extends UnitTestBase {
       'screen and (min-width)',
     );
 
-    foreach($media_queries as $media_query) {
+    foreach ($media_queries as $media_query) {
       try {
         $this->assertTrue(Breakpoint::isValidMediaQuery($media_query), $media_query . ' is valid.');
       }
@@ -64,7 +68,7 @@ class BreakpointsMediaqueryTest extends UnitTestBase {
   /**
    * Test invalid media queries.
    */
-  function testInvalidMediaQueries() {
+  public function testInvalidMediaQueries() {
     $media_queries = array(
       'not (orientation)',
       'only (orientation)',
@@ -105,7 +109,7 @@ class BreakpointsMediaqueryTest extends UnitTestBase {
       '(orientation: bogus)',
     );
 
-    foreach($media_queries as $media_query) {
+    foreach ($media_queries as $media_query) {
       try {
         $this->assertFalse(Breakpoint::isValidMediaQuery($media_query), $media_query . ' is not valid.');
       }

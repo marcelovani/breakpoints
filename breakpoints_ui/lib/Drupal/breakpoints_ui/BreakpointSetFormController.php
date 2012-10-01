@@ -56,7 +56,7 @@ class BreakpointSetFormController extends EntityFormController {
     }
 
     // Breakpointsets efined by themes cannot be altered.
-    $read_only = $breakpointset->source_type === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+    $read_only = $breakpointset->sourceType === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
 
     // Weight for the order of the breakpoints.
     $weight = 0;
@@ -87,7 +87,7 @@ class BreakpointSetFormController extends EntityFormController {
         'class' => array('draggable'),
         'data' => array(
           'label' => '',
-          'media_query' => '',
+          'mediaQuery' => '',
           'multipliers' => '',
           'weight' => '',
           'remove' => '',
@@ -101,11 +101,11 @@ class BreakpointSetFormController extends EntityFormController {
         '#size' => 20,
         '#required' => TRUE,
       );
-      $form['breakpoints_fieldset']['breakpoints'][$key]['media_query'] = array(
+      $form['breakpoints_fieldset']['breakpoints'][$key]['mediaQuery'] = array(
         '#type' => 'textfield',
-        '#default_value' => $breakpoint->media_query,
+        '#default_value' => $breakpoint->mediaQuery,
         '#maxlength' => 255,
-        '#parents' => array('breakpoints', $key, 'media_query'),
+        '#parents' => array('breakpoints', $key, 'mediaQuery'),
         '#required' => TRUE,
         '#size' => 60,
         '#disabled' => $read_only,
@@ -143,7 +143,7 @@ class BreakpointSetFormController extends EntityFormController {
     }
     $form['breakpoints_fieldset']['breakpoints']['#header'] = array(
       'label' => t('Label'),
-      'media_query' => t('Media query'),
+      'mediaQuery' => t('Media query'),
       'multipliers' => t('Multipliers'),
       'weight' => t('Weight'),
       'remove' => t('Remove'),

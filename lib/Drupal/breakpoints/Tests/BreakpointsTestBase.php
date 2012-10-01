@@ -21,22 +21,36 @@ abstract class BreakpointsTestBase extends WebTestBase {
    */
   public static $modules = array('breakpoints');
 
-  function setUp() {
+  /**
+   * Drupal\simpletest\WebTestBase\setUp().
+   */
+  public function setUp() {
     parent::setUp();
   }
 
   /**
    * Verify that a breakpoint is properly stored.
    */
-  function verifyBreakpoint(Breakpoint $breakpoint, Breakpoint $compare_breakpoint = NULL) {
-    $t_args = array('%breakpoint' => $breakpoint->label());
-    $properties = array('label', 'media_query', 'source', 'source_type', 'status', 'weight', 'multipliers');
+  public function verifyBreakpoint(Breakpoint $breakpoint, Breakpoint $compare_breakpoint = NULL) {
+    $properties = array(
+      'label',
+      'mediaQuery',
+      'source',
+      'sourceType',
+      'status',
+      'weight',
+      'multipliers',
+    );
     $assert_group = t('Breakpoints API');
 
-    // Verify breakpoints_breakpoint_load_by_fullkey().
-    $compare_breakpoint = is_null($compare_breakpoint) ? breakpoints_breakpoint_load($breakpoint->get_config_name()) : $compare_breakpoint;
+    // Verify breakpoints_breakpoint_load().
+    $compare_breakpoint = is_null($compare_breakpoint) ? breakpoints_breakpoint_load($breakpoint->getConfigName()) : $compare_breakpoint;
     foreach ($properties as $property) {
-      $this->assertEqual($compare_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoints_breakpoint_load: Proper ' . $property . ' for breakpoint %breakpoint.', $t_args), $assert_group);
+      $t_args = array(
+        '%breakpoint' => $breakpoint->label(),
+        '%property' => $property,
+      );
+      $this->assertEqual($compare_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoints_breakpoint_load: Proper %property for breakpoint %breakpoint.', $t_args), $assert_group);
     }
   }
 }

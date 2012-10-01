@@ -202,8 +202,8 @@ function breakpoints_ui_breakpoints_options() {
   $options = array();
   $breakpoints = breakpoints_breakpoint_load_all();
   foreach ($breakpoints as $breakpoint) {
-    $options[$breakpoint->id()] = $breakpoint->label() . ' (' . $breakpoint->source . ' - ' . $breakpoint->source_type .   ') [' . $breakpoint->media_query . ']';
+    $options[$breakpoint->id()] = $breakpoint->label() . ' (' . $breakpoint->source . ' - ' . $breakpoint->sourceType .   ') [' . $breakpoint->mediaQuery . ']';
   }
-  
+
   return $options;
 }

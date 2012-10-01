@@ -3,8 +3,3 @@ description = Test theme for breakpoints.
 core = 8.x
 base theme = bartik
 hidden = TRUE
-
-breakpoints[mobile] = (min-width: 0px)
-breakpoints[narrow] = (min-width: 560px)
-breakpoints[wide] = (min-width: 851px)
-breakpoints[tv] = only screen and (min-width: 3456px)

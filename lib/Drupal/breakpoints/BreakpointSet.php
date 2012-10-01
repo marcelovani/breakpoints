@@ -47,7 +47,7 @@ class BreakpointSet extends ConfigEntityBase {
    *
    * @var string
    */
-  public $source_type = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+  public $sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
 
   /**
    * The BreakpointSet overridden status.
@@ -57,11 +57,11 @@ class BreakpointSet extends ConfigEntityBase {
   public $overridden = FALSE;
 
   /**
-   * Overrides Drupal\config\ConfigEntityBase::__construct()
+   * Overrides Drupal\config\ConfigEntityBase::__construct().
    */
   public function __construct(array $values = array(), $entity_type = 'breakpoints_breakpointset') {
     parent::__construct($values, $entity_type);
-    $this->_load_all_breakpoints();
+    $this->loadAllBreakpoints();
   }
 
   /**
@@ -71,7 +71,7 @@ class BreakpointSet extends ConfigEntityBase {
     // Only save the keys, but return the full objects.
     $this->breakpoints = array_keys($this->breakpoints);
     parent::save();
-    $this->_load_all_breakpoints();
+    $this->loadAllBreakpoints();
   }
 
   /**
@@ -102,10 +102,10 @@ class BreakpointSet extends ConfigEntityBase {
   /**
    * Load all breakpoints, remove non-existing ones.
    */
-  private function _load_all_breakpoints() {
+  protected function loadAllBreakpoints() {
     $breakpoints = $this->breakpoints;
     $this->breakpoints = array();
-    foreach($breakpoints as $breakpoint_id) {
+    foreach ($breakpoints as $breakpoint_id) {
       $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
       if ($breakpoint) {
         $this->breakpoints[$breakpoint_id] = $breakpoint;

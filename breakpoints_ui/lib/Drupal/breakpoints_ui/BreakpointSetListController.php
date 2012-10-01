@@ -48,7 +48,7 @@ class BreakpointSetListController extends ConfigEntityListController {
       'options' => $uri['options'],
       'weight' => 15,
     );
-    if ($entity->source_type == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
+    if ($entity->sourceType == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
       if (!$entity->overridden) {
         $operations['override'] = array(
           'title' => t('Override'),
