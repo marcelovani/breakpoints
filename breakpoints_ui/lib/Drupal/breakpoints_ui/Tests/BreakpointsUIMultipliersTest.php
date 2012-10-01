@@ -10,7 +10,7 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Test breakpoint multipliers.
  */
-class BreakpointMultipliersTest extends WebTestBase {
+class BreakpointsUIMultipliersTest extends WebTestBase {
 
   /**
    * Modules to enable.
@@ -23,7 +23,7 @@ class BreakpointMultipliersTest extends WebTestBase {
     return array(
       'name' => 'Breakpoint Multiplier functionality',
       'description' => 'Thoroughly test the breakpoint multiplier functionality (CRUD).',
-      'group' => 'Breakpoints',
+      'group' => 'Breakpoints UI',
     );
   }
 
