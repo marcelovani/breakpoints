@@ -5,7 +5,7 @@
  * Definition of Drupal\breakpoint\BreakpointSet.
  */
 
-namespace Drupal\breakpoints;
+namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
@@ -54,7 +54,7 @@ class BreakpointSet extends ConfigEntityBase {
    *     Breakpoint::SOURCE_TYPE_MODULE
    *     Breakpoint::SOURCE_TYPE_CUSTOM
    *
-   * @see Drupal\breakpoints\Breakpoint
+   * @see Drupal\breakpoint\Breakpoint
    */
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
@@ -68,7 +68,7 @@ class BreakpointSet extends ConfigEntityBase {
   /**
    * Overrides Drupal\config\ConfigEntityBase::__construct().
    */
-  public function __construct(array $values = array(), $entity_type = 'breakpoints_breakpointset') {
+  public function __construct(array $values = array(), $entity_type = 'breakpoint_breakpointset') {
     parent::__construct($values, $entity_type);
     $this->loadAllBreakpoints();
   }
@@ -115,7 +115,7 @@ class BreakpointSet extends ConfigEntityBase {
     $breakpoints = $this->breakpoints;
     $this->breakpoints = array();
     foreach ($breakpoints as $breakpoint_id) {
-      $breakpoint = breakpoints_breakpoint_load($breakpoint_id);
+      $breakpoint = breakpoint_breakpoint_load($breakpoint_id);
       if ($breakpoint) {
         $this->breakpoints[$breakpoint_id] = $breakpoint;
       }

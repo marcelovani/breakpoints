@@ -5,7 +5,7 @@
  * Definition of Drupal\breakpoint\Breakpoint.
  */
 
-namespace Drupal\breakpoints;
+namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Exception;
@@ -99,7 +99,7 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * Overrides Drupal\config\ConfigEntityBase::__construct().
    */
-  public function __construct(array $values = array(), $entity_type = 'breakpoints_breakpoint') {
+  public function __construct(array $values = array(), $entity_type = 'breakpoint_breakpoint') {
     parent::__construct($values, $entity_type);
   }
 
@@ -166,7 +166,7 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * Shortcut function to enable a breakpoint and save it.
    *
-   * @see breakpoints_breakpoint_action_confirm_submit()
+   * @see breakpoint_breakpoint_action_confirm_submit()
    */
   public function enable() {
     if (!$this->status) {
@@ -178,7 +178,7 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * Shortcut function to disable a breakpoint and save it.
    *
-   * @see breakpoints_breakpoint_action_confirm_submit()
+   * @see breakpoint_breakpoint_action_confirm_submit()
    */
   public function disable() {
     if ($this->status) {

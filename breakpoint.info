@@ -1,4 +1,4 @@
-name = Breakpoints
+name = Breakpoint
 description = Manage breakpoints and breakpoint sets for responsive designs.
 package = Core
 version = VERSION

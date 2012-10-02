@@ -1,25 +1,25 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointsTestBase.
+ * Definition of Drupal\breakpoint\Tests\BreakpointTestBase.
  */
 
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoint\Tests;
 
 use Drupal\simpletest\WebTestBase;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\Breakpoint;
 
 /**
  * Base class for Breakpoint tests.
  */
-abstract class BreakpointsTestBase extends WebTestBase {
+abstract class BreakpointTestBase extends WebTestBase {
 
   /**
    * Modules to enable.
    *
    * @var array
    */
-  public static $modules = array('breakpoints');
+  public static $modules = array('breakpoint');
 
   /**
    * Drupal\simpletest\WebTestBase\setUp().
@@ -43,14 +43,14 @@ abstract class BreakpointsTestBase extends WebTestBase {
     );
     $assert_group = t('Breakpoints API');
 
-    // Verify breakpoints_breakpoint_load().
-    $compare_breakpoint = is_null($compare_breakpoint) ? breakpoints_breakpoint_load($breakpoint->getConfigName()) : $compare_breakpoint;
+    // Verify breakpoint_breakpoint_load().
+    $compare_breakpoint = is_null($compare_breakpoint) ? breakpoint_breakpoint_load($breakpoint->getConfigName()) : $compare_breakpoint;
     foreach ($properties as $property) {
       $t_args = array(
         '%breakpoint' => $breakpoint->label(),
         '%property' => $property,
       );
-      $this->assertEqual($compare_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoints_breakpoint_load: Proper %property for breakpoint %breakpoint.', $t_args), $assert_group);
+      $this->assertEqual($compare_breakpoint->{$property}, $breakpoint->{$property}, t('breakpoint_breakpoint_load: Proper %property for breakpoint %breakpoint.', $t_args), $assert_group);
     }
   }
 }

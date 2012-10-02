@@ -1,14 +1,14 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointSetCrudTest.
+ * Definition of Drupal\breakpoint\Tests\BreakpointSetCrudTest.
  */
 
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoint\Tests;
 
-use Drupal\breakpoints\Tests\BreakpointSetTestBase;
-use Drupal\breakpoints\BreakpointSet;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\Tests\BreakpointSetTestBase;
+use Drupal\breakpoint\BreakpointSet;
+use Drupal\breakpoint\Breakpoint;
 
 /**
  * Tests for breakpoint set CRUD operations.
@@ -22,7 +22,7 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
     return array(
       'name' => 'Breakpoint Set CRUD operations',
       'description' => 'Test creation, loading, updating, deleting of breakpoint sets.',
-      'group' => 'Breakpoints',
+      'group' => 'Breakpoint',
     );
   }
 
@@ -70,6 +70,6 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
 
     // Delete the breakpoint set.
     $set->delete();
-    $this->assertFalse(breakpoints_breakpointset_load($set->id), t('breakpoints_breakpointset_load: Loading a deleted breakpoint set returns false.'), t('Breakpoints API'));
+    $this->assertFalse(breakpoint_breakpointset_load($set->id), t('breakpoint_breakpointset_load: Loading a deleted breakpoint set returns false.'), t('Breakpoints API'));
   }
 }

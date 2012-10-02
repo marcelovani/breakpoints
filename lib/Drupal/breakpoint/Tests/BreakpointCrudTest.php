@@ -1,34 +1,34 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointsCrudTest.
+ * Definition of Drupal\breakpoint\Tests\BreakpointCrudTest.
  */
 
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoint\Tests;
 
-use Drupal\breakpoints\Tests\BreakpointsTestBase;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\Tests\BreakpointTestBase;
+use Drupal\breakpoint\Breakpoint;
 
 /**
- * Tests for breakpoints CRUD operations.
+ * Tests for breakpoint CRUD operations.
  */
-class BreakpointsCrudTest extends BreakpointsTestBase {
+class BreakpointCrudTest extends BreakpointTestBase {
 
   /**
    * Drupal\simpletest\WebTestBase\getInfo().
    */
   public static function getInfo() {
     return array(
-      'name' => 'Breakpoints CRUD operations',
+      'name' => 'Breakpoint CRUD operations',
       'description' => 'Test creation, loading, updating, deleting of breakpoints.',
-      'group' => 'Breakpoints',
+      'group' => 'Breakpoint',
     );
   }
 
   /**
    * Test CRUD operations for breakpoints.
    */
-  public function testBreakpointsCrud() {
+  public function testBreakpointCrud() {
     // Add a breakpoint with minimum data only.
     $values = array(
       'label' => drupal_strtolower($this->randomName()),
@@ -40,10 +40,10 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
 
     $this->verifyBreakpoint($breakpoint);
 
-    // Test breakpoints_breakpoint_load_all
-    $all_breakpoints = breakpoints_breakpoint_load_all();
+    // Test breakpoint_breakpoint_load_all
+    $all_breakpoints = breakpoint_breakpoint_load_all();
     $config_name = $breakpoint->getConfigName();
-    $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoints_breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
+    $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoint_breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
     $this->verifyBreakpoint($breakpoint, $all_breakpoints[$config_name]);
 
     // Update the breakpoint.
@@ -58,6 +58,6 @@ class BreakpointsCrudTest extends BreakpointsTestBase {
 
     // Delete the breakpoint.
     $breakpoint->delete();
-    $this->assertFalse(breakpoints_breakpoint_load($config_name), t('breakpoints_breakpoint_load: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));
+    $this->assertFalse(breakpoint_breakpoint_load($config_name), t('breakpoint_breakpoint_load: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));
   }
 }

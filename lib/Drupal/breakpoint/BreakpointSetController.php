@@ -4,11 +4,11 @@
  * Definition of Drupal\breakpoint\BreakpointSetController.
  */
 
-namespace Drupal\breakpoints;
+namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigStorageController;
-use Drupal\breakpoints\BreakpointSet;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\BreakpointSet;
+use Drupal\breakpoint\Breakpoint;
 
 /**
  * Defines the BreakpointSet entity's controller.
@@ -48,7 +48,7 @@ class BreakpointSetController extends ConfigStorageController {
     }
 
     // Reload all breakpoints from theme.
-    $reloaded_set = breakpoints_breakpoints_set_reload_from_theme($breakpointset->id());
+    $reloaded_set = breakpoint_breakpointset_reload_from_theme($breakpointset->id());
     if ($reloaded_set) {
       $breakpointset->breakpoints = $reloaded_set->breakpoints;
       $breakpointset->overridden = FALSE;

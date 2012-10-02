@@ -1,28 +1,28 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointsMediaQueryTest.
+ * Definition of Drupal\breakpoint\Tests\BreakpointMediaQueryTest.
  */
 
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoint\Tests;
 
 use Drupal\simpletest\UnitTestBase;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\Breakpoint;
 use Exception;
 
 /**
- * Tests for media queries in breakpoints.
+ * Tests for media queries in a breakpoint.
  */
-class BreakpointsMediaQueryTest extends UnitTestBase {
+class BreakpointMediaQueryTest extends UnitTestBase {
 
   /**
    * Drupal\simpletest\WebTestBase\getInfo().
    */
   public static function getInfo() {
     return array(
-      'name' => 'Breakpoints media query tests',
+      'name' => 'Breakpoint media query tests',
       'description' => 'Test validation of media queries.',
-      'group' => 'Breakpoints',
+      'group' => 'Breakpoint',
     );
   }
 

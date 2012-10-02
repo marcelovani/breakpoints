@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointSetTestBase.
+ * Definition of Drupal\breakpoint\Tests\BreakpointSetTestBase.
  */
 
-namespace Drupal\breakpoints\Tests;
+namespace Drupal\breakpoint\Tests;
 
 use Drupal\simpletest\WebTestBase;
-use Drupal\breakpoints\BreakpointSet;
+use Drupal\breakpoint\BreakpointSet;
 
 /**
  * Base class for Breakpoint Set tests.
@@ -19,7 +19,7 @@ abstract class BreakpointSetTestBase extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('breakpoints');
+  public static $modules = array('breakpoint');
 
   /**
    * Drupal\simpletest\WebTestBase\setUp().
@@ -41,8 +41,8 @@ abstract class BreakpointSetTestBase extends WebTestBase {
     );
     $assert_set = t('Breakpoints API');
 
-    // Verify breakpoints_breakpoint_set_load().
-    $compare_set = is_null($compare_set) ? breakpoints_breakpointset_load($set->id) : $compare_set;
+    // Verify breakpoint_breakpointset_load().
+    $compare_set = is_null($compare_set) ? breakpoint_breakpointset_load($set->id) : $compare_set;
 
     foreach ($properties as $property) {
       $t_args = array(
@@ -50,10 +50,10 @@ abstract class BreakpointSetTestBase extends WebTestBase {
         '%property' => $property,
       );
       if (is_array($compare_set->{$property})) {
-        $this->assertEqual(array_keys($compare_set->{$property}), array_keys($set->{$property}), t('breakpoints_breakpoint_set_load: Proper %property for breakpoint set %set.', $t_args), $assert_set);
+        $this->assertEqual(array_keys($compare_set->{$property}), array_keys($set->{$property}), t('breakpoint_breakpointset_load: Proper %property for breakpoint set %set.', $t_args), $assert_set);
       }
       else {
-        $this->assertEqual($compare_set->{$property}, $set->{$property}, t('breakpoints_breakpoint_set_load: Proper %property . for breakpoint set %set.', $t_args), $assert_set);
+        $this->assertEqual($compare_set->{$property}, $set->{$property}, t('breakpoint_breakpointset_load: Proper %property . for breakpoint set %set.', $t_args), $assert_set);
       }
     }
   }

@@ -5,18 +5,18 @@
  * Manage breakpoints and breakpoint sets for responsive designs.
  */
 
-use \Drupal\breakpoints\Breakpoint;
-use \Drupal\breakpoints\BreakpointSet;
+use \Drupal\breakpoint\Breakpoint;
+use \Drupal\breakpoint\BreakpointSet;
 
 /**
  * Implements hook_enable().
  *
  * Import breakpoints from all enabled themes.
  */
-function breakpoints_enable() {
-  config_install_default_config('module', 'breakpoints');
+function breakpoint_enable() {
+  config_install_default_config('module', 'breakpoint');
   $themes = list_themes();
-  breakpoints_themes_enabled(array_keys($themes));
+  breakpoint_themes_enabled(array_keys($themes));
 }
 
 /**
@@ -27,11 +27,11 @@ function breakpoints_enable() {
  * @param array $theme_list
  *   An array of theme names.
  */
-function breakpoints_themes_enabled($theme_list) {
+function breakpoint_themes_enabled($theme_list) {
   $themes = list_themes();
   foreach ($theme_list as $theme_key) {
     if ($themes[$theme_key]->status) {
-      $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
+      $theme_breakpoints = breakpoint_get_theme_breakpoint_list($theme_key);
       if (!empty($theme_breakpoints)) {
         $weight = 0;
         // Build a breakpoint set for each theme.
@@ -52,6 +52,7 @@ function breakpoints_themes_enabled($theme_list) {
           $breakpointset->breakpoints[$breakpoint->id()] = $breakpoint;
         }
         $breakpointset->save();
+
         $uri = $breakpointset->uri();
         if ($uri) {
           $uri_options = $uri;
@@ -61,7 +62,7 @@ function breakpoints_themes_enabled($theme_list) {
         $message = t('The breakpoints from theme %theme are imported.', array(
           '%theme' => check_plain($themes[$theme_key]->info['name']),
         ));
-        if (module_exists('breakpoints_ui') && $uri) {
+        if (module_exists('breakpoint_ui') && $uri) {
           $message .= '<p>' . l(t('A new breakpoint set is created for theme %theme.', array(
             '%theme' => check_plain($themes[$theme_key]->info['name']),
           )), $uri, $uri_options);
@@ -80,18 +81,18 @@ function breakpoints_themes_enabled($theme_list) {
  * @param array $theme_list
  *   An array of theme names.
  */
-function breakpoints_themes_disabled($theme_list) {
-  $breakpointsets = entity_load_multiple('breakpoints_breakpointset', $theme_list);
+function breakpoint_themes_disabled($theme_list) {
+  $breakpointsets = entity_load_multiple('breakpoint_breakpointset', $theme_list);
   foreach ($breakpointsets as $breakpointset) {
     $breakpointset->delete();
     // delete all breakpoints defined by this theme.
     $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.' . Breakpoint::SOURCE_TYPE_THEME . '.' . $breakpointset->id() . '.');
-    $entity_info = entity_get_info('breakpoints_breakpoint');
+    $entity_info = entity_get_info('breakpoint_breakpoint');
 
     foreach ($names as &$name) {
       $name = substr($name, strlen($entity_info['config prefix']) + 1);
     }
-    $breakpoints = entity_load_multiple('breakpoints_breakpoint', $names);
+    $breakpoints = entity_load_multiple('breakpoint_breakpoint', $names);
 
     foreach ($breakpoints as $breakpoint) {
       $breakpoint->delete();
@@ -102,8 +103,8 @@ function breakpoints_themes_disabled($theme_list) {
 /**
  * Load general settings.
  */
-function breakpoints_settings() {
-  $config = config('breakpoints');
+function breakpoint_settings() {
+  $config = config('breakpoint');
   if ($config->isNew()) {
     return FALSE;
   }
@@ -116,8 +117,8 @@ function breakpoints_settings() {
  * @param array $multipliers
  *   array containing multipliers.
  */
-function breakpoints_settings_save_multipliers($multipliers) {
-  $config = config('breakpoints');
+function breakpoint_settings_save_multipliers($multipliers) {
+  $config = config('breakpoint');
   $config->set('multipliers', $multipliers);
   $config->save();
 }
@@ -131,14 +132,14 @@ function breakpoints_settings_save_multipliers($multipliers) {
  * @return BreakpointSet
  *   Returns a BreakpointSet containing the breakpoints defined by the theme.
  */
-function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
+function breakpoint_breakpointset_reload_from_theme($theme_key) {
   // Clear caches so theme.info is fresh.
   system_rebuild_theme_data();
   drupal_theme_rebuild();
 
   $themes = list_themes();
   if ($themes[$theme_key]->status) {
-    $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
+    $theme_breakpoints = breakpoint_get_theme_breakpoint_list($theme_key);
     if (!empty($theme_breakpoints)) {
       $weight = 0;
       // Build a set for each theme
@@ -173,7 +174,7 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
  * @return
  *   An array of breakpoints in the form $breakpoint['name'] = 'media query'.
  */
-function breakpoints_get_theme_breakpoint_list($theme_key) {
+function breakpoint_get_theme_breakpoint_list($theme_key) {
   $themes = list_themes();
   if (!isset($themes[$theme_key])) {
     return array();
@@ -189,13 +190,13 @@ function breakpoints_get_theme_breakpoint_list($theme_key) {
 /**
  * Implements hook_entity_info().
  */
-function breakpoints_entity_info() {
+function breakpoint_entity_info() {
   // Breakpoint
-  $types['breakpoints_breakpoint'] = array(
+  $types['breakpoint_breakpoint'] = array(
     'label' => 'Breakpoint',
-    'entity class' => 'Drupal\breakpoints\Breakpoint',
+    'entity class' => 'Drupal\breakpoint\Breakpoint',
     'controller class' => 'Drupal\Core\Config\Entity\ConfigStorageController',
-    'config prefix' => 'breakpoints.breakpoint',
+    'config prefix' => 'breakpoint.breakpoint',
     'entity keys' => array(
       'id' => 'id',
       'label' => 'label',
@@ -204,11 +205,11 @@ function breakpoints_entity_info() {
   );
 
   // Breakpointset
-  $types['breakpoints_breakpointset'] = array(
+  $types['breakpoint_breakpointset'] = array(
     'label' => 'Breakpoint Set',
-    'entity class' => 'Drupal\breakpoints\BreakpointSet',
-    'controller class' => 'Drupal\breakpoints\BreakpointSetController',
-    'config prefix' => 'breakpoints.breakpointset',
+    'entity class' => 'Drupal\breakpoint\BreakpointSet',
+    'controller class' => 'Drupal\breakpoint\BreakpointSetController',
+    'config prefix' => 'breakpoint.breakpointset',
     'entity keys' => array(
       'id' => 'id',
       'label' => 'label',
@@ -222,39 +223,39 @@ function breakpoints_entity_info() {
 /**
  * Load one breakpoint set by its identifier.
  */
-function breakpoints_breakpointset_load($id) {
-  return entity_load('breakpoints_breakpointset', $id);
+function breakpoint_breakpointset_load($id) {
+  return entity_load('breakpoint_breakpointset', $id);
 }
 
 /**
  * Load all breakpoint sets.
  */
-function breakpoints_breakpointset_load_all() {
-  $breakpointsets = entity_load_multiple('breakpoints_breakpointset');
+function breakpoint_breakpointset_load_all() {
+  $breakpointsets = entity_load_multiple('breakpoint_breakpointset');
   return $breakpointsets;
 }
 
 /**
  * Load one breakpoint by its identifier.
  */
-function breakpoints_breakpoint_load($id) {
-  return entity_load('breakpoints_breakpoint', $id);
+function breakpoint_breakpoint_load($id) {
+  return entity_load('breakpoint_breakpoint', $id);
 }
 
 /**
  * Load all breakpoints.
  */
-function breakpoints_breakpoint_load_all() {
-  $breakpoints = entity_load_multiple('breakpoints_breakpoint');
+function breakpoint_breakpoint_load_all() {
+  $breakpoints = entity_load_multiple('breakpoint_breakpoint');
   return $breakpoints;
 }
 
 /**
  * Load all breakpointsets as select options.
  */
-function breakpoints_breakpointset_select_options() {
+function breakpoint_breakpointset_select_options() {
   $options = array();
-  $breakpointsets = breakpoints_breakpointset_load_all();
+  $breakpointsets = breakpoint_breakpointset_load_all();
   foreach ($breakpointsets as $breakpointset) {
     $options[$breakpointset->id()] = $breakpointset->label();
   }
