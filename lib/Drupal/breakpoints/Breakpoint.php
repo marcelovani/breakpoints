@@ -62,7 +62,7 @@ class Breakpoint extends ConfigEntityBase {
    *
    * @var string
    */
-  public $sourceType = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+  public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
   /**
    * The breakpoint status.
@@ -88,9 +88,9 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * The possible values for source type.
    */
-  const BREAKPOINTS_SOURCE_TYPE_THEME = 'theme';
-  const BREAKPOINTS_SOURCE_TYPE_MODULE = 'module';
-  const BREAKPOINTS_SOURCE_TYPE_CUSTOM = 'custom';
+  const SOURCE_TYPE_THEME = 'theme';
+  const SOURCE_TYPE_MODULE = 'module';
+  const SOURCE_TYPE_CUSTOM = 'custom';
 
   /**
    * Overrides Drupal\config\ConfigEntityBase::__construct().
@@ -130,17 +130,17 @@ class Breakpoint extends ConfigEntityBase {
   protected function buildConfigName() {
     // Check for illegal values in breakpoint source type.
     if (!in_array($this->sourceType, array(
-        BREAKPOINTS_SOURCE_TYPE_CUSTOM,
-        BREAKPOINTS_SOURCE_TYPE_MODULE,
-        BREAKPOINTS_SOURCE_TYPE_THEME)
+        Breakpoint::SOURCE_TYPE_CUSTOM,
+        Breakpoint::SOURCE_TYPE_MODULE,
+        Breakpoint::SOURCE_TYPE_THEME)
       )) {
       throw new Exception(
           t(
             "Expected one of '@custom', '@module' or '@theme' for breakpoint sourceType property but got '@sourcetype'.",
             array(
-              '@custom' => \BREAKPOINTS_SOURCE_TYPE_CUSTOM,
-              '@module' => \BREAKPOINTS_SOURCE_TYPE_MODULE,
-              '@theme' => \BREAKPOINTS_SOURCE_TYPE_THEME,
+              '@custom' => Breakpoint::SOURCE_TYPE_CUSTOM,
+              '@module' => Breakpoint::SOURCE_TYPE_MODULE,
+              '@theme' => Breakpoint::SOURCE_TYPE_THEME,
               '@sourcetype' => $this->sourceType,
             )
           )

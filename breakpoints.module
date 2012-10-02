@@ -2,18 +2,15 @@
 
 /**
  * @file
- * Breakpoints
+ * Manage breakpoints and breakpoint sets for responsive designs.
  */
 
 use \Drupal\breakpoints\Breakpoint;
 use \Drupal\breakpoints\BreakpointSet;
 
-define('BREAKPOINTS_SOURCE_TYPE_THEME', 'theme');
-define('BREAKPOINTS_SOURCE_TYPE_MODULE', 'module');
-define('BREAKPOINTS_SOURCE_TYPE_CUSTOM', 'custom');
-
 /**
  * Implements hook_enable().
+ *
  * Import breakpoints from all enabled themes.
  */
 function breakpoints_enable() {
@@ -24,28 +21,31 @@ function breakpoints_enable() {
 
 /**
  * Implements hook_themes_enabled().
+ *
  * Import breakpoints from all new enabled themes.
+ *
+ * @param array $theme_list
+ *   An array of theme names.
  */
 function breakpoints_themes_enabled($theme_list) {
   $themes = list_themes();
   foreach ($theme_list as $theme_key) {
     if ($themes[$theme_key]->status) {
-      // Check theme_key.breakpoints.yml first
       $theme_breakpoints = breakpoints_get_theme_breakpoint_list($theme_key);
       if (!empty($theme_breakpoints)) {
         $weight = 0;
-        // Build a breakpoint set for each theme
+        // Build a breakpoint set for each theme.
         $breakpointset = new BreakpointSet();
         $breakpointset->id = $theme_key;
         $breakpointset->label = $themes[$theme_key]->info['name'];
-        $breakpointset->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+        $breakpointset->sourceType = Breakpoint::SOURCE_TYPE_THEME;
         foreach ($theme_breakpoints as $name => $mediaQuery) {
           $breakpoint = new Breakpoint;
           $breakpoint->name = $name;
           $breakpoint->label = ucfirst($name);
           $breakpoint->mediaQuery = $mediaQuery;
           $breakpoint->source = $theme_key;
-          $breakpoint->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+          $breakpoint->sourceType = Breakpoint::SOURCE_TYPE_THEME;
           $breakpoint->status = TRUE;
           $breakpoint->weight = $weight++;
           $breakpoint->save();
@@ -58,10 +58,14 @@ function breakpoints_themes_enabled($theme_list) {
           unset($uri_options['path']);
           $uri = $uri['path'];
         }
-        $message = t('The breakpoints from theme %theme are imported and !setlink.', array(
+        $message = t('The breakpoints from theme %theme are imported.', array(
           '%theme' => check_plain($themes[$theme_key]->info['name']),
-          '!setlink' => module_exists('breakpoints_ui') && $uri ? l(t('a new breakpoint set is created'), $uri, $uri_options) : t('a new breakpoint set is created'),
         ));
+        if (module_exists('breakpoints_ui') && $uri) {
+          $message .= '<p>' . l(t('A new breakpoint set is created for theme %theme.', array(
+            '%theme' => check_plain($themes[$theme_key]->info['name']),
+          )), $uri, $uri_options);
+        }
         drupal_set_message($message, 'status');
       }
     }
@@ -70,14 +74,18 @@ function breakpoints_themes_enabled($theme_list) {
 
 /**
  * Implements hook_themes_disabled().
+ *
  * Remove breakpoints from all disabled themes.
+ *
+ * @param array $theme_list
+ *   An array of theme names.
  */
 function breakpoints_themes_disabled($theme_list) {
   $breakpointsets = entity_load_multiple('breakpoints_breakpointset', $theme_list);
   foreach ($breakpointsets as $breakpointset) {
     $breakpointset->delete();
     // delete all breakpoints defined by this theme.
-    $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.' . BREAKPOINTS_SOURCE_TYPE_THEME . '.' . $breakpointset->id() . '.');
+    $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.' . Breakpoint::SOURCE_TYPE_THEME . '.' . $breakpointset->id() . '.');
     $entity_info = entity_get_info('breakpoints_breakpoint');
 
     foreach ($names as &$name) {
@@ -103,16 +111,13 @@ function breakpoints_settings() {
 }
 
 /**
- * Save general settings.
+ * Save multipliers to settings.
  *
  * @param array $multipliers
  *   array containing multipliers.
  */
-function breakpoints_settings_save($multipliers) {
+function breakpoints_settings_save_multipliers($multipliers) {
   $config = config('breakpoints');
-  if ($config->isNew()) {
-    return FALSE;
-  }
   $config->set('multipliers', $multipliers);
   $config->save();
 }
@@ -121,8 +126,10 @@ function breakpoints_settings_save($multipliers) {
  * Reload breakpoint sets as they were defined in the theme.
  *
  * @param string $theme_key
+ *   The name of the theme.
  *
  * @return BreakpointSet
+ *   Returns a BreakpointSet containing the breakpoints defined by the theme.
  */
 function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
   // Clear caches so theme.info is fresh.
@@ -138,14 +145,14 @@ function breakpoints_breakpoints_set_reload_from_theme($theme_key) {
       $breakpointset = new BreakpointSet();
       $breakpointset->id = $theme_key;
       $breakpointset->label = $themes[$theme_key]->info['name'];
-      $breakpointset->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+      $breakpointset->sourceType = Breakpoint::SOURCE_TYPE_THEME;
       foreach ($theme_breakpoints as $name => $mediaQuery) {
         $breakpoint = new Breakpoint;
         $breakpoint->name = $name;
         $breakpoint->label = ucfirst($name);
         $breakpoint->mediaQuery = $mediaQuery;
         $breakpoint->source = $theme_key;
-        $breakpoint->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+        $breakpoint->sourceType = Breakpoint::SOURCE_TYPE_THEME;
         $breakpoint->status = TRUE;
         $breakpoint->weight = $weight++;
         $breakpoint->save();

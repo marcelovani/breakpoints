@@ -45,12 +45,11 @@ class BreakpointsThemeTest extends BreakpointSetTestBase {
    * Test the breakpoints provided by a theme.
    */
   public function testThemeBreakpoints() {
-    debug(breakpoints_breakpointset_load_all());
     // Verify the breakpoint group for breakpoints_test_theme was created.
     $breakpoint_set_obj = new BreakpointSet();
     $breakpoint_set_obj->label = 'Breakpoints test theme';
     $breakpoint_set_obj->id = 'breakpoints_test_theme';
-    $breakpoint_set_obj->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME;
+    $breakpoint_set_obj->sourceType = Breakpoint::SOURCE_TYPE_THEME;
     $breakpoint_set_obj->breakpoints = array(
       'theme.breakpoints_test_theme.mobile' => array(),
       'theme.breakpoints_test_theme.narrow' => array(),

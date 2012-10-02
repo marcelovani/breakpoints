@@ -47,7 +47,7 @@ class BreakpointSet extends ConfigEntityBase {
    *
    * @var string
    */
-  public $sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+  public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
   /**
    * The BreakpointSet overridden status.

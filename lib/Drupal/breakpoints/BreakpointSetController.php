@@ -19,14 +19,14 @@ class BreakpointSetController extends ConfigStorageController {
    * Override and save a breakpoint set.
    */
   public function override(BreakpointSet $breakpointset) {
-    if (!$breakpointset->sourceType == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
+    if (!$breakpointset->sourceType == Breakpoint::SOURCE_TYPE_THEME) {
       return FALSE;
     }
     foreach ($breakpointset->breakpoints as $key => $breakpoint) {
-      if ($breakpoint->sourceType == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME && $breakpoint->source == $breakpointset->id()) {
+      if ($breakpoint->sourceType == Breakpoint::SOURCE_TYPE_THEME && $breakpoint->source == $breakpointset->id()) {
         $new_breakpoint = $breakpoint->createDuplicate();
         $new_breakpoint->id = '';
-        $new_breakpoint->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+        $new_breakpoint->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
         $new_breakpoint->save();
 
         // Remove old one, add new one.
@@ -43,7 +43,7 @@ class BreakpointSetController extends ConfigStorageController {
    * Revert a breakpoint set after it has been overridden.
    */
   public function revert(BreakpointSet $breakpointset) {
-    if (!$breakpointset->overridden || !$breakpointset->sourceType == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
+    if (!$breakpointset->overridden || !$breakpointset->sourceType == Breakpoint::SOURCE_TYPE_THEME) {
       return FALSE;
     }
 

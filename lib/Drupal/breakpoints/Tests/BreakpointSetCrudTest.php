@@ -63,7 +63,7 @@ class BreakpointSetCrudTest extends BreakpointSetTestBase {
     $new_set = new BreakpointSet();
     $new_set->label = t('Clone of') . ' ' . $set->label();
     $new_set->id = '';
-    $new_set->sourceType = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+    $new_set->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
     $new_set->breakpoints = $set->breakpoints;
     $duplicated_set = $set->createDuplicate();
     $this->verifyBreakpointSet($duplicated_set, $new_set);

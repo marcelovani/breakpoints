@@ -49,7 +49,7 @@ class BreakpointsApiTest extends BreakpointsTestBase {
     $this->assertEqual((string) $breakpoint->id(), '', t('breakpoints_breakpoint_config_name: No id is set when an invalid sourceType is entered.'), t('Breakpoints API'));
 
     // Try an invalid source.
-    $breakpoint->sourceType = BREAKPOINTS_SOURCE_TYPE_CUSTOM;
+    $breakpoint->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
     $breakpoint->source = 'custom*_module source';
     $exception = FALSE;
     try {
@@ -85,6 +85,6 @@ class BreakpointsApiTest extends BreakpointsTestBase {
       $exception = TRUE;
     }
     $this->assertFalse($exception, t('breakpoints_breakpoint_config_name: No exception is thrown when a valid breakpoint is passed.'), t('Breakpoints API'));
-    $this->assertEqual($breakpoint->id(), Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.custom_module.' . $breakpoint->name, t('breakpoints_breakpoint_config_name: A id is set when a valid breakpoint is passed.'), t('Breakpoints API'));
+    $this->assertEqual($breakpoint->id(), Breakpoint::SOURCE_TYPE_CUSTOM . '.custom_module.' . $breakpoint->name, t('breakpoints_breakpoint_config_name: A id is set when a valid breakpoint is passed.'), t('Breakpoints API'));
   }
 }
