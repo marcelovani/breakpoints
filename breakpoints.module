@@ -241,3 +241,15 @@ function breakpoints_breakpoint_load_all() {
   $breakpoints = entity_load_multiple('breakpoints_breakpoint');
   return $breakpoints;
 }
+
+/**
+ * Load all breakpointsets as select options.
+ */
+function breakpoints_breakpointset_select_options() {
+  $options = array();
+  $breakpointsets = breakpoints_breakpointset_load_all();
+  foreach ($breakpointsets as $breakpointset) {
+    $options[$breakpointset->id()] = $breakpointset->label();
+  }
+  return $options;
+}
