@@ -69,9 +69,9 @@ class Breakpoint extends ConfigEntityBase {
    *
    * @var string
    *   Allowed values:
-   *     SOURCE_TYPE_THEME
-   *     SOURCE_TYPE_MODULE
-   *     SOURCE_TYPE_CUSTOM
+   *     Breakpoint::SOURCE_TYPE_THEME
+   *     Breakpoint::SOURCE_TYPE_MODULE
+   *     Breakpoint::SOURCE_TYPE_CUSTOM
    */
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 

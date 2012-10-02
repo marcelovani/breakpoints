@@ -1,4 +1,4 @@
-name = Breakpoints Theme Test
+name = Breakpoints theme test
 description = Test breakpoints provided by themes
 package = Other
 core = 8.x

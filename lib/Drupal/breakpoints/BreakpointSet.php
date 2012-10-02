@@ -39,6 +39,9 @@ class BreakpointSet extends ConfigEntityBase {
    * The BreakpointSet breakpoints.
    *
    * @var array
+   *   Array containing all breakpoints of this set.
+   *
+   * @see Drupal\breakpoints\Breakpoint
    */
   public $breakpoints = array();
 
@@ -46,6 +49,12 @@ class BreakpointSet extends ConfigEntityBase {
    * The BreakpointSet source type.
    *
    * @var string
+   *   Allowed values:
+   *     Breakpoint::SOURCE_TYPE_THEME
+   *     Breakpoint::SOURCE_TYPE_MODULE
+   *     Breakpoint::SOURCE_TYPE_CUSTOM
+   *
+   * @see Drupal\breakpoints\Breakpoint
    */
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
