@@ -16,6 +16,13 @@ use Exception;
 class Breakpoint extends ConfigEntityBase {
 
   /**
+   * The possible values for sourceType.
+   */
+  const SOURCE_TYPE_THEME = 'theme';
+  const SOURCE_TYPE_MODULE = 'module';
+  const SOURCE_TYPE_CUSTOM = 'custom';
+
+  /**
    * The breakpoint ID (config name).
    *
    * @var string
@@ -61,6 +68,10 @@ class Breakpoint extends ConfigEntityBase {
    * The breakpoint source type.
    *
    * @var string
+   *   Allowed values:
+   *     SOURCE_TYPE_THEME
+   *     SOURCE_TYPE_MODULE
+   *     SOURCE_TYPE_CUSTOM
    */
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
@@ -84,13 +95,6 @@ class Breakpoint extends ConfigEntityBase {
    * @var multipliers
    */
   public $multipliers = array();
-
-  /**
-   * The possible values for source type.
-   */
-  const SOURCE_TYPE_THEME = 'theme';
-  const SOURCE_TYPE_MODULE = 'module';
-  const SOURCE_TYPE_CUSTOM = 'custom';
 
   /**
    * Overrides Drupal\config\ConfigEntityBase::__construct().
@@ -161,6 +165,7 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Shortcut function to enable a breakpoint and save it.
+   *
    * @see breakpoints_breakpoint_action_confirm_submit()
    */
   public function enable() {
@@ -172,6 +177,7 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Shortcut function to disable a breakpoint and save it.
+   *
    * @see breakpoints_breakpoint_action_confirm_submit()
    */
   public function disable() {
@@ -183,6 +189,7 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Check if the mediaQuery is valid.
+   *
    * @see isValidMediaQuery()
    */
   public function isValid() {
@@ -191,6 +198,7 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Check if a mediaQuery is valid.
+   *
    * @see http://www.w3.org/TR/css3-mediaqueries/
    * @see http://www.w3.org/Style/CSS/Test/MediaQueries/20120229/reports/implement-report.html
    */
@@ -211,9 +219,14 @@ class Breakpoint extends ConfigEntityBase {
       'grid' => 'integer',
     );
     if ($media_query) {
-      // @todo: strip comments, new lines, ....
+      // Strip new lines and trim.
+      $media_query = str_replace(array("\r", "\n"), ' ', trim($media_query));
+
+      // Remove comments /* ... */.
+      $media_query = preg_replace('/\/\*[\s\S]*?\*\//', '', $media_query);
+
       // Check mediaQuery_list: S* [mediaQuery [ ',' S* mediaQuery ]* ]?
-      $parts = explode(',', trim($media_query));
+      $parts = explode(',', $media_query);
       foreach ($parts as $part) {
         // Split on ' and '
         $query_parts = explode(' and ', trim($part));

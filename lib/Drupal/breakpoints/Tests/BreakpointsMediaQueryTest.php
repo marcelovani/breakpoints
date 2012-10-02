@@ -53,6 +53,10 @@ class BreakpointsMediaQueryTest extends UnitTestBase {
       'screen and (min-width: -0)',
       'screen and (max-width: 0)',
       'screen and (min-width)',
+      // Multiline and comments.
+      'screen and /* this is a comment */ (min-width)',
+      "screen\nand /* this is a comment */ (min-width)",
+      "screen\n\nand /* this is\n a comment */ (min-width)",
     );
 
     foreach ($media_queries as $media_query) {
