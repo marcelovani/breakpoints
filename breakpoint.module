@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Manage breakpoints and breakpoint sets for responsive designs.
+ * Manage breakpoints and breakpoint groups for responsive designs.
  */
 
 use \Drupal\breakpoint\Breakpoint;
-use \Drupal\breakpoint\BreakpointSet;
+use \Drupal\breakpoint\BreakpointGroup;
 
 /**
  * Implements hook_enable().
@@ -34,11 +34,11 @@ function breakpoint_themes_enabled($theme_list) {
       $theme_breakpoints = breakpoint_get_theme_breakpoint_list($theme_key);
       if (!empty($theme_breakpoints)) {
         $weight = 0;
-        // Build a breakpoint set for each theme.
-        $breakpointset = new BreakpointSet();
-        $breakpointset->id = $theme_key;
-        $breakpointset->label = $themes[$theme_key]->info['name'];
-        $breakpointset->sourceType = Breakpoint::SOURCE_TYPE_THEME;
+        // Build a breakpoint group for each theme.
+        $breakpoint_group = new BreakpointGroup();
+        $breakpoint_group->id = $theme_key;
+        $breakpoint_group->label = $themes[$theme_key]->info['name'];
+        $breakpoint_group->sourceType = Breakpoint::SOURCE_TYPE_THEME;
         foreach ($theme_breakpoints as $name => $mediaQuery) {
           $breakpoint = new Breakpoint;
           $breakpoint->name = $name;
@@ -49,11 +49,11 @@ function breakpoint_themes_enabled($theme_list) {
           $breakpoint->status = TRUE;
           $breakpoint->weight = $weight++;
           $breakpoint->save();
-          $breakpointset->breakpoints[$breakpoint->id()] = $breakpoint;
+          $breakpoint_group->breakpoints[$breakpoint->id()] = $breakpoint;
         }
-        $breakpointset->save();
+        $breakpoint_group->save();
 
-        $uri = $breakpointset->uri();
+        $uri = $breakpoint_group->uri();
         if ($uri) {
           $uri_options = $uri;
           unset($uri_options['path']);
@@ -63,7 +63,7 @@ function breakpoint_themes_enabled($theme_list) {
           '%theme' => check_plain($themes[$theme_key]->info['name']),
         ));
         if (module_exists('breakpoint_ui') && $uri) {
-          $message .= '<p>' . l(t('A new breakpoint set is created for theme %theme.', array(
+          $message .= '<p>' . l(t('A new breakpoint group is created for theme %theme.', array(
             '%theme' => check_plain($themes[$theme_key]->info['name']),
           )), $uri, $uri_options);
         }
@@ -82,17 +82,17 @@ function breakpoint_themes_enabled($theme_list) {
  *   An array of theme names.
  */
 function breakpoint_themes_disabled($theme_list) {
-  $breakpointsets = entity_load_multiple('breakpoint_breakpointset', $theme_list);
-  foreach ($breakpointsets as $breakpointset) {
-    $breakpointset->delete();
+  $breakpoint_groups = entity_load_multiple('breakpoint_group', $theme_list);
+  foreach ($breakpoint_groups as $breakpoint_group) {
+    $breakpoint_group->delete();
     // delete all breakpoints defined by this theme.
-    $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.' . Breakpoint::SOURCE_TYPE_THEME . '.' . $breakpointset->id() . '.');
-    $entity_info = entity_get_info('breakpoint_breakpoint');
+    $names = drupal_container()->get('config.storage')->listAll('breakpoints.breakpoint.' . Breakpoint::SOURCE_TYPE_THEME . '.' . $breakpoint_group->id() . '.');
+    $entity_info = entity_get_info('breakpoint');
 
     foreach ($names as &$name) {
       $name = substr($name, strlen($entity_info['config prefix']) + 1);
     }
-    $breakpoints = entity_load_multiple('breakpoint_breakpoint', $names);
+    $breakpoints = entity_load_multiple('breakpoint', $names);
 
     foreach ($breakpoints as $breakpoint) {
       $breakpoint->delete();
@@ -124,16 +124,16 @@ function breakpoint_settings_save_multipliers($multipliers) {
 }
 
 /**
- * Reload breakpoint sets as they were defined in the theme.
+ * Reload breakpoint groups as they were defined in the theme.
  *
  * @param string $theme_key
  *   The name of the theme.
  *
- * @return BreakpointSet
- *   Returns a BreakpointSet containing the breakpoints defined by the theme.
+ * @return BreakpointGroup
+ *   Returns a BreakpointGroup containing the breakpoints defined by the theme.
  */
-function breakpoint_breakpointset_reload_from_theme($theme_key) {
-  // Clear caches so theme.info is fresh.
+function breakpoint_group_reload_from_theme($theme_key) {
+  // Clear caches so theme info is fresh.
   system_rebuild_theme_data();
   drupal_theme_rebuild();
 
@@ -142,11 +142,11 @@ function breakpoint_breakpointset_reload_from_theme($theme_key) {
     $theme_breakpoints = breakpoint_get_theme_breakpoint_list($theme_key);
     if (!empty($theme_breakpoints)) {
       $weight = 0;
-      // Build a set for each theme
-      $breakpointset = new BreakpointSet();
-      $breakpointset->id = $theme_key;
-      $breakpointset->label = $themes[$theme_key]->info['name'];
-      $breakpointset->sourceType = Breakpoint::SOURCE_TYPE_THEME;
+      // Build a group for the theme.
+      $breakpoint_group = new BreakpointGroup();
+      $breakpoint_group->id = $theme_key;
+      $breakpoint_group->label = $themes[$theme_key]->info['name'];
+      $breakpoint_group->sourceType = Breakpoint::SOURCE_TYPE_THEME;
       foreach ($theme_breakpoints as $name => $mediaQuery) {
         $breakpoint = new Breakpoint;
         $breakpoint->name = $name;
@@ -157,10 +157,10 @@ function breakpoint_breakpointset_reload_from_theme($theme_key) {
         $breakpoint->status = TRUE;
         $breakpoint->weight = $weight++;
         $breakpoint->save();
-        $breakpointset->breakpoints[$breakpoint->getConfigName()] = $breakpoint;
+        $breakpoint_group->breakpoints[$breakpoint->getConfigName()] = $breakpoint;
       }
     }
-    return $breakpointset;
+    return $breakpoint_group;
   }
   return FALSE;
 }
@@ -191,8 +191,8 @@ function breakpoint_get_theme_breakpoint_list($theme_key) {
  * Implements hook_entity_info().
  */
 function breakpoint_entity_info() {
-  // Breakpoint
-  $types['breakpoint_breakpoint'] = array(
+  // Breakpoint.
+  $types['breakpoint'] = array(
     'label' => 'Breakpoint',
     'entity class' => 'Drupal\breakpoint\Breakpoint',
     'controller class' => 'Drupal\Core\Config\Entity\ConfigStorageController',
@@ -204,12 +204,12 @@ function breakpoint_entity_info() {
     ),
   );
 
-  // Breakpointset
-  $types['breakpoint_breakpointset'] = array(
-    'label' => 'Breakpoint Set',
-    'entity class' => 'Drupal\breakpoint\BreakpointSet',
-    'controller class' => 'Drupal\breakpoint\BreakpointSetController',
-    'config prefix' => 'breakpoint.breakpointset',
+  // Breakpoint group.
+  $types['breakpoint_group'] = array(
+    'label' => 'Breakpoint group',
+    'entity class' => 'Drupal\breakpoint\BreakpointGroup',
+    'controller class' => 'Drupal\breakpoint\BreakpointGroupController',
+    'config prefix' => 'breakpoint.breakpoint_group',
     'entity keys' => array(
       'id' => 'id',
       'label' => 'label',
@@ -221,43 +221,61 @@ function breakpoint_entity_info() {
 }
 
 /**
- * Load one breakpoint set by its identifier.
+ * Load one breakpoint group by its identifier.
+ *
+ * @param int $id
+ *   The id of the breakpoint group to load.
+ *
+ * @return Drupal\Core\Entity\EntityInterface
+ *   The entity object, or FALSE if there is no entity with the given id.
  */
-function breakpoint_breakpointset_load($id) {
-  return entity_load('breakpoint_breakpointset', $id);
+function breakpoint_group_load($id) {
+  return entity_load('breakpoint_group', $id);
 }
 
 /**
- * Load all breakpoint sets.
+ * Load all breakpoint groups.
+ *
+ * @return array
+ *   An array of entity objects indexed by their ids.
  */
-function breakpoint_breakpointset_load_all() {
-  $breakpointsets = entity_load_multiple('breakpoint_breakpointset');
-  return $breakpointsets;
+function breakpoint_group_load_all() {
+  $breakpoint_groups = entity_load_multiple('breakpoint_group');
+  return $breakpoint_groups;
 }
 
 /**
  * Load one breakpoint by its identifier.
+ *
+ * @param int $id
+ *   The id of the breakpoint to load.
+ *
+ * @return Drupal\Core\Entity\EntityInterface
+ *   The entity object, or FALSE if there is no entity with the given id.
  */
-function breakpoint_breakpoint_load($id) {
-  return entity_load('breakpoint_breakpoint', $id);
+function breakpoint_load($id) {
+  return entity_load('breakpoint', $id);
 }
 
 /**
  * Load all breakpoints.
+ *
+ * @return array
+ *   An array of entity objects indexed by their ids.
  */
-function breakpoint_breakpoint_load_all() {
-  $breakpoints = entity_load_multiple('breakpoint_breakpoint');
+function breakpoint_load_all() {
+  $breakpoints = entity_load_multiple('breakpoint');
   return $breakpoints;
 }
 
 /**
- * Load all breakpointsets as select options.
+ * Load all breakpoint groups as select options.
  */
-function breakpoint_breakpointset_select_options() {
+function breakpoint_group_select_options() {
   $options = array();
-  $breakpointsets = breakpoint_breakpointset_load_all();
-  foreach ($breakpointsets as $breakpointset) {
-    $options[$breakpointset->id()] = $breakpointset->label();
+  $breakpoint_groups = breakpoint_group_load_all();
+  foreach ($breakpoint_groups as $breakpoint_group) {
+    $options[$breakpoint_group->id()] = $breakpoint_group->label();
   }
   return $options;
 }

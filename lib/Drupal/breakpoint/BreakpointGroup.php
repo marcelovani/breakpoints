@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of Drupal\breakpoint\BreakpointSet.
+ * Definition of Drupal\breakpoint\BreakpointGroup.
  */
 
 namespace Drupal\breakpoint;
@@ -10,43 +10,43 @@ namespace Drupal\breakpoint;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the BreakpointSet entity.
+ * Defines the BreakpointGroup entity.
  */
-class BreakpointSet extends ConfigEntityBase {
+class BreakpointGroup extends ConfigEntityBase {
 
   /**
-   * The BreakpointSet ID (machine name).
+   * The BreakpointGroup ID (machine name).
    *
    * @var string
    */
   public $id;
 
   /**
-   * The BreakpointSet UUID.
+   * The BreakpointGroup UUID.
    *
    * @var string
    */
   public $uuid;
 
   /**
-   * The BreakpointSet label.
+   * The BreakpointGroup label.
    *
    * @var string
    */
   public $label;
 
   /**
-   * The BreakpointSet breakpoints.
+   * The BreakpointGroup breakpoints.
    *
    * @var array
-   *   Array containing all breakpoints of this set.
+   *   Array containing all breakpoints of this group.
    *
    * @see Drupal\breakpoints\Breakpoint
    */
   public $breakpoints = array();
 
   /**
-   * The BreakpointSet source type.
+   * The BreakpointGroup source type.
    *
    * @var string
    *   Allowed values:
@@ -59,7 +59,7 @@ class BreakpointSet extends ConfigEntityBase {
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
   /**
-   * The BreakpointSet overridden status.
+   * The BreakpointGroup overridden status.
    *
    * @var string
    */
@@ -68,7 +68,7 @@ class BreakpointSet extends ConfigEntityBase {
   /**
    * Overrides Drupal\config\ConfigEntityBase::__construct().
    */
-  public function __construct(array $values = array(), $entity_type = 'breakpoint_breakpointset') {
+  public function __construct(array $values = array(), $entity_type = 'breakpoint_group') {
     parent::__construct($values, $entity_type);
     $this->loadAllBreakpoints();
   }
@@ -84,14 +84,14 @@ class BreakpointSet extends ConfigEntityBase {
   }
 
   /**
-   * Override and save a breakpoint set.
+   * Override and save a breakpoint group.
    */
   public function override() {
     return entity_get_controller($this->entityType)->override($this);
   }
 
   /**
-   * Revert a breakpoint set after it has been overridden.
+   * Revert a breakpoint group after it has been overridden.
    */
   public function revert() {
     return entity_get_controller($this->entityType)->revert($this);
@@ -101,7 +101,7 @@ class BreakpointSet extends ConfigEntityBase {
    * Implements EntityInterface::createDuplicate().
    */
   public function createDuplicate() {
-    $duplicate = new BreakpointSet();
+    $duplicate = new BreakpointGroup();
     $duplicate->id = '';
     $duplicate->label = t('Clone of') . ' ' . $this->label();
     $duplicate->breakpoints = $this->breakpoints;
@@ -115,7 +115,7 @@ class BreakpointSet extends ConfigEntityBase {
     $breakpoints = $this->breakpoints;
     $this->breakpoints = array();
     foreach ($breakpoints as $breakpoint_id) {
-      $breakpoint = breakpoint_breakpoint_load($breakpoint_id);
+      $breakpoint = breakpoint_load($breakpoint_id);
       if ($breakpoint) {
         $this->breakpoints[$breakpoint_id] = $breakpoint;
       }

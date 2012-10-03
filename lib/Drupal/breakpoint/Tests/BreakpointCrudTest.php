@@ -40,10 +40,10 @@ class BreakpointCrudTest extends BreakpointTestBase {
 
     $this->verifyBreakpoint($breakpoint);
 
-    // Test breakpoint_breakpoint_load_all
-    $all_breakpoints = breakpoint_breakpoint_load_all();
+    // Test breakpoint_load_all
+    $all_breakpoints = breakpoint_load_all();
     $config_name = $breakpoint->getConfigName();
-    $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoint_breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
+    $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
     $this->verifyBreakpoint($breakpoint, $all_breakpoints[$config_name]);
 
     // Update the breakpoint.
@@ -58,6 +58,6 @@ class BreakpointCrudTest extends BreakpointTestBase {
 
     // Delete the breakpoint.
     $breakpoint->delete();
-    $this->assertFalse(breakpoint_breakpoint_load($config_name), t('breakpoint_breakpoint_load: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));
+    $this->assertFalse(breakpoint_load($config_name), t('breakpoint_load: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));
   }
 }
