@@ -70,6 +70,6 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
 
     // Delete the breakpoint group.
     $group->delete();
-    $this->assertFalse(breakpoint_group_load($group->id), t('breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
+    $this->assertFalse(entity_load('breakpoint_group', $group->id), t('breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
   }
 }

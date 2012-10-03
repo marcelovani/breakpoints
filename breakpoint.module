@@ -102,6 +102,9 @@ function breakpoint_themes_disabled($theme_list) {
 
 /**
  * Load general settings.
+ *
+ * @return array
+ *   array containing general breakpoint settings.
  */
 function breakpoint_settings() {
   $config = config('breakpoint');
@@ -168,10 +171,10 @@ function breakpoint_group_reload_from_theme($theme_key) {
 /**
  * Get a list of available breakpoints from a specified theme.
  *
- * @param $theme_key
+ * @param string $theme_key
  *   The name of the theme.
  *
- * @return
+ * @return array
  *   An array of breakpoints in the form $breakpoint['name'] = 'media query'.
  */
 function breakpoint_get_theme_breakpoint_list($theme_key) {
@@ -223,25 +226,18 @@ function breakpoint_entity_info() {
 /**
  * Load one breakpoint group by its identifier.
  *
- * @param int $id
+ * @param string $id
  *   The id of the breakpoint group to load.
  *
- * @return Drupal\Core\Entity\EntityInterface
- *   The entity object, or FALSE if there is no entity with the given id.
+ * @return Drupal\breakpoint\BreakpointGroup|false
+ *   The breakpoint group, or FALSE if there is no entity with the given id.
+ *
+ * @todo Needed for menu_callback
+ *
+ * @see http://drupal.org/node/1798214
  */
 function breakpoint_group_load($id) {
   return entity_load('breakpoint_group', $id);
-}
-
-/**
- * Load all breakpoint groups.
- *
- * @return array
- *   An array of entity objects indexed by their ids.
- */
-function breakpoint_group_load_all() {
-  $breakpoint_groups = entity_load_multiple('breakpoint_group');
-  return $breakpoint_groups;
 }
 
 /**
@@ -250,32 +246,30 @@ function breakpoint_group_load_all() {
  * @param int $id
  *   The id of the breakpoint to load.
  *
- * @return Drupal\Core\Entity\EntityInterface
+ * @return Drupal\breakpoint\Breakpoint
  *   The entity object, or FALSE if there is no entity with the given id.
+ *
+ * @todo Needed for menu_callback
+ *
+ * @see http://drupal.org/node/1798214
+ *
  */
 function breakpoint_load($id) {
   return entity_load('breakpoint', $id);
 }
 
 /**
- * Load all breakpoints.
+ * Load all breakpoint groups as select options.
  *
  * @return array
- *   An array of entity objects indexed by their ids.
- */
-function breakpoint_load_all() {
-  $breakpoints = entity_load_multiple('breakpoint');
-  return $breakpoints;
-}
-
-/**
- * Load all breakpoint groups as select options.
+ *   An array containing breakpoint group labels indexed by their ids.
  */
 function breakpoint_group_select_options() {
   $options = array();
-  $breakpoint_groups = breakpoint_group_load_all();
+  $breakpoint_groups = entity_load_multiple('breakpoint_group');
   foreach ($breakpoint_groups as $breakpoint_group) {
     $options[$breakpoint_group->id()] = $breakpoint_group->label();
   }
+  asort($options);
   return $options;
 }

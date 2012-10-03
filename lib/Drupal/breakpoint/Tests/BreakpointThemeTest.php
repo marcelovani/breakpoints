@@ -63,7 +63,7 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
 
     // Override the breakpoints.
     $overridden_set = clone $breakpoint_group_obj;
-    $breakpoint_group = breakpoint_group_load('breakpoint_test_theme');
+    $breakpoint_group = entity_load('breakpoint_group', 'breakpoint_test_theme');
     $breakpoint_group = $breakpoint_group->override();
 
     // Verify the group is overridden.
@@ -77,7 +77,7 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
     $this->verifyBreakpointGroup($overridden_set);
 
     // Revert the breakpoint group.
-    $breakpoint_group = breakpoint_group_load('breakpoint_test_theme');
+    $breakpoint_group = entity_load('breakpoint_group', 'breakpoint_test_theme');
     $breakpoint_group = $breakpoint_group->revert();
 
     // Verify the breakpoint group has its original values again when loaded.
@@ -85,6 +85,6 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
 
     // Disable the test theme and verify the breakpoint group is deleted.
     theme_disable(array('breakpoint_test_theme'));
-    $this->assertFalse(breakpoint_group_load('breakpoint_test_theme'), t('breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
+    $this->assertFalse(entity_load('breakpoint_group', 'breakpoint_test_theme'), t('breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
   }
 }

@@ -42,7 +42,7 @@ abstract class BreakpointGroupTestBase extends WebTestBase {
     $assert_set = t('Breakpoints API');
 
     // Verify breakpoint_group_load().
-    $compare_set = is_null($compare_set) ? breakpoint_group_load($group->id) : $compare_set;
+    $compare_set = is_null($compare_set) ? entity_load('breakpoint_group', $group->id) : $compare_set;
 
     foreach ($properties as $property) {
       $t_args = array(

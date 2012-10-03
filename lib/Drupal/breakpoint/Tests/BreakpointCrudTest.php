@@ -41,7 +41,7 @@ class BreakpointCrudTest extends BreakpointTestBase {
     $this->verifyBreakpoint($breakpoint);
 
     // Test breakpoint_load_all
-    $all_breakpoints = breakpoint_load_all();
+    $all_breakpoints = entity_load_multiple('breakpoint');
     $config_name = $breakpoint->getConfigName();
     $this->assertTrue(isset($all_breakpoints[$config_name]), t('breakpoint_load_all: New breakpoint is present when loading all breakpoints.'));
     $this->verifyBreakpoint($breakpoint, $all_breakpoints[$config_name]);
