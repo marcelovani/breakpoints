@@ -111,7 +111,7 @@ class Breakpoint extends ConfigEntityBase {
       $this->id = $this->buildConfigName();
     }
     if (empty($this->label)) {
-      $this->label = ucfirst($this->name);
+      $this->label = drupal_ucfirst($this->name);
     }
     if (!$this->isValid()) {
       throw new Exception(t('Invalid media query detected.'));
