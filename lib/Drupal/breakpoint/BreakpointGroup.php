@@ -59,6 +59,13 @@ class BreakpointGroup extends ConfigEntityBase {
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
   /**
+   * The breakpoint source: theme or module name.
+   *
+   * @var string
+   */
+  public $source = '';
+
+  /**
    * The BreakpointGroup overridden status.
    *
    * @var string

@@ -87,4 +87,68 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
     theme_disable(array('breakpoint_test_theme'));
     $this->assertFalse(entity_load('breakpoint_group', 'breakpoint_test_theme'), t('breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
   }
+
+  /**
+   * Test the breakpoints defined by the custom group.
+   */
+  public function testThemeBreakpointGroup() {
+    // Verify the breakpoint group 'test' was created by breakpoint_test_theme.
+    $breakpoint_group_obj = new BreakpointGroup();
+    $breakpoint_group_obj->label = 'Test';
+    $breakpoint_group_obj->id = 'test';
+    $breakpoint_group_obj->sourceType = Breakpoint::SOURCE_TYPE_THEME;
+    $breakpoint_group_obj->source = 'breakpoint_test_theme';
+    $breakpoint_group_obj->breakpoints = array(
+      'theme.breakpoint_test_theme.mobile' => array('1.5x', '2.x'),
+      'theme.breakpoint_test_theme.narrow' => array(),
+      'theme.breakpoint_test_theme.wide' => array(),
+    );
+    $breakpoint_group_obj->overridden = 0;
+
+    // Verify we can load this breakpoint defined by the theme.
+    $this->verifyBreakpointGroup($breakpoint_group_obj);
+
+    // Disable the test theme and verify the breakpoint group is deleted.
+    theme_disable(array('breakpoint_test_theme'));
+    $this->assertFalse(entity_load('breakpoint_group', 'test'), t('breakpoint_group_load: Loading a deleted breakpoint group returns false.'), t('Breakpoints API'));
+  }
+
+  /**
+   * Test the breakpoints defined by the custom group in the module.
+   */
+  public function testThemeBreakpointGroupModule() {
+    // Call the import manually, since the testbot needs to enable the module
+    // first, otherwise the theme isn't detected.
+    _breakpoint_import_breakpoint_groups('breakpoint_theme_test', Breakpoint::SOURCE_TYPE_MODULE);
+
+    // Verify the breakpoint group 'module_test' was created by
+    // breakpoint_theme_test module.
+    $breakpoint_group_obj = new BreakpointGroup();
+    $breakpoint_group_obj->label = 'Test Module';
+    $breakpoint_group_obj->id = 'module_test';
+    $breakpoint_group_obj->sourceType = Breakpoint::SOURCE_TYPE_MODULE;
+    $breakpoint_group_obj->source = 'breakpoint_theme_test';
+    $breakpoint_group_obj->breakpoints = array(
+      'theme.breakpoint_test_theme.mobile' => array(),
+      'theme.breakpoint_test_theme.narrow' => array('2.x'),
+      'theme.breakpoint_test_theme.wide' => array(),
+    );
+    $breakpoint_group_obj->overridden = 0;
+
+    // Verify we can load this breakpoint defined by the theme.
+    $this->verifyBreakpointGroup($breakpoint_group_obj);
+
+    // Disable the test theme and verify the breakpoint group still exists.
+    theme_disable(array('breakpoint_test_theme'));
+    $this->assertTrue(entity_load('breakpoint_group', 'module_test'));
+
+    // Disable the test module and verify the breakpoint group still exists.
+    module_disable(array('breakpoint_theme_test'));
+    $this->assertTrue(entity_load('breakpoint_group', 'module_test'));
+
+    // Uninstall the test module and verify the breakpoint group is deleted.
+    module_uninstall(array('breakpoint_theme_test'));
+    $this->assertFalse(entity_load('breakpoint_group', 'module_test'));
+  }
+
 }
