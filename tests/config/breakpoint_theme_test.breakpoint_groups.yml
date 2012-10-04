@@ -2,5 +2,5 @@ module_test:
   label: Test Module
   breakpoints:
     theme.breakpoint_test_theme.mobile: []
-    theme.breakpoint_test_theme.narrow: ['2x']
+    theme.breakpoint_test_theme.narrow: ['3x', '4x']
     theme.breakpoint_test_theme.wide:

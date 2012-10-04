@@ -130,7 +130,7 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
     $breakpoint_group_obj->source = 'breakpoint_theme_test';
     $breakpoint_group_obj->breakpoints = array(
       'theme.breakpoint_test_theme.mobile' => array(),
-      'theme.breakpoint_test_theme.narrow' => array('2.x'),
+      'theme.breakpoint_test_theme.narrow' => array('3.x', '4.x'),
       'theme.breakpoint_test_theme.wide' => array(),
     );
     $breakpoint_group_obj->overridden = 0;
@@ -138,17 +138,28 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
     // Verify we can load this breakpoint defined by the theme.
     $this->verifyBreakpointGroup($breakpoint_group_obj);
 
+    // Check that the multipliers are added to the settings.
+    $settings = breakpoint_settings();
+    $expected_settings = array(
+      0 => '1x',
+      1 => '1.5x',
+      2 => '2x',
+      3 => '3x',
+      4 => '4x',
+    );
+    $this->assertEqual($settings->multipliers, $expected_settings, 'Multipliers are added to settings.');
+
     // Disable the test theme and verify the breakpoint group still exists.
     theme_disable(array('breakpoint_test_theme'));
-    $this->assertTrue(entity_load('breakpoint_group', 'module_test'));
+    $this->assertTrue(entity_load('breakpoint_group', 'module_test'), 'Breakpoint group still exists if theme is disabled.');
 
     // Disable the test module and verify the breakpoint group still exists.
     module_disable(array('breakpoint_theme_test'));
-    $this->assertTrue(entity_load('breakpoint_group', 'module_test'));
+    $this->assertTrue(entity_load('breakpoint_group', 'module_test'), 'Breakpoint group still exists if module is disabled.');
 
     // Uninstall the test module and verify the breakpoint group is deleted.
     module_uninstall(array('breakpoint_theme_test'));
-    $this->assertFalse(entity_load('breakpoint_group', 'module_test'));
+    $this->assertFalse(entity_load('breakpoint_group', 'module_test'), 'Breakpoint group is removed if module is uninstalled.');
   }
 
 }

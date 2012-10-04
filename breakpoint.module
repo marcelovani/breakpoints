@@ -208,18 +208,17 @@ function _breakpoint_import_breakpoint_groups($group_id, $sourceType) {
           if ($breakpoint) {
             // Check if the multipliers are set, if not set them now.
             if (is_array($multipliers) && !empty($multipliers)) {
-              $multipliers = drupal_map_assoc(array_values($multipliers));
-
               // Check settings first.
               $settings = breakpoint_settings();
               $defined_multipliers = $settings->multipliers;
               $new_multipliers = array_diff($multipliers, $defined_multipliers);
               if (!empty($new_multipliers)) {
-                $defined_multipliers += $new_multipliers;
+                $defined_multipliers = array_merge($defined_multipliers, $new_multipliers);
                 breakpoint_settings_save_multipliers($defined_multipliers);
               }
 
               // Check breakpoint multipliers.
+              $multipliers = drupal_map_assoc(array_values($multipliers));
               $new_multipliers = array_diff($multipliers, $breakpoint->multipliers);
               if (!empty($new_multipliers)) {
                 $breakpoint->multipliers += $new_multipliers;
