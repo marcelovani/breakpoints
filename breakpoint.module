@@ -105,19 +105,7 @@ function breakpoint_modules_enabled($modules) {
     _breakpoint_import_breakpoint_groups($module, Breakpoint::SOURCE_TYPE_MODULE);
   }
 }
-/*
-function breakpoint_module_implements_alter(&$implementations, $hook) {
-  if ($hook == 'modules_enabled') {
-    // Move my_module_rdf_mapping() to the end of the list. module_implements()
-    // iterates through $implementations with a foreach loop which PHP iterates
-    // in the order that the items were added, so to move an item to the end of
-    // the array, we remove it and then add it.
-    $group = $implementations['breakpoint'];
-    unset($implementations['breakpoint']);
-    $implementations['breakpoint'] = $group;
-  }
-}
-*/
+
 /**
  * Implements hook_modules_uninstalled().
  *
@@ -157,7 +145,7 @@ function _breakpoint_import_breakpoints($label, $id, $source_type, $media_querie
     foreach ($media_queries as $name => $media_query) {
       $breakpoint = new Breakpoint;
       $breakpoint->name = $name;
-      $breakpoint->label = ucfirst($name);
+      $breakpoint->label = drupal_ucfirst($name);
       $breakpoint->mediaQuery = $media_query;
       $breakpoint->source = $id;
       $breakpoint->sourceType = $source_type;
@@ -196,9 +184,9 @@ function _breakpoint_import_breakpoint_groups($group_id, $source_type) {
           $breakpoint_group->label = $data['label'];
         }
         else {
-          $breakpoint_group->label = ucfirst($data['label']);
+          $breakpoint_group->label = drupal_ucfirst($data['label']);
         }
-        foreach($data['breakpoints'] as $breakpoint_id => $multipliers) {
+        foreach ($data['breakpoints'] as $breakpoint_id => $multipliers) {
           // Check if breakpoint exists, assume short name.
           $breakpoint = entity_load('breakpoint', $source_type . '.' . $group_id . '.' . $breakpoint_id);
           // If the breakpoint doesn't exist, try using the full name.
@@ -257,7 +245,7 @@ function _breakpoint_delete_breakpoints($ids, $source_type) {
       $entity_info = entity_get_info('breakpoint');
 
       foreach ($names as &$name) {
-        $name = substr($name, strlen($entity_info['config prefix']) + 1);
+        $name = drupal_substr($name, drupal_strlen($entity_info['config prefix']) + 1);
       }
       $breakpoints = entity_load_multiple('breakpoint', $names);
 
@@ -347,7 +335,7 @@ function breakpoint_group_reload_from_theme($theme_key) {
       foreach ($theme_breakpoints as $name => $media_query) {
         $breakpoint = new Breakpoint;
         $breakpoint->name = $name;
-        $breakpoint->label = ucfirst($name);
+        $breakpoint->label = drupal_ucfirst($name);
         $breakpoint->mediaQuery = $media_query;
         $breakpoint->source = $theme_key;
         $breakpoint->sourceType = Breakpoint::SOURCE_TYPE_THEME;
