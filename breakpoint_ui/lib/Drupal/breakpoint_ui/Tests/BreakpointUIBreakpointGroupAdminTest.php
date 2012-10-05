@@ -6,9 +6,7 @@
 namespace Drupal\breakpoint_ui\Tests;
 
 use Drupal\breakpoint\Tests\BreakpointGroupTestBase;
-use Drupal\breakpoint\BreakpointGroup;
 use Drupal\breakpoint\Breakpoint;
-use stdClass;
 
 /**
  * Tests for breakpoint groups admin interface.
@@ -24,7 +22,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Breakpoint Set administration functionality',
+      'name' => 'Breakpoint Group administration functionality',
       'description' => 'Thoroughly test the administrative interface of the breakpoint module.',
       'group' => 'Breakpoint UI',
     );
@@ -44,87 +42,76 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
   /**
    * Test breakpoint administration functionality
    */
-  function testBreakpointGroupAdmin() {
+  function testCustomBreakpointGroupAdmin() {
+    $group = t('Breakpoint Group UI');
     // Add breakpoints.
     $breakpoints = array();
     for ($i = 0; $i <= 3; $i++) {
-      $breakpoint = new Breakpoint;
-      $breakpoint->name = drupal_strtolower($this->randomName());
       $width = ($i + 1) * 200;
-      $breakpoint->mediaQuery = "(min-width: {$width}px)";
-      $breakpoint->source = 'user';
-      $breakpoint->sourceType = 'custom';
-      $breakpoint->multipliers = array(
-        '1.5x' => 0,
-        '2x' => 0,
+      $values = array(
+        'name' => drupal_strtolower($this->randomName()),
+        'mediaQuery' => "(min-width: {$width}px)",
       );
+      $breakpoint = entity_create('breakpoint', $values);
       $breakpoint->save();
       $breakpoints[$breakpoint->id] = $breakpoint;
     }
     // Add breakpoint group.
     $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/add');
-    $name = $this->randomName();
+    $label = $this->randomName();
     $machine_name = drupal_strtolower($name);
     $breakpoint = reset($breakpoints);
     $edit = array(
-      'name' => $name,
-      'machine_name' => $machine_name,
-      'breakpoints[' . $breakpoint->id . ']' => $breakpoint->id,
+      'label' => $name,
+      'id' => $machine_name,
+      'breakpoints[' . $breakpoint->id . '][label]' => $breakpoint->label(),
+      'breakpoints[' . $breakpoint->id . '][mediaQuery]' => $breakpoint->mediaQuery,
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the breakpoint was saved.
-    $this->drupalGet('admin/config/media/breakpoint/sets/' . $machine_name);
-    $this->assertResponse(200, t('Breakpoint set was saved.'));
-
-    // Verify the breakpoint was attached to the set.
-    $this->assertField('breakpoints[' . $config_name . '][name]', t('The Breakpoint was added.'));
+    $this->assertText(t('Breakpoint group @group was saved', array('@group' => $name)), $group);
+    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    $this->assertResponse(200, t('Breakpoint group was saved.'));
+    $this->assertField('breakpoints[' . $breakpoint->id . '][label]', t('The breakpointgroup should contain the right breakpoints.'), $group);
 
     // Add breakpoints to the breakpoint group.
-    $this->drupalGet('admin/config/media/breakpoint/sets/' . $machine_name . '/edit');
     $edit = array();
     foreach ($breakpoints as $breakpoint) {
-      $config_name = breakpoint_breakpoint_config_name($breakpoint);
-      $edit['breakpoints[' . $config_name . ']'] = $config_name;
+      $edit['breakpoints[' . $breakpoint->id() . '][label]'] = $breakpoint->label();
+      $edit['breakpoints[' . $breakpoint->id . '][mediaQuery]'] = $breakpoint->mediaQuery;
     }
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the breakpoints were attached to the set.
-    $this->drupalGet('admin/config/media/breakpoint/sets/' . $machine_name);
+    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
     foreach ($breakpoints as $breakpoint) {
-      $config_name = breakpoint_breakpoint_config_name($breakpoint);
-      $this->assertField('breakpoints[' . $config_name . '][name]', t('The Breakpoint was added.'));
+      $this->assertField('breakpoints[' . $breakpoint->id() . '][label]', t('The Breakpoint was added.'), $group);
     }
 
     // Change the order breakpoints of the breakpoints within the breakpoint group.
     $breakpoint = end($breakpoints);
-    $config_name = breakpoint_breakpoint_config_name($breakpoint);
     $edit = array(
-      "breakpoints[" . $config_name . "][weight]" => 0,
+      "breakpoints[" . $breakpoint->id() . "][weight]" => 0,
     );
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertFieldByName("breakpoints[" . $config_name . "][weight]", 0, t('Breakpoint weight was saved.'));
+    $this->assertFieldByName("breakpoints[" . $breakpoint->id() . "][weight]", 0, t('Breakpoint weight was saved.'));
 
     // Submit the form.
-    $this->drupalGet('admin/config/media/breakpoint');
     $this->drupalPost(NULL, array(), t('Save'));
 
     // Verify that the custom weight of the breakpoint has been retained.
-    $this->drupalGet('admin/config/media/breakpoint/sets/' . $machine_name);
-    $this->assertFieldByName("breakpoints[" . $config_name . "][weight]", 0, t('Breakpoint weight was retained.'));
-
-    // Verify that the weight has only changed within the set.
-    $this->drupalGet('admin/config/media/breakpoint');
-    $this->assertFieldByName("breakpoints[" . $config_name . "][weight]", $breakpoint->weight, t('Breakpoint weight has only changed within the set.'));
+    $this->drupalGet('admin/config/media/breakpoint/sets/' . $machine_name . '/edit');
+    $this->assertFieldByName("breakpoints[" . $breakpoint->id() . "][weight]", 0, t('Breakpoint weight was retained.'));
 
     // Change the multipliers of the breakpoint within the set.
     $edit = array(
-      "breakpoints[" . $config_name . "][multipliers][1.5x]" => "1.5x",
+      "breakpoints[" . $breakpoint->id() . "][multipliers][1.5x]" => "1.5x",
     );
     $this->drupalPost(NULL, $edit, t('Save'));
     $id = drupal_clean_css_identifier('edit-breakpoints-' . $config_name . '-multipliers-');
-    $this->assertFieldChecked($id . '15x', t('Breakpoint multipliers were saved.' . $id . '15x'));
+    $this->assertFieldChecked($id . '15x', t('Breakpoint multipliers were saved.'));
     $this->assertNoFieldChecked($id . '2x', t('Breakpoint multipliers were saved.'));
 
     // Submit the form.
@@ -143,22 +130,24 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
 
     // Attempt to create a breakpoint group of the same machine name as the disabled
     // breakpoint but with a different human readable name.
-    // Add breakpoint group.
-    $this->drupalGet('admin/config/media/breakpoint/sets/add');
+    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/add');
     $breakpoint = reset($breakpoints);
-    $config_name = breakpoint_breakpoint_config_name($breakpoint);
     $edit = array(
-      'name' => $this->randomName(),
-      'machine_name' => $machine_name,
-      'breakpoints[' . $config_name . ']' => $config_name,
+      'label' => $this->randomName(),
+      'id' => $machine_name,
+      'breakpoints[' . $breakpoint->id . '][label]' => $breakpoint->label(),
+      'breakpoints[' . $breakpoint->id . '][mediaQuery]' => $breakpoint->mediaQuery,
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertText('The machine-readable name is already in use. It must be unique.');
+    $this->assertText('The machine-readable name is already in use. It must be unique.', t('Users can\'t add two breakpoint groups with the same machine readable names.'), $group);
 
     // Delete breakpoint.
-    $this->drupalGet('admin/config/media/breakpoint/sets/' . $machine_name . '/delete');
+    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/delete');
     $this->drupalPost(NULL, array(), t('Confirm'));
+
+    // Verify the breakpoint group is not listed anymore.
+    $this->assertNoText($machine_name, t('Breakpoint groups that are deleted are no longer listed'), $group);
   }
 
 }

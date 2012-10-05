@@ -87,8 +87,8 @@ function breakpoint_ui_breakpoint_group_action_confirm_submit($form, &$form_stat
       $verb = 'reverted';
       break;
   }
-  drupal_set_message(t('Breakpoint set %label has been @action.', array('%label' => $breakpoint_group->label(), '@action' => $verb)));
-  watchdog('breakpoint_group', 'Breakpoint set %label has been @action.', array('%label' => $breakpoint_group->label(), '@action' => $verb), WATCHDOG_NOTICE);
+  drupal_set_message(t('Breakpoint group %label has been @action.', array('%label' => $breakpoint_group->label(), '@action' => $verb)));
+  watchdog('breakpoint_group', 'Breakpoint group %label has been @action.', array('%label' => $breakpoint_group->label(), '@action' => $verb), WATCHDOG_NOTICE);
   $form_state['redirect'] = 'admin/config/media/breakpoint/breakpoint_group';
 }
 

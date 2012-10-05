@@ -1,0 +1,2 @@
+uitestmobile: '(min-width: 0px)'
+uitestwide: 'all and (min-width: 851px)'

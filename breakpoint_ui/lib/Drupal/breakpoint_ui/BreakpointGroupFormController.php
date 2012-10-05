@@ -239,8 +239,8 @@ class BreakpointGroupFormController extends EntityFormController {
     }
     $breakpoint_group->save();
 
-    watchdog('breakpoint', 'Breakpoint set @label saved.', array('@label' => $breakpoint_group->label()), WATCHDOG_NOTICE);
-    drupal_set_message(t('Breakpoint set %label saved.', array('%label' => $breakpoint_group->label())));
+    watchdog('breakpoint', 'Breakpoint group @label saved.', array('@label' => $breakpoint_group->label()), WATCHDOG_NOTICE);
+    drupal_set_message(t('Breakpoint group %label saved.', array('%label' => $breakpoint_group->label())));
 
     $form_state['redirect'] = 'admin/config/media/breakpoint/breakpoint_group';
   }

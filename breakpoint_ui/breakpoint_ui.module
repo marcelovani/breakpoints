@@ -65,7 +65,7 @@ function breakpoint_ui_menu() {
   );
 
 
-  // Breakpoint set
+  // Breakpoint group
   $items['admin/config/media/breakpoint/breakpoint_group'] = array(
     'title' => 'Breakpoint groups',
     'description' => 'Manage breakpoint groups',
