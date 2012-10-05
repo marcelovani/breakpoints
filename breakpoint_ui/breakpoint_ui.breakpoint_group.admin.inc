@@ -1,8 +1,5 @@
 <?php
 
-use \Drupal\breakpoint\Breakpoint;
-use \Drupal\breakpoint\BreakpointGroup;
-
 /**
  * @file
  * Administration functions to maintain a common set of breakpoint groups.

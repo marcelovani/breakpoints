@@ -159,7 +159,7 @@ function breakpoint_uri(Breakpoint $breakpoint) {
 
 /**
  * Access callback.
- * 
+ *
  * @see breakpoint_ui_menu()
  */
 function breakpoint_ui_breakpoint_access (Breakpoint $breakpoint, $action, $account = NULL) {
@@ -167,15 +167,15 @@ function breakpoint_ui_breakpoint_access (Breakpoint $breakpoint, $action, $acco
     global $user;
     $account = $user;
   }
-  return 
-    $action != 'delete' ? 
-    user_access('administer breakpoints', $account) : 
+  return
+    $action != 'delete' ?
+    user_access('administer breakpoints', $account) :
     user_access('administer breakpoints', $account) && $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM;
 }
 
 /**
  * Access callback.
- * 
+ *
  * @see breakpoint_ui_menu()
  */
 function breakpoint_ui_breakpoint_group_access (BreakpointGroup $breakpoint_group, $action, $account = NULL) {
@@ -183,9 +183,9 @@ function breakpoint_ui_breakpoint_group_access (BreakpointGroup $breakpoint_grou
     global $user;
     $account = $user;
   }
-  return 
-    $action != 'delete' ? 
-    user_access('administer breakpoints', $account) : 
+  return
+    $action != 'delete' ?
+    user_access('administer breakpoints', $account) :
     user_access('administer breakpoints', $account) && $breakpoint_group->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM;
 }
 
