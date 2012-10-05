@@ -17,6 +17,8 @@ function breakpoint_enable() {
   config_install_default_config('module', 'breakpoint');
   $themes = list_themes();
   breakpoint_themes_enabled(array_keys($themes));
+  $modules = module_list();
+  breakpoint_modules_enabled($modules);
 }
 
 /**
