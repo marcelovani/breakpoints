@@ -56,8 +56,9 @@ class BreakpointGroupFormController extends EntityFormController {
       }
     }
 
-    // Breakpoint groups defined by themes or modules cannot be altered.
-    $read_only = $breakpoint_group->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM;
+    // Breakpoint groups defined by themes or modules cannot be altered
+    // unless they are were overridden.
+    $read_only = $breakpoint_group->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM && $breakpoint_group->overridden == 0;
 
     // Weight for the order of the breakpoints.
     $weight = 0;
@@ -109,7 +110,7 @@ class BreakpointGroupFormController extends EntityFormController {
         '#parents' => array('breakpoints', $key, 'mediaQuery'),
         '#required' => TRUE,
         '#size' => 60,
-        '#disabled' => $read_only,
+        '#disabled' => $breakpoint->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM,
       );
       $form['breakpoint_fieldset']['breakpoints'][$key]['multipliers'] = array(
         '#type' => 'checkboxes',
@@ -122,6 +123,7 @@ class BreakpointGroupFormController extends EntityFormController {
           '#type' => 'submit',
           '#value' => t('Remove'),
           '#name' => 'breakpoint_remove_' . $weight,
+          '#access' => $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM,
           '#submit' => array(
             array($this, 'removeBreakpointSubmit'),
           ),
@@ -150,11 +152,14 @@ class BreakpointGroupFormController extends EntityFormController {
       'weight' => t('Weight'),
       'remove' => t('Remove'),
     );
+    
+    // Hide remove column for read only groups.
     if ($read_only) {
       unset($form['breakpoint_fieldset']['breakpoints']['#header']['remove']);
     }
 
-    if (!$read_only || $breakpoint_group->overridden) {
+    // Show add another breakpoint if the group isn't read only.
+    if (!$read_only) {
       $options = array_diff_key(breakpoint_select_options(), $breakpoint_group->breakpoints);
 
       if (!empty($options)) {
