@@ -8,6 +8,7 @@
 namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Component\Uuid\Uuid;
 
 /**
  * Defines the BreakpointGroup entity.
@@ -77,6 +78,11 @@ class BreakpointGroup extends ConfigEntityBase {
    */
   public function __construct(array $values = array(), $entity_type = 'breakpoint_group') {
     parent::__construct($values, $entity_type);
+    // Assign a new UUID if there is none yet.
+    if (!isset($this->uuid)) {
+      $uuid = new Uuid();
+      $this->uuid = $uuid->generate();
+    }
     $this->loadAllBreakpoints();
   }
 
@@ -91,27 +97,58 @@ class BreakpointGroup extends ConfigEntityBase {
   }
 
   /**
-   * Override and save a breakpoint group.
+   * Override a breakpoint group.
    */
   public function override() {
-    return entity_get_controller($this->entityType)->override($this);
+    // Custom breakpoint group can't be overridden.
+    if ($this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
+      return FALSE;
+    }
+
+    // Duplicate all breakpoints to custom breakpoints.
+    foreach ($this->breakpoints as $key => $breakpoint) {
+      if ($breakpoint->sourceType === $this->sourceType && $breakpoint->source == $this->id()) {
+        $new_breakpoint = $breakpoint->createDuplicate();
+        $new_breakpoint->id = '';
+        $new_breakpoint->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
+        $new_breakpoint->save();
+
+        // Remove old one, add new one.
+        unset($this->breakpoints[$key]);
+        $this->breakpoints[$new_breakpoint->id] = $new_breakpoint;
+      }
+    }
+
+    // Mark breakpoint group as overridden.
+    $this->overridden = TRUE;
+    $this->save();
+    return $this;
   }
 
   /**
    * Revert a breakpoint group after it has been overridden.
    */
   public function revert() {
-    return entity_get_controller($this->entityType)->revert($this);
+    if (!$this->overridden || $this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
+      return FALSE;
+    }
+
+    // Reload all breakpoints from theme.
+    $reloaded_set = breakpoint_group_reload_from_theme($this->id());
+    if ($reloaded_set) {
+      $this->breakpoints = $reloaded_set->breakpoints;
+      $this->overridden = FALSE;
+      $this->save();
+    }
+    return $this;
   }
 
   /**
    * Implements EntityInterface::createDuplicate().
    */
   public function createDuplicate() {
-    $duplicate = new BreakpointGroup();
-    $duplicate->id = '';
+    $duplicate = parent::createDuplicate();
     $duplicate->label = t('Clone of') . ' ' . $this->label();
-    $duplicate->breakpoints = $this->breakpoints;
     return $duplicate;
   }
 

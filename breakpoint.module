@@ -18,7 +18,7 @@ function breakpoint_enable() {
   $themes = list_themes();
   breakpoint_themes_enabled(array_keys($themes));
   $modules = module_list();
-  breakpoint_modules_enabled($modules);
+  breakpoint_modules_enabled(array_keys($modules));
 }
 
 /**
@@ -415,7 +415,7 @@ function breakpoint_entity_info() {
   $types['breakpoint_group'] = array(
     'label' => 'Breakpoint group',
     'entity class' => 'Drupal\breakpoint\BreakpointGroup',
-    'controller class' => 'Drupal\breakpoint\BreakpointGroupController',
+    'controller class' => 'Drupal\Core\Config\Entity\ConfigStorageController',
     'config prefix' => 'breakpoint.breakpoint_group',
     'entity keys' => array(
       'id' => 'id',

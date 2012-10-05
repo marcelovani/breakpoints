@@ -8,6 +8,7 @@
 namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Component\Uuid\Uuid;
 use Exception;
 
 /**
@@ -101,6 +102,10 @@ class Breakpoint extends ConfigEntityBase {
    */
   public function __construct(array $values = array(), $entity_type = 'breakpoint') {
     parent::__construct($values, $entity_type);
+    if (!isset($this->uuid)) {
+      $uuid = new Uuid();
+      $this->uuid = $uuid->generate();
+    }
   }
 
   /**
