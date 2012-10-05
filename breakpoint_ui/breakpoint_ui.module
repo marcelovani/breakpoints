@@ -59,8 +59,8 @@ function breakpoint_ui_menu() {
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('breakpoint_ui_breakpoint_action_confirm', 5, 6),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
+    'access callback' => 'breakpoint_ui_breakpoint_access',
+    'access arguments' => array(5, 6),
     'file' => 'breakpoint_ui.breakpoint.admin.inc',
   );
 
@@ -103,8 +103,8 @@ function breakpoint_ui_menu() {
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('breakpoint_ui_breakpoint_group_action_confirm', 5, 6),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer breakpoints'),
+    'access callback' => 'breakpoint_ui_breakpoint_group_access',
+    'access arguments' => array(5, 6),
     'file' => 'breakpoint_ui.breakpoint_group.admin.inc',
   );
 
@@ -155,6 +155,38 @@ function breakpoint_uri(Breakpoint $breakpoint) {
   return array(
     'path' => 'admin/config/media/breakpoint/breakpoint/' . $breakpoint->id(),
   );
+}
+
+/**
+ * Access callback.
+ * 
+ * @see breakpoint_ui_menu()
+ */
+function breakpoint_ui_breakpoint_access (Breakpoint $breakpoint, $action, $account = NULL) {
+  if (!$account) {
+    global $user;
+    $account = $user;
+  }
+  return 
+    $action != 'delete' ? 
+    user_access('administer breakpoints', $account) : 
+    user_access('administer breakpoints', $account) && $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM;
+}
+
+/**
+ * Access callback.
+ * 
+ * @see breakpoint_ui_menu()
+ */
+function breakpoint_ui_breakpoint_group_access (BreakpointGroup $breakpoint_group, $action, $account = NULL) {
+  if (!$account) {
+    global $user;
+    $account = $user;
+  }
+  return 
+    $action != 'delete' ? 
+    user_access('administer breakpoints', $account) : 
+    user_access('administer breakpoints', $account) && $breakpoint_group->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM;
 }
 
 /**

@@ -9,6 +9,7 @@ namespace Drupal\breakpoint_ui;
 
 use Drupal\Core\Config\Entity\ConfigEntityListController;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\breakpoint\Breakpoint;
 
 /**
  * Provides a listing of breakpoints.
@@ -48,6 +49,9 @@ class BreakpointListController extends ConfigEntityListController {
       'options' => $uri['options'],
       'weight' => 15,
     );
+    if ($entity->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM) {
+      unset($operations['delete']);
+    }
     return $operations;
   }
 

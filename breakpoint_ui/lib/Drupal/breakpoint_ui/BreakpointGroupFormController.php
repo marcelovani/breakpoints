@@ -25,7 +25,7 @@ class BreakpointGroupFormController extends EntityFormController {
       $breakpoint_group = $breakpoint_group->createDuplicate();
       $this->setEntity($breakpoint_group, $form_state);
     }
-    dpm($breakpoint_group);
+
     $form['label'] = array(
       '#type' => 'textfield',
       '#title' => t('Label'),
@@ -56,8 +56,8 @@ class BreakpointGroupFormController extends EntityFormController {
       }
     }
 
-    // Breakpoint groups defined by themes cannot be altered.
-    $read_only = $breakpoint_group->sourceType === Breakpoint::SOURCE_TYPE_THEME;
+    // Breakpoint groups defined by themes or modules cannot be altered.
+    $read_only = $breakpoint_group->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM;
 
     // Weight for the order of the breakpoints.
     $weight = 0;
@@ -89,9 +89,9 @@ class BreakpointGroupFormController extends EntityFormController {
         'data' => array(
           'label' => '',
           'mediaQuery' => '',
+          'source' => $breakpoint->source . ' - ' . $breakpoint->sourceType,
           'multipliers' => '',
           'weight' => '',
-          'remove' => '',
         ),
       );
       $form['breakpoint_fieldset']['breakpoints'][$key]['label'] = array(
@@ -109,7 +109,7 @@ class BreakpointGroupFormController extends EntityFormController {
         '#parents' => array('breakpoints', $key, 'mediaQuery'),
         '#required' => TRUE,
         '#size' => 60,
-        '#disabled' => $read_only || $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_THEME,
+        '#disabled' => $read_only,
       );
       $form['breakpoint_fieldset']['breakpoints'][$key]['multipliers'] = array(
         '#type' => 'checkboxes',
@@ -145,6 +145,7 @@ class BreakpointGroupFormController extends EntityFormController {
     $form['breakpoint_fieldset']['breakpoints']['#header'] = array(
       'label' => t('Label'),
       'mediaQuery' => t('Media query'),
+      'source' => t('Source'),
       'multipliers' => t('Multipliers'),
       'weight' => t('Weight'),
       'remove' => t('Remove'),
@@ -153,7 +154,7 @@ class BreakpointGroupFormController extends EntityFormController {
       unset($form['breakpoint_fieldset']['breakpoints']['#header']['remove']);
     }
 
-    if (!$read_only) {
+    if (!$read_only || $breakpoint_group->overridden) {
       $options = array_diff_key(breakpoint_select_options(), $breakpoint_group->breakpoints);
 
       if (!empty($options)) {

@@ -67,7 +67,7 @@ function breakpoint_ui_multipliers_form_validate($form, $form_state) {
 function breakpoint_ui_multipliers_form_submit($form, &$form_state) {
   $multipliers = array_values(array_filter($form_state['values']['multipliers']));
   array_unshift($multipliers, '1x');
-  breakpoint_settings_save($multipliers);
+  breakpoint_settings_save_multipliers($multipliers);
   drupal_set_message(t('Multipliers are saved.'));
 }
 
@@ -99,7 +99,7 @@ function breakpoint_ui_admin_multiplier_delete_form_submit($form, &$form_state) 
   if (isset($multipliers[$multiplier])) {
     unset($multipliers[$multiplier]);
   }
-  breakpoint_settings_save(array_values($multipliers));
+  breakpoint_settings_save_multipliers(array_values($multipliers));
   drupal_set_message(t('Multiplier %multiplier was deleted', array('%multiplier' => $multiplier)));
   $form_state['redirect'] = 'admin/config/media/breakpoint/multipliers';
 }

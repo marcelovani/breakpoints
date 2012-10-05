@@ -48,7 +48,8 @@ class BreakpointGroupListController extends ConfigEntityListController {
       'options' => $uri['options'],
       'weight' => 15,
     );
-    if ($entity->sourceType != Breakpoint::SOURCE_TYPE_CUSTOM) {
+    if ($entity->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM) {
+      unset($operations['delete']);
       if (!$entity->overridden) {
         $operations['override'] = array(
           'title' => t('Override'),
