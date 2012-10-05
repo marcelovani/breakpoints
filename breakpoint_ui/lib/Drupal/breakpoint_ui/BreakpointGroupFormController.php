@@ -31,7 +31,7 @@ class BreakpointGroupFormController extends EntityFormController {
       '#title' => t('Label'),
       '#maxlength' => 255,
       '#default_value' => $breakpoint_group->label(),
-      '#description' => t("Example: 'Omega' or 'Custom'."),
+      '#description' => t("Example: 'Content' or 'Sidebar'."),
       '#required' => TRUE,
     );
     $form['id'] = array(
