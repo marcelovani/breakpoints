@@ -113,8 +113,17 @@ class Breakpoint extends ConfigEntityBase {
     if (empty($this->label)) {
       $this->label = drupal_ucfirst($this->name);
     }
+
+    // Check the media query.
     if (!$this->isValid()) {
       throw new Exception(t('Invalid media query detected.'));
+    }
+    // Remove ununsed multipliers.
+    $this->multipliers = array_filter($this->multipliers);
+
+    // Add '1x' multiplier.
+    if (!array_key_exists('1x', $this->multipliers)) {
+      $this->multipliers = array('1x' => '1x') + $this->multipliers;
     }
     return parent::save();
   }
@@ -275,15 +284,16 @@ class Breakpoint extends ConfigEntityBase {
               }
             }
           }
+
           // Check [ONLY | NOT]? S* media_type
-          elseif (preg_match('/((?:only|not)?\s?)([\w\-]+)$/i', trim($query_part), $matches)) {
+          elseif (preg_match('/^((?:only|not)?\s?)([\w\-]+)$/i', trim($query_part), $matches)) {
             if ($media_type_found) {
-              throw new Exception(t('Only when media type allowed.'));
+              return FALSE;
             }
             $media_type_found = TRUE;
           }
           else {
-            throw new Exception(t("Invalid value '@query_part' for breakpoint media query property.", array('@query_part' => $query_part)));
+            return FALSE;
           }
         }
       }

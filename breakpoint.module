@@ -115,7 +115,6 @@ function breakpoint_modules_enabled($modules) {
  *   An array of the modules that were uninstalled.
  */
 function breakpoint_modules_uninstalled($modules) {
-  dpm($modules);
   _breakpoint_delete_breakpoints($modules, Breakpoint::SOURCE_TYPE_MODULE);
 }
 
@@ -435,7 +434,7 @@ function breakpoint_entity_info() {
  * @return Drupal\breakpoint\BreakpointGroup|false
  *   The breakpoint group, or FALSE if there is no entity with the given id.
  *
- * @todo Needed for menu_callback
+ * @todo Needed for menu_callback and machine_name.
  *
  * @see http://drupal.org/node/1798214
  */
@@ -452,7 +451,7 @@ function breakpoint_group_load($id) {
  * @return Drupal\breakpoint\Breakpoint
  *   The entity object, or FALSE if there is no entity with the given id.
  *
- * @todo Needed for menu_callback
+ * @todo Needed for menu_callback and machine_name.
  *
  * @see http://drupal.org/node/1798214
  *
@@ -474,5 +473,21 @@ function breakpoint_group_select_options() {
     $options[$breakpoint_group->id()] = $breakpoint_group->label();
   }
   asort($options);
+  return $options;
+}
+
+/**
+ * Load all breakpoints as select options.
+ *
+ * @return array
+ *   An array containing breakpoints indexed by their ids.
+ */
+function breakpoint_select_options() {
+  $options = array();
+  $breakpoints = entity_load_multiple('breakpoint');
+  foreach ($breakpoints as $breakpoint) {
+    $options[$breakpoint->id()] = $breakpoint->label() . ' (' . $breakpoint->source . ' - ' . $breakpoint->sourceType .   ') [' . $breakpoint->mediaQuery . ']';
+  }
+
   return $options;
 }
