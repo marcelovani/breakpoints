@@ -3,8 +3,8 @@
 /**
  * Multipliers administration form.
  */
-function breakpoints_ui_multipliers_form($form, &$form_state) {
-  $settings = breakpoints_settings();
+function breakpoint_ui_multipliers_form($form, &$form_state) {
+  $settings = breakpoint_settings();
   $multipliers = drupal_map_assoc($settings->multipliers);
   if (isset($multipliers['1x'])) {
     unset($multipliers['1x']);
@@ -12,7 +12,7 @@ function breakpoints_ui_multipliers_form($form, &$form_state) {
   $form['multipliers'] = array(
     '#type' => 'container',
     '#tree' => TRUE,
-    '#theme' => 'breakpoints_ui_multipliers_table_form',
+    '#theme' => 'breakpoint_ui_multipliers_table_form',
   );
   $form['multipliers']['1x'] = array(
     '#markup' => '1x',
@@ -41,9 +41,9 @@ function breakpoints_ui_multipliers_form($form, &$form_state) {
 }
 
 /**
- * Validate callback for breakpoints_ui_multipliers_form().
+ * Validate callback for breakpoint_ui_multipliers_form().
  */
-function breakpoints_ui_multipliers_form_validate($form, $form_state) {
+function breakpoint_ui_multipliers_form_validate($form, $form_state) {
   $multipliers = $form_state['values']['multipliers'];
   $saved_multipliers = array(
     '1x' => '1x',
@@ -62,20 +62,20 @@ function breakpoints_ui_multipliers_form_validate($form, $form_state) {
 }
 
 /**
- * Submit callback for breakpoints_ui_multipliers_form().
+ * Submit callback for breakpoint_ui_multipliers_form().
  */
-function breakpoints_ui_multipliers_form_submit($form, &$form_state) {
+function breakpoint_ui_multipliers_form_submit($form, &$form_state) {
   $multipliers = array_values(array_filter($form_state['values']['multipliers']));
   array_unshift($multipliers, '1x');
-  breakpoints_settings_save($multipliers);
+  breakpoint_settings_save($multipliers);
   drupal_set_message(t('Multipliers are saved.'));
 }
 
 /**
  * Multipliers delete form.
  */
-function breakpoints_ui_admin_multiplier_delete_form($form, &$form_state, $multiplier) {
-  $path = 'admin/config/media/breakpoints/multipliers';
+function breakpoint_ui_admin_multiplier_delete_form($form, &$form_state, $multiplier) {
+  $path = 'admin/config/media/breakpoint/multipliers';
   if ($multiplier == '1x') {
     $form['multiplier'] = array(
       '#markup' => t('Multiplier %multiplier can not be deleted! !link', array('%multiplier' => $multiplier, '!link' => l(t('Back to overview page.'), $path)))
@@ -90,30 +90,30 @@ function breakpoints_ui_admin_multiplier_delete_form($form, &$form_state, $multi
 }
 
 /**
- * Sumbit callback for breakpoints_ui_admin_multiplier_delete_form().
+ * Sumbit callback for breakpoint_ui_admin_multiplier_delete_form().
  */
-function breakpoints_ui_admin_multiplier_delete_form_submit($form, &$form_state) {
-  $settings = breakpoints_settings();
+function breakpoint_ui_admin_multiplier_delete_form_submit($form, &$form_state) {
+  $settings = breakpoint_settings();
   $multiplier = $form_state['values']['multiplier'];
   $multipliers = drupal_map_assoc($settings->multipliers);
   if (isset($multipliers[$multiplier])) {
     unset($multipliers[$multiplier]);
   }
-  breakpoints_settings_save(array_values($multipliers));
+  breakpoint_settings_save(array_values($multipliers));
   drupal_set_message(t('Multiplier %multiplier was deleted', array('%multiplier' => $multiplier)));
-  $form_state['redirect'] = 'admin/config/media/breakpoints/multipliers';
+  $form_state['redirect'] = 'admin/config/media/breakpoint/multipliers';
 }
 
 /**
  * Theme multipliers form as table.
  */
-function theme_breakpoints_ui_multipliers_table_form($element) {
+function theme_breakpoint_ui_multipliers_table_form($element) {
   $form = $element['form'];
   $header = array(t('Multiplier'), t('Operations'));
   foreach (element_children($form) as $multiplier) {
     $row = array();
     $row[] = drupal_render($form[$multiplier]);
-    $row[] = in_array($multiplier, array('new', '1x')) ? '' : l(t('Delete'), 'admin/config/media/breakpoints/multipliers/' . $multiplier . '/delete');
+    $row[] = in_array($multiplier, array('new', '1x')) ? '' : l(t('Delete'), 'admin/config/media/breakpoint/multipliers/' . $multiplier . '/delete');
     $rows[] = $row;
   }
   return theme('table', array('header' => $header, 'rows' => $rows));

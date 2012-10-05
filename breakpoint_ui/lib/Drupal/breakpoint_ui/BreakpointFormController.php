@@ -2,14 +2,14 @@
 
 /**
  * @file
- * Definition of Drupal\breakpoints_ui\BreakpointFormController.
+ * Definition of Drupal\breakpoint_ui\BreakpointFormController.
  */
 
-namespace Drupal\breakpoints_ui;
+namespace Drupal\breakpoint_ui;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\Breakpoint;
 
 /**
  * Form controller for the breakpoint edit/add forms.
@@ -32,7 +32,7 @@ class BreakpointFormController extends EntityFormController {
       '#type' => 'machine_name',
       '#default_value' => $breakpoint->name,
       '#machine_name' => array(
-        'exists' => 'breakpoints_breakpoint_load',
+        'exists' => 'breakpoint_load',
         'source' => array('label'),
       ),
       '#required' => TRUE,
@@ -45,10 +45,10 @@ class BreakpointFormController extends EntityFormController {
       '#default_value' => $breakpoint->mediaQuery,
       '#description' => t("Media query without '@media'. Example: '(min-width: 320px)'."),
       '#required' => TRUE,
-      '#disabled' => $breakpoint->sourceType === Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME,
+      '#disabled' => $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_THEME,
     );
 
-    $settings = breakpoints_settings();
+    $settings = breakpoint_settings();
     $multipliers = array();
     if (isset($settings->multipliers) && !empty($settings->multipliers)) {
       $multipliers = drupal_map_assoc(array_values($settings->multipliers));
@@ -95,12 +95,12 @@ class BreakpointFormController extends EntityFormController {
     if (!isset($breakpoint->id)) {
       // Check for duplicates if user adds a new breakpoint.
       // Use $form_state['values']['label'] because $breakpoint->label is empty.
-      $name = Breakpoint::BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.user.' . $form_state['values']['label'];
-      if (breakpoints_breakpoint_load($name)) {
+      $name = Breakpoint::SOURCE_TYPE_CUSTOM . '.user.' . $form_state['values']['label'];
+      if (entity_load('breakpoint', $name)) {
         form_set_error('label', t('The breakpoint label %label is already in use.', array('%label' => $form_state['values']['label'])));
       }
     }
-    if (!$breakpoint->isValidMediaQuery($form_state['values']['mediaQuery'])) {
+    if (!Breakpoint::isValidMediaQuery($form_state['values']['mediaQuery'])) {
       form_set_error('mediaQuery', t('Illegal media query'));
     }
   }
@@ -115,7 +115,7 @@ class BreakpointFormController extends EntityFormController {
     watchdog('breakpoint', 'Breakpoint @label saved.', array('@label' => $breakpoint->label()), WATCHDOG_NOTICE);
     drupal_set_message(t('Breakpoint %label saved.', array('%label' => $breakpoint->label())));
 
-    $form_state['redirect'] = 'admin/config/media/breakpoints/breakpoint';
+    $form_state['redirect'] = 'admin/config/media/breakpoint/breakpoint';
   }
 
 }

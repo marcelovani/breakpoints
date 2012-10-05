@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Definition of Drupal\breakpoints_ui\BreakpointListController.
+ * Definition of Drupal\breakpoint_ui\BreakpointListController.
  */
 
-namespace Drupal\breakpoints_ui;
+namespace Drupal\breakpoint_ui;
 
 use Drupal\Core\Config\Entity\ConfigEntityListController;
 use Drupal\Core\Entity\EntityInterface;

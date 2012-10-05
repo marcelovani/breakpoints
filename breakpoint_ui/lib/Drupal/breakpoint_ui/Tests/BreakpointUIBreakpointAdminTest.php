@@ -1,29 +1,29 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoints\Tests\BreakpointsAdminTest.
+ * Definition of Drupal\breakpoint_ui\Tests\BreakpointAdminTest.
  */
-namespace Drupal\breakpoints_ui\Tests;
+namespace Drupal\breakpoint_ui\Tests;
 
-use Drupal\breakpoints\Tests\BreakpointsTestBase;
+use Drupal\breakpoint\Tests\BreakpointTestBase;
 use stdClass;
 
 /**
  * Tests for breakpoints admin interface.
  */
-class BreakpointsUIBreakpointsAdminTest extends BreakpointsTestBase {
+class BreakpointUIBreakpointAdminTest extends BreakpointTestBase {
 
   /**
    * Modules to enable.
    *
    * @var array
    */
-  public static $modules = array('breakpoints_ui');
+  public static $modules = array('breakpoint_ui');
 
   public static function getInfo() {
     return array(
       'name' => 'Breakpoints administration functionality',
-      'description' => 'Thoroughly test the administrative interface of the breakpoints module.',
+      'description' => 'Thoroughly test the administrative interface of the breakpoint module.',
       'group' => 'Breakpoints UI',
     );
   }
@@ -44,7 +44,7 @@ class BreakpointsUIBreakpointsAdminTest extends BreakpointsTestBase {
    */
   function testBreakpointAdmin() {
     // Add breakpoint.
-    $this->drupalGet('admin/config/media/breakpoints');
+    $this->drupalGet('admin/config/media/breakpoint');
     $name = drupal_strtolower($this->randomName());
     $mediaquery = '(min-width: 600px)';
     $edit = array(
@@ -54,25 +54,25 @@ class BreakpointsUIBreakpointsAdminTest extends BreakpointsTestBase {
 
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    $machine_name = 'breakpoints.' . BREAKPOINTS_SOURCE_TYPE_CUSTOM . '.user.' . $name;
+    $machine_name = 'breakpoints.' . SOURCE_TYPE_CUSTOM . '.user.' . $name;
     // Verify the breakpoint was saved and verify default weight of the breakpoint.
-    $this->drupalGet('admin/config/media/breakpoints');
-    $this->assertFieldByName("breakpoints[$machine_name][weight]", 0, t('Breakpoint weight was saved.'), t('Breakpoints API'));
+    $this->drupalGet('admin/config/media/breakpoint');
+    $this->assertFieldByName("breakpoints[$machine_name][weight]", 0, t('Breakpoint weight was saved.'), t('Breakpoint API'));
 
     // Change the weight of the breakpoint.
     $edit = array(
       "breakpoints[$machine_name][weight]" => 5,
     );
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was saved.'), t('Breakpoints API'));
+    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was saved.'), t('Breakpoint API'));
 
     // Submit the form.
-    $this->drupalGet('admin/config/media/breakpoints');
+    $this->drupalGet('admin/config/media/breakpoint');
     $this->drupalPost(NULL, array(), t('Save'));
 
     // Verify that the custom weight of the breakpoint has been retained.
-    $this->drupalGet('admin/config/media/breakpoints');
-    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was retained.'), t('Breakpoints API'));
+    $this->drupalGet('admin/config/media/breakpoint');
+    $this->assertFieldByName("breakpoints[$machine_name][weight]", 5, t('Breakpoint weight was retained.'), t('Breakpoint API'));
 
     // Change the multipliers of the breakpoint.
     $edit = array(
@@ -84,21 +84,21 @@ class BreakpointsUIBreakpointsAdminTest extends BreakpointsTestBase {
     $this->assertNoFieldChecked($id . '2x', t('Breakpoint multipliers were saved.'));
 
     // Submit the form.
-    $this->drupalGet('admin/config/media/breakpoints');
+    $this->drupalGet('admin/config/media/breakpoint');
     $this->drupalPost(NULL, array(), t('Save'));
 
     // Verify that the custom weight of the breakpoint has been retained.
-    $this->drupalGet('admin/config/media/breakpoints');
+    $this->drupalGet('admin/config/media/breakpoint');
     $this->assertFieldChecked($id . '15x', t('Breakpoint multipliers were retained.'));
     $this->assertNoFieldChecked($id . '2x', t('Breakpoint multipliers were retained.'));
 
     // Disable breakpoint.
-    $this->assertLinkByHref('admin/config/media/breakpoints/disable/' . $machine_name);
-    $this->drupalGet('admin/config/media/breakpoints/disable/' . $machine_name);
+    $this->assertLinkByHref('admin/config/media/breakpoint/disable/' . $machine_name);
+    $this->drupalGet('admin/config/media/breakpoint/disable/' . $machine_name);
     $this->drupalPost(NULL, array(), t('Confirm'));
 
     // Verify that the breakpoint is disabled.
-    $this->assertLinkByHref('admin/config/media/breakpoints/enable/' . $machine_name, 0, t('Breakpoint was disabled.'), t('Breakpoints API'));
+    $this->assertLinkByHref('admin/config/media/breakpoint/enable/' . $machine_name, 0, t('Breakpoint was disabled.'), t('Breakpoint API'));
   }
 
 }

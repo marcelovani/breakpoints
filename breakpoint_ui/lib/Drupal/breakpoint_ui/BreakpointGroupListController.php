@@ -2,19 +2,19 @@
 
 /**
  * @file
- * Definition of Drupal\breakpoints_ui\BreakpointSetListController.
+ * Definition of Drupal\breakpoint_ui\BreakpointGroupListController.
  */
 
-namespace Drupal\breakpoints_ui;
+namespace Drupal\breakpoint_ui;
 
 use Drupal\Core\Config\Entity\ConfigEntityListController;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\breakpoints\Breakpoint;
+use Drupal\breakpoint\Breakpoint;
 
 /**
- * Provides a listing of Breakpoint sets.
+ * Provides a listing of breakpoint groups.
  */
-class BreakpointSetListController extends ConfigEntityListController {
+class BreakpointGroupListController extends ConfigEntityListController {
 
   public function __construct($entity_type, $entity_info = FALSE) {
     parent::__construct($entity_type, $entity_info);
@@ -28,8 +28,8 @@ class BreakpointSetListController extends ConfigEntityListController {
     $items = parent::hookMenu();
 
     // Override the access callback.
-    $items[$path]['title'] = 'Breakpoint sets';
-    $items[$path]['description'] = 'Manage list of breakpoint sets.';
+    $items[$path]['title'] = 'Breakpoint groups';
+    $items[$path]['description'] = 'Manage list of breakpoint groups.';
     $items[$path]['access callback'] = 'user_access';
     $items[$path]['access arguments'] = array('administer breakpoints');
 
@@ -48,7 +48,7 @@ class BreakpointSetListController extends ConfigEntityListController {
       'options' => $uri['options'],
       'weight' => 15,
     );
-    if ($entity->sourceType == Breakpoint::BREAKPOINTS_SOURCE_TYPE_THEME) {
+    if ($entity->sourceType != Breakpoint::SOURCE_TYPE_CUSTOM) {
       if (!$entity->overridden) {
         $operations['override'] = array(
           'title' => t('Override'),

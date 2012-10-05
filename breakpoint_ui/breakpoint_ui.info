@@ -1,7 +1,7 @@
-name = Breakpoints UI
+name = Breakpoint UI
 description = Proveds a user interface to manage breakpoints.
-package = Other
+package = Core
 core = 8.x
 
-dependencies[] = breakpoints
-configure = admin/config/media/breakpoints
+dependencies[] = breakpoint
+configure = admin/config/media/breakpoint
