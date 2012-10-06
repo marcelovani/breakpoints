@@ -61,11 +61,8 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
 
     // Duplicate the breakpoint group.
     $new_set = new BreakpointGroup();
-    $new_set->label = t('Clone of') . ' ' . $group->label();
-    $new_set->id = '';
-    $new_set->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
     $new_set->breakpoints = $group->breakpoints;
-    $duplicated_set = $group->createDuplicate();
+    $duplicated_set = $group->duplicate();
     $this->verifyBreakpointGroup($duplicated_set, $new_set);
 
     // Delete the breakpoint group.

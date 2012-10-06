@@ -63,7 +63,7 @@ class Breakpoint extends ConfigEntityBase {
    *
    * @var string
    */
-  protected $originalMediaQuery = '';
+  public $originalMediaQuery = '';
 
   /**
    * The breakpoint source.
@@ -105,9 +105,9 @@ class Breakpoint extends ConfigEntityBase {
   public $multipliers = array();
 
   /**
-   * The BreakpointGroup overridden status.
+   * The Breakpoint overridden status.
    *
-   * @var string
+   * @var boolean
    */
   public $overridden = FALSE;
 
@@ -192,21 +192,38 @@ class Breakpoint extends ConfigEntityBase {
   }
 
   /**
-   * Implements EntityInterface::createDuplicate().
+   * Override a breakpoint and save it.
+   *
    */
-  public function createDuplicate() {
-    $duplicate = clone $this;
-    $entity_info = $this->entityInfo();
-    $duplicate->{$entity_info['entity keys']['id']} = NULL;
-
-    // Check if the entity type supports UUIDs and generate a new one if so.
-    if (!empty($entity_info['entity keys']['uuid'])) {
-      $uuid = new Uuid();
-      $duplicate->{$entity_info['entity keys']['uuid']} = $uuid->generate();
+  public function override() {
+    if (!$this->overridden) {
+      $this->overridden = TRUE;
+      $this->originalMediaQuery = $this->mediaQuery;
+      $this->save();
     }
-    $duplicate->label = $this->label();
-    $duplicate->isNew = TRUE;
-    $duplicate->originalID = NULL;
+  }
+
+  /**
+   * Revert a breakpoint and save it.
+   *
+   */
+  public function revert() {
+    if ($this->overridden) {
+      $this->overridden = FALSE;
+      $this->mediaQuery = $this->originalMediaQuery;
+      $this->save();
+    }
+  }
+
+  /**
+   * Duplicate a breakpoint.
+   *
+   * The new breakpoint inherits the media query
+   *
+   */
+  public function duplicate() {
+    $duplicate = new Breakpoint;
+    $duplicate->mediaQuery = $this->mediaQuery;
     return $duplicate;
   }
 
@@ -235,36 +252,27 @@ class Breakpoint extends ConfigEntityBase {
   }
 
   /**
-   * Override a breakpoint and save it.
-   *
-   */
-  public function override() {
-    if (!$this->overridden) {
-      $this->overridden = TRUE;
-      $this->originalMediaQuery = $this->mediaQuery;
-      $this->save();
-    }
-  }
-
-  /**
-   * Revert a breakpoint and save it.
-   *
-   */
-  public function revert() {
-    if ($this->overridden) {
-      $this->overridden = FALSE;
-      $this->mediaQuery = $this->originalMediaQuery;
-      $this->save();
-    }
-  }
-
-  /**
    * Check if the mediaQuery is valid.
    *
    * @see isValidMediaQuery()
    */
   public function isValid() {
     return $this::isValidMediaQuery($this->mediaQuery);
+  }
+
+  /**
+   * Is the breakpoint editable.
+   */
+  public function isEditable() {
+    // Custom breakpoints are always editable.
+    if ($this->sourceType == Breakpoint::SOURCE_TYPE_CUSTOM) {
+      return TRUE;
+    }
+    // Overridden breakpoints are editable.
+    if ($this->overridden) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**

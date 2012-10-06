@@ -47,6 +47,13 @@ class BreakpointGroup extends ConfigEntityBase {
   public $breakpoints = array();
 
   /**
+   * The breakpoint source: theme or module name.
+   *
+   * @var string
+   */
+  public $source = '';
+
+  /**
    * The BreakpointGroup source type.
    *
    * @var string
@@ -60,16 +67,9 @@ class BreakpointGroup extends ConfigEntityBase {
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
   /**
-   * The breakpoint source: theme or module name.
-   *
-   * @var string
-   */
-  public $source = '';
-
-  /**
    * The BreakpointGroup overridden status.
    *
-   * @var string
+   * @var boolean
    */
   public $overridden = FALSE;
 
@@ -137,24 +137,30 @@ class BreakpointGroup extends ConfigEntityBase {
   }
 
   /**
-   * Implements EntityInterface::createDuplicate().
+   * Duplicate a breakpoint group.
+   *
+   * The new breakpoint group inherits the breakpoints.
+   *
    */
-  public function createDuplicate() {
-    $duplicate = clone $this;
-    $entity_info = $this->entityInfo();
-    $duplicate->{$entity_info['entity keys']['id']} = NULL;
-
-    // Check if the entity type supports UUIDs and generate a new one if so.
-    if (!empty($entity_info['entity keys']['uuid'])) {
-      $uuid = new Uuid();
-      $duplicate->{$entity_info['entity keys']['uuid']} = $uuid->generate();
-    }
-    $duplicate->label = t('Clone of') . ' ' . $this->label();
-    $duplicate->isNew = TRUE;
-    $duplicate->originalID = NULL;
-    $duplicate->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
-    $duplicate->overridden = FALSE;
+  public function duplicate() {
+    $duplicate = new BreakpointGroup;
+    $duplicate->breakpoints = $this->breakpoints;
     return $duplicate;
+  }
+
+  /**
+   * Is the breakpoint group editable.
+   */
+  public function isEditable() {
+    // Custom breakpoint groups are always editable.
+    if ($this->sourceType == Breakpoint::SOURCE_TYPE_CUSTOM) {
+      return TRUE;
+    }
+    // Overridden breakpoints groups are editable.
+    if ($this->overridden) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
