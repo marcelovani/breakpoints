@@ -47,10 +47,34 @@ class BreakpointListController extends ConfigEntityListController {
       'title' => t(drupal_ucfirst($action)),
       'href' => $uri['path'] . '/' . $action,
       'options' => $uri['options'],
+      'weight' => 12,
+    );
+    $operations['duplicate'] = array(
+      'title' => t('Duplicate'),
+      'href' => $uri['path'] . '/duplicate',
+      'options' => $uri['options'],
       'weight' => 15,
     );
+    // Theme and module breakpoint groups can be overridden/reverted.
+    // Custom breakpoints can be deleted.
     if ($entity->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM) {
       unset($operations['delete']);
+      if (!$entity->overridden) {
+        $operations['override'] = array(
+          'title' => t('Override'),
+          'href' => $uri['path'] . '/override',
+          'options' => $uri['options'],
+          'weight' => 15,
+        );
+      }
+      else {
+        $operations['revert'] = array(
+          'title' => t('Revert'),
+          'href' => $uri['path'] . '/revert',
+          'options' => $uri['options'],
+          'weight' => 15,
+        );
+      }
     }
     return $operations;
   }

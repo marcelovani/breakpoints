@@ -48,6 +48,8 @@ class BreakpointGroupListController extends ConfigEntityListController {
       'options' => $uri['options'],
       'weight' => 15,
     );
+    // Theme and module breakpoint groups can be overridden/reverted.
+    // Custom breakpoint groups can be deleted.
     if ($entity->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM) {
       unset($operations['delete']);
       if (!$entity->overridden) {

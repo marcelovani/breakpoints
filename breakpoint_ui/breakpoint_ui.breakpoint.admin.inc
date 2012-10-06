@@ -26,6 +26,16 @@ function breakpoint_ui_breakpoint_page_edit($breakpoint) {
 }
 
 /**
+ * Page callback: Presents the breakpoint editing form.
+ *
+ * @see breakpoint_ui_menu()
+ */
+function breakpoint_ui_breakpoint_page_duplicate($breakpoint) {
+  drupal_set_title(t('<em>Duplicate breakpoint</em> @label', array('@label' => $breakpoint->label())), PASS_THROUGH);
+  return entity_get_form($breakpoint->duplicate());
+}
+
+/**
  * Page callback: Provides the new breakpoint addition form.
  *
  * @see breakpoint_ui_menu()
@@ -42,7 +52,7 @@ function breakpoint_ui_breakpoint_page_add() {
  */
 function breakpoint_ui_breakpoint_action_confirm($form, &$form_state, $breakpoint, $action) {
   // Always provide entity id in the same form key as in the entity edit form.
-  if (in_array($action, array('delete', 'enable', 'disable'))) {
+  if (in_array($action, array('delete', 'enable', 'disable', 'override', 'revert'))) {
     $form['id'] = array('#type' => 'value', '#value' => $breakpoint->id());
     $form['action'] = array('#type' => 'value', '#value' => $action);
     $form_state['breakpoint'] = $breakpoint;
@@ -64,7 +74,20 @@ function breakpoint_ui_breakpoint_action_confirm_submit($form, &$form_state) {
   $breakpoint = $form_state['breakpoint'];
   $action = $form_state['values']['action'];
   $breakpoint->{$action}();
-  $verb = $action . 'd'; //enabled, disabled, deleted.
+  $verb = '';
+  switch ($action) {
+    case 'delete':
+    case 'enable':
+    case 'disable':
+      $verb = $action . 'd';
+      break;
+    case 'override':
+      $verb = 'overridden';
+      break;
+    case 'revert':
+      $verb = 'reverted';
+      break;
+  }
   drupal_set_message(t('Breakpoint %label has been @action.', array('%label' => $breakpoint->label(), '@action' => $verb)));
   watchdog('breakpoint', 'Breakpoint %label has been @action.', array('%label' => $breakpoint->label(), '@action' => $verb), WATCHDOG_NOTICE);
   $form_state['redirect'] = 'admin/config/media/breakpoint/breakpoint';

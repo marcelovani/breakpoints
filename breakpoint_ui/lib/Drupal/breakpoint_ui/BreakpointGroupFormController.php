@@ -20,12 +20,6 @@ class BreakpointGroupFormController extends EntityFormController {
    * Overrides Drupal\Core\Entity\EntityFormController::form().
    */
   public function form(array $form, array &$form_state, EntityInterface $breakpoint_group) {
-    // Check if we need to duplicate the breakpoint group.
-    if ($this->operation == 'duplicate') {
-      $breakpoint_group = $breakpoint_group->createDuplicate();
-      $this->setEntity($breakpoint_group, $form_state);
-    }
-
     $form['label'] = array(
       '#type' => 'textfield',
       '#title' => t('Label'),
@@ -41,7 +35,7 @@ class BreakpointGroupFormController extends EntityFormController {
         'exists' => 'breakpoint_group_load',
         'source' => array('label'),
       ),
-      '#disabled' => (bool)$breakpoint_group->id() && $this->operation != 'duplicate',
+      '#disabled' => (bool)$breakpoint_group->id(),
     );
 
     $form['#tree'] = TRUE;
@@ -55,10 +49,6 @@ class BreakpointGroupFormController extends EntityFormController {
         unset($multipliers['1x']);
       }
     }
-
-    // Breakpoint groups defined by themes or modules cannot be altered
-    // unless they are were overridden.
-    $read_only = $breakpoint_group->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM && $breakpoint_group->overridden == 0;
 
     // Weight for the order of the breakpoints.
     $weight = 0;
@@ -110,7 +100,7 @@ class BreakpointGroupFormController extends EntityFormController {
         '#parents' => array('breakpoints', $key, 'mediaQuery'),
         '#required' => TRUE,
         '#size' => 60,
-        '#disabled' => $breakpoint->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM,
+        '#disabled' => !$breakpoint->isEditable(),
       );
       $form['breakpoint_fieldset']['breakpoints'][$key]['multipliers'] = array(
         '#type' => 'checkboxes',
@@ -118,7 +108,7 @@ class BreakpointGroupFormController extends EntityFormController {
         '#options' => $multipliers,
         '#parents' => array('breakpoints', $key, 'multipliers'),
       );
-      if (!$read_only || $breakpoint_group->overridden) {
+      if ($breakpoint_group->isEditable()) {
         $form['breakpoint_fieldset']['breakpoints'][$key]['remove'] = array(
           '#type' => 'submit',
           '#value' => t('Remove'),
@@ -154,12 +144,12 @@ class BreakpointGroupFormController extends EntityFormController {
     );
 
     // Hide remove column for read only groups.
-    if ($read_only && !$breakpoint_group->overridden) {
+    if (!$breakpoint_group->isEditable()) {
       unset($form['breakpoint_fieldset']['breakpoints']['#header']['remove']);
     }
 
     // Show add another breakpoint if the group isn't read only.
-    if (!$read_only) {
+    if ($breakpoint_group->isEditable()) {
       $options = array_diff_key(breakpoint_select_options(), $breakpoint_group->breakpoints);
 
       if (!empty($options)) {

@@ -55,6 +55,14 @@ function breakpoint_ui_menu() {
     'access arguments' => array('administer breakpoints'),
     'file' => 'breakpoint_ui.breakpoint.admin.inc',
   );
+  $items['admin/config/media/breakpoint/breakpoint/%breakpoint/duplicate'] = array(
+    'title' => 'Duplicate breakpoint',
+    'page callback' => 'breakpoint_ui_breakpoint_page_duplicate',
+    'page arguments' => array(5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer breakpoints'),
+    'file' => 'breakpoint_ui.breakpoint.admin.inc',
+  );
   $items['admin/config/media/breakpoint/breakpoint/%breakpoint/%'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
@@ -93,7 +101,7 @@ function breakpoint_ui_menu() {
   );
   $items['admin/config/media/breakpoint/breakpoint_group/%breakpoint_group/duplicate'] = array(
     'title' => 'Duplicate breakpoint group',
-    'page callback' => 'breakpoint_ui_breakpoint_page_duplicate',
+    'page callback' => 'breakpoint_ui_breakpoint_group_page_duplicate',
     'page arguments' => array(5),
     'access callback' => 'user_access',
     'access arguments' => array('administer breakpoints'),
