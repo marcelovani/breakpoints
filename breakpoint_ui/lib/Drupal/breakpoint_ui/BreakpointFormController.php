@@ -45,7 +45,7 @@ class BreakpointFormController extends EntityFormController {
       '#default_value' => $breakpoint->mediaQuery,
       '#description' => t("Media query without '@media'. Example: '(min-width: 320px)'."),
       '#required' => TRUE,
-      '#disabled' => $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_THEME,
+      '#disabled' => $breakpoint->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM,
     );
 
     $settings = breakpoint_settings();

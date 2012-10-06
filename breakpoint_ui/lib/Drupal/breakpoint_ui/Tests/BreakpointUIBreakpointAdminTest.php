@@ -36,7 +36,7 @@ class BreakpointUIBreakpointAdminTest extends BreakpointTestBase {
     // Create user.
     $this->admin_user = $this->drupalCreateUser(array(
       'administer breakpoints',
-        ));
+    ));
 
     $this->drupalLogin($this->admin_user);
   }
@@ -121,16 +121,16 @@ class BreakpointUIBreakpointAdminTest extends BreakpointTestBase {
    */
   function testThemeModuleBreakpointAdmin() {
     $group = t('Breakpoint UI');
-    // Enable Seven to load its breakpoints.
-    theme_enable(array('seven'));
-    
-    // Enable breakpoint_ui_test to load its breakpoints.
-    module_enable(array('breakpoint_ui_test'));
 
-    // Do the tests for both breakpoints that are defined by Seven
-    $breakpoints = entity_load_multiple('breakpoint', array('theme.seven.mobile', 'theme.seven.wide', 'module.breakpoint_ui_test.mobile', 'module.breakpoint_ui_test.wide'));
+    // Enable seven and breakpoint_ui_test to load their breakpoints.
+    theme_enable(array('seven'));
+    module_enable(array('breakpoint_ui_test'));
     
-    $this->assertEqual(count($breakpoints), 4, t('All theme- and module-provided breakpoints are loaded'), $group);
+    // Do the tests for both breakpoints that are defined by Seven
+    $breakpoints = entity_load_multiple('breakpoint', array('theme.seven.mobile', 'theme.seven.wide', 'module.breakpoint_ui_test.uitestmobile', 'module.breakpoint_ui_test.uitestwide'));
+    
+    $this->assertEqual(count($breakpoints), 4, t('All theme- and module-provided breakpoints are loaded.' . count($breakpoints)), $group);
+    $this->verbose(highlight_string('<?php ' . var_export($breakpoints, TRUE), TRUE));
 
     foreach ($breakpoints as $machine_name => $breakpoint) {
       $this->drupalGet('admin/config/media/breakpoint/breakpoint');

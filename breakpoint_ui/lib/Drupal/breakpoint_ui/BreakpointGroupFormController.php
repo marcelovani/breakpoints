@@ -118,7 +118,7 @@ class BreakpointGroupFormController extends EntityFormController {
         '#options' => $multipliers,
         '#parents' => array('breakpoints', $key, 'multipliers'),
       );
-      if (!$read_only) {
+      if (!$read_only || $breakpoint_group->overridden) {
         $form['breakpoint_fieldset']['breakpoints'][$key]['remove'] = array(
           '#type' => 'submit',
           '#value' => t('Remove'),
@@ -152,9 +152,9 @@ class BreakpointGroupFormController extends EntityFormController {
       'weight' => t('Weight'),
       'remove' => t('Remove'),
     );
-    
+
     // Hide remove column for read only groups.
-    if ($read_only) {
+    if ($read_only && !$breakpoint_group->overridden) {
       unset($form['breakpoint_fieldset']['breakpoints']['#header']['remove']);
     }
 
@@ -217,12 +217,14 @@ class BreakpointGroupFormController extends EntityFormController {
   public function validate(array $form, array &$form_state) {
     $breakpoint_group = $this->getEntity($form_state);
     // Check if the media queries are valid.
-    $breakpoints = $form_state['values']['breakpoints'];
-    foreach ($breakpoints as $breakpoint_id => $breakpoint) {
-      // Check if the user can edit the media query.
-      if ($breakpoint_group->breakpoints[$breakpoint_id]->sourceType == Breakpoint::SOURCE_TYPE_CUSTOM) {
-        if (!Breakpoint::isValidMediaQuery($breakpoints[$breakpoint_id]['mediaQuery'])) {
-          form_set_error('breakpoints][' . $breakpoint_id . '][mediaQuery', t('Illegal media query'));
+    if (isset($form_state['values']['breakpoints'])) {
+      $breakpoints = $form_state['values']['breakpoints'];
+      foreach ($breakpoints as $breakpoint_id => $breakpoint) {
+        // Check if the user can edit the media query.
+        if ($breakpoint_group->breakpoints[$breakpoint_id]->sourceType == Breakpoint::SOURCE_TYPE_CUSTOM) {
+          if (!Breakpoint::isValidMediaQuery($breakpoints[$breakpoint_id]['mediaQuery'])) {
+            form_set_error('breakpoints][' . $breakpoint_id . '][mediaQuery', t('Illegal media query'));
+          }
         }
       }
     }
@@ -241,6 +243,7 @@ class BreakpointGroupFormController extends EntityFormController {
       foreach ($breakpoint as $property => $value) {
         $breakpointobject->{$property} = $value;
       }
+      $breakpointobject->save();
     }
     $breakpoint_group->save();
 
@@ -257,8 +260,10 @@ class BreakpointGroupFormController extends EntityFormController {
   public function addBreakpointSubmit(array $form, array $form_state) {
     $entity = $this->getEntity($form_state);
     // Get the order from the current form_state.
-    $breakpoints = $form_state['values']['breakpoints'];
-    $this->_sort_breakpoints($entity, $breakpoints);
+    if (isset($form_state['values']['breakpoints'])) {
+      $breakpoints = $form_state['values']['breakpoints'];
+      $this->_sort_breakpoints($entity, $breakpoints);
+    }
     // Add the new breakpoint at the end.
     $breakpoint = $form_state['values']['breakpoint'];
     $entity->breakpoints += array($breakpoint => entity_load('breakpoint', $breakpoint));

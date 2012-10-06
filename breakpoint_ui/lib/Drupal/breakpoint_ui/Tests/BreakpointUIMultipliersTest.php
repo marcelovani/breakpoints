@@ -9,6 +9,8 @@ use Drupal\simpletest\WebTestBase;
 
 /**
  * Test breakpoint multipliers.
+ *
+ * @todo Multipliers provided by modules and themes.
  */
 class BreakpointUIMultipliersTest extends WebTestBase {
 
