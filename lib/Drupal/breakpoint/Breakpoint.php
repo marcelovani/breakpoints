@@ -59,6 +59,13 @@ class Breakpoint extends ConfigEntityBase {
   public $mediaQuery = '';
 
   /**
+   * The original media query.
+   *
+   * @var string
+   */
+  protected $originalMediaQuery = '';
+
+  /**
    * The breakpoint source.
    *
    * @var string
@@ -96,6 +103,13 @@ class Breakpoint extends ConfigEntityBase {
    * @var multipliers
    */
   public $multipliers = array();
+
+  /**
+   * The BreakpointGroup overridden status.
+   *
+   * @var string
+   */
+  public $overridden = FALSE;
 
   /**
    * Overrides Drupal\config\ConfigEntityBase::__construct().
@@ -203,7 +217,7 @@ class Breakpoint extends ConfigEntityBase {
    */
   public function enable() {
     if (!$this->status) {
-      $this->status = 1;
+      $this->status = TRUE;
       $this->save();
     }
   }
@@ -215,7 +229,31 @@ class Breakpoint extends ConfigEntityBase {
    */
   public function disable() {
     if ($this->status) {
-      $this->status = 0;
+      $this->status = FALSE;
+      $this->save();
+    }
+  }
+
+  /**
+   * Override a breakpoint and save it.
+   *
+   */
+  public function override() {
+    if (!$this->overridden) {
+      $this->overridden = TRUE;
+      $this->originalMediaQuery = $this->mediaQuery;
+      $this->save();
+    }
+  }
+
+  /**
+   * Revert a breakpoint and save it.
+   *
+   */
+  public function revert() {
+    if ($this->overridden) {
+      $this->overridden = FALSE;
+      $this->mediaQuery = $this->originalMediaQuery;
       $this->save();
     }
   }

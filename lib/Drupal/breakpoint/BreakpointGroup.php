@@ -105,16 +105,10 @@ class BreakpointGroup extends ConfigEntityBase {
       return FALSE;
     }
 
-    // Duplicate all breakpoints to custom breakpoints.
+    // Mark all breakpoints as overridden.
     foreach ($this->breakpoints as $key => $breakpoint) {
       if ($breakpoint->sourceType === $this->sourceType && $breakpoint->source == $this->id()) {
-        $new_breakpoint = $breakpoint->createDuplicate();
-        $new_breakpoint->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
-        $new_breakpoint->save();
-
-        // Remove old one, add new one.
-        unset($this->breakpoints[$key]);
-        $this->breakpoints[$new_breakpoint->id] = $new_breakpoint;
+        $breakpoint->override();
       }
     }
 

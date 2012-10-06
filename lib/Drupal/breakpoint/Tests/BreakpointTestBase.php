@@ -39,6 +39,7 @@ abstract class BreakpointTestBase extends WebTestBase {
       'sourceType',
       'status',
       'weight',
+      'overridden',
       'multipliers',
     );
     $assert_group = t('Breakpoints API');

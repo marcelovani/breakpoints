@@ -56,6 +56,18 @@ class BreakpointCrudTest extends BreakpointTestBase {
     $breakpoint->disable();
     $this->verifyBreakpoint($breakpoint);
 
+    // Enable the breakpoint.
+    $breakpoint->enable();
+    $this->verifyBreakpoint($breakpoint);
+
+    // Override the breakpoint.
+    $breakpoint->enable();
+    $this->verifyBreakpoint($breakpoint);
+
+    // Revert the breakpoint.
+    $breakpoint->enable();
+    $this->verifyBreakpoint($breakpoint);
+
     // Delete the breakpoint.
     $breakpoint->delete();
     $this->assertFalse(breakpoint_load($config_name), t('breakpoint_load: Loading a deleted breakpoint returns false.'), t('Breakpoints API'));

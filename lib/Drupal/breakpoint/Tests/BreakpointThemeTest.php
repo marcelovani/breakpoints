@@ -68,10 +68,10 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
 
     // Verify the group is overridden.
     $overridden_set->breakpoints = array(
-      'custom.breakpoint_test_theme.mobile' => array(),
-      'custom.breakpoint_test_theme.narrow' => array(),
-      'custom.breakpoint_test_theme.wide' => array(),
-      'custom.breakpoint_test_theme.tv' => array(),
+      'theme.breakpoint_test_theme.mobile' => array(),
+      'theme.breakpoint_test_theme.narrow' => array(),
+      'theme.breakpoint_test_theme.wide' => array(),
+      'theme.breakpoint_test_theme.tv' => array(),
     );
     $overridden_set->overridden = 1;
     $this->verifyBreakpointGroup($overridden_set);
