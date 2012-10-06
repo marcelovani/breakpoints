@@ -36,6 +36,7 @@ function breakpoint_themes_enabled($theme_list) {
       $theme_breakpoints = breakpoint_get_theme_breakpoint_list($theme_key);
       if (!empty($theme_breakpoints)) {
         if ($breakpoint_group = _breakpoint_import_breakpoints($themes[$theme_key]->info['name'], $theme_key, Breakpoint::SOURCE_TYPE_THEME, $theme_breakpoints)) {
+          $breakpoint_group->save();
           $uri = $breakpoint_group->uri();
           if ($uri) {
             $uri_options = $uri;
@@ -85,6 +86,7 @@ function breakpoint_modules_enabled($modules) {
     $module_breakpoints = breakpoint_get_module_breakpoint_list($module);
     if (!empty($module_breakpoints)) {
       if ($breakpoint_group = _breakpoint_import_breakpoints($module, $module, Breakpoint::SOURCE_TYPE_MODULE, $module_breakpoints)) {
+        $breakpoint_group->save();
         $uri = $breakpoint_group->uri();
         if ($uri) {
           $uri_options = $uri;
@@ -142,6 +144,7 @@ function _breakpoint_import_breakpoints($label, $id, $source_type, $media_querie
     $breakpoint_group = new BreakpointGroup();
     $breakpoint_group->id = $id;
     $breakpoint_group->label = $label;
+    $breakpoint_group->source = $id;
     $breakpoint_group->sourceType = $source_type;
     foreach ($media_queries as $name => $media_query) {
       $breakpoint = new Breakpoint;
@@ -155,7 +158,6 @@ function _breakpoint_import_breakpoints($label, $id, $source_type, $media_querie
       $breakpoint->save();
       $breakpoint_group->breakpoints[$breakpoint->id()] = $breakpoint;
     }
-    $breakpoint_group->save();
     return $breakpoint_group;
   }
   return FALSE;
@@ -324,29 +326,11 @@ function breakpoint_group_reload_from_theme($theme_key) {
   drupal_theme_rebuild();
 
   $themes = list_themes();
-  if ($themes[$theme_key]->status) {
+  if (isset($themes[$theme_key]) && $themes[$theme_key]->status) {
     $theme_breakpoints = breakpoint_get_theme_breakpoint_list($theme_key);
     if (!empty($theme_breakpoints)) {
-      $weight = 0;
-      // Build a group for the theme.
-      $breakpoint_group = new BreakpointGroup();
-      $breakpoint_group->id = $theme_key;
-      $breakpoint_group->label = $themes[$theme_key]->info['name'];
-      $breakpoint_group->sourceType = Breakpoint::SOURCE_TYPE_THEME;
-      foreach ($theme_breakpoints as $name => $media_query) {
-        $breakpoint = new Breakpoint;
-        $breakpoint->name = $name;
-        $breakpoint->label = drupal_ucfirst($name);
-        $breakpoint->mediaQuery = $media_query;
-        $breakpoint->source = $theme_key;
-        $breakpoint->sourceType = Breakpoint::SOURCE_TYPE_THEME;
-        $breakpoint->status = TRUE;
-        $breakpoint->weight = $weight++;
-        $breakpoint->save();
-        $breakpoint_group->breakpoints[$breakpoint->getConfigName()] = $breakpoint;
-      }
+      return _breakpoint_import_breakpoints($themes[$theme_key]->info['name'], $theme_key, Breakpoint::SOURCE_TYPE_THEME, $theme_breakpoints);
     }
-    return $breakpoint_group;
   }
   return FALSE;
 }

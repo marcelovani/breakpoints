@@ -109,7 +109,6 @@ class BreakpointGroup extends ConfigEntityBase {
     foreach ($this->breakpoints as $key => $breakpoint) {
       if ($breakpoint->sourceType === $this->sourceType && $breakpoint->source == $this->id()) {
         $new_breakpoint = $breakpoint->createDuplicate();
-        $new_breakpoint->id = '';
         $new_breakpoint->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
         $new_breakpoint->save();
 
@@ -147,8 +146,20 @@ class BreakpointGroup extends ConfigEntityBase {
    * Implements EntityInterface::createDuplicate().
    */
   public function createDuplicate() {
-    $duplicate = parent::createDuplicate();
+    $duplicate = clone $this;
+    $entity_info = $this->entityInfo();
+    $duplicate->{$entity_info['entity keys']['id']} = NULL;
+
+    // Check if the entity type supports UUIDs and generate a new one if so.
+    if (!empty($entity_info['entity keys']['uuid'])) {
+      $uuid = new Uuid();
+      $duplicate->{$entity_info['entity keys']['uuid']} = $uuid->generate();
+    }
     $duplicate->label = t('Clone of') . ' ' . $this->label();
+    $duplicate->isNew = TRUE;
+    $duplicate->originalID = NULL;
+    $duplicate->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
+    $duplicate->overridden = FALSE;
     return $duplicate;
   }
 

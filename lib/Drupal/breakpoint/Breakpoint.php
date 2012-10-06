@@ -178,6 +178,25 @@ class Breakpoint extends ConfigEntityBase {
   }
 
   /**
+   * Implements EntityInterface::createDuplicate().
+   */
+  public function createDuplicate() {
+    $duplicate = clone $this;
+    $entity_info = $this->entityInfo();
+    $duplicate->{$entity_info['entity keys']['id']} = NULL;
+
+    // Check if the entity type supports UUIDs and generate a new one if so.
+    if (!empty($entity_info['entity keys']['uuid'])) {
+      $uuid = new Uuid();
+      $duplicate->{$entity_info['entity keys']['uuid']} = $uuid->generate();
+    }
+    $duplicate->label = $this->label();
+    $duplicate->isNew = TRUE;
+    $duplicate->originalID = NULL;
+    return $duplicate;
+  }
+
+  /**
    * Shortcut function to enable a breakpoint and save it.
    *
    * @see breakpoint_action_confirm_submit()

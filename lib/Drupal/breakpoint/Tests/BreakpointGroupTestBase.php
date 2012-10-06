@@ -53,7 +53,13 @@ abstract class BreakpointGroupTestBase extends WebTestBase {
         $this->assertEqual(array_keys($compare_set->{$property}), array_keys($group->{$property}), t('breakpoint_group_load: Proper %property for breakpoint group %group.', $t_args), $assert_set);
       }
       else {
-        $this->assertEqual($compare_set->{$property}, $group->{$property}, t('breakpoint_group_load: Proper %property . for breakpoint group %group.', $t_args), $assert_set);
+        $t_args = array(
+          '%group' => $group->label(),
+          '%property' => $property,
+          '%property1' => $compare_set->{$property},
+          '%property2' => $group->{$property},
+        );
+        $this->assertEqual($compare_set->{$property}, $group->{$property}, t('breakpoint_group_load: Proper %property: %property1 == %property2 for breakpoint group %group.', $t_args), $assert_set);
       }
     }
   }

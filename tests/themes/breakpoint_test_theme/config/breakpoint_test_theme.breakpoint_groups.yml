@@ -2,5 +2,5 @@ test:
   label: Test
   breakpoints:
     mobile: ['1.5x', '2x']
-    narrow: []
+    narrow:
     wide:
