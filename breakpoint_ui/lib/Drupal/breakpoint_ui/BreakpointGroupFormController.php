@@ -171,7 +171,6 @@ class BreakpointGroupFormController extends EntityFormController {
             'wrapper' => 'breakpoint_group-fieldset',
           ),
         );
-        $form['breakpoint_fieldset']['add_breakpoint_action']['#attached']['css'][] = drupal_get_path('module', 'breakpoint_ui') . '/css/breakpoint_ui.breakpoint_group.admin.css';
       }
     }
 

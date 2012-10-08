@@ -82,9 +82,6 @@ class BreakpointGroupListController extends ConfigEntityListController {
     if (!isset($build['#attached'])) {
       $build['#attached'] = array();
     }
-    $build['#attached'] = drupal_array_merge_deep($build['#attached'], array (
-      'css' => array(drupal_get_path('module', 'node') . '/node.admin.css'),
-    ));
     return $build;
   }
 }
