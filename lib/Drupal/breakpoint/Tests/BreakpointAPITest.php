@@ -1,19 +1,21 @@
 <?php
 /**
  * @file
- * Definition of Drupal\breakpoint\Tests\BreakpointsApiTest.
+ * Definition of Drupal\breakpoint\Tests\BreakpointAPITest.
  */
 
 namespace Drupal\breakpoint\Tests;
 
 use Drupal\breakpoint\Tests\BreakpointsTestBase;
 use Drupal\breakpoint\Breakpoint;
-use Exception;
+use Drupal\breakpoint\InvalidBreakpointNameException;
+use Drupal\breakpoint\InvalidBreakpointSourceException;
+use Drupal\breakpoint\InvalidBreakpointSourceTypeException;
 
 /**
- * Tests for general breakpoint api functions.
+ * Tests for general breakpoint API functions.
  */
-class BreakpointApiTest extends BreakpointTestBase {
+class BreakpointAPITest extends BreakpointTestBase {
 
   /**
    * Drupal\simpletest\WebTestBase\getInfo().
@@ -30,58 +32,60 @@ class BreakpointApiTest extends BreakpointTestBase {
    * Test Breakpoint::buildConfigName().
    */
   public function testConfigName() {
-    $breakpoint = new Breakpoint(
-      array(
-        'label' => drupal_strtolower($this->randomName()),
-        'source' => 'custom_module',
-        // Try an invalid sourceType.
-        'sourceType' => 'oops',
-      )
-    );
+    // Try an invalid sourceType.
+    $breakpoint = entity_create('breakpoint', array(
+      'label' => drupal_strtolower($this->randomName()),
+      'source' => 'custom_module',
+      'sourceType' => 'oops',
+    ));
 
+    $exception = FALSE;
     try {
       $breakpoint->save();
     }
-    catch (Exception $e) {
+    catch (InvalidBreakpointSourceTypeException $e) {
       $exception = TRUE;
     }
     $this->assertTrue($exception, t('breakpoint_config_name: An exception is thrown when an invalid sourceType is entered.'));
-    $this->assertEqual((string) $breakpoint->id(), '', t('breakpoint_config_name: No id is set when an invalid sourceType is entered.'));
 
     // Try an invalid source.
+    $breakpoint->id = '';
     $breakpoint->sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
     $breakpoint->source = 'custom*_module source';
+
     $exception = FALSE;
     try {
       $breakpoint->save();
     }
-    catch (Exception $e) {
+    catch (InvalidBreakpointSourceException $e) {
       $exception = TRUE;
     }
     $this->assertTrue($exception, t('breakpoint_config_name: An exception is thrown when an invalid source is entered.'));
-    $this->assertEqual((string) $breakpoint->id(), '', t('breakpoint_config_name: No id is set when an invalid sourceType is entered.'));
 
     // Try an invalid name (make sure there is at least once capital letter).
+    $breakpoint->id = '';
     $breakpoint->source = 'custom_module';
     $breakpoint->name = drupal_ucfirst($this->randomName());
+
     $exception = FALSE;
     try {
       $breakpoint->save();
     }
-    catch (Exception $e) {
+    catch (InvalidBreakpointNameException $e) {
       $exception = TRUE;
     }
     $this->assertTrue($exception, t('breakpoint_config_name: An exception is thrown when an invalid name is entered.'));
-    $this->assertEqual((string) $breakpoint->id(), '', t('breakpoint_config_name: No id is set when an invalid sourceType is entered.'));
 
     // Try a valid breakpoint.
+    $breakpoint->id = '';
     $breakpoint->name = drupal_strtolower($this->randomName());
     $breakpoint->mediaQuery = 'all';
+
     $exception = FALSE;
     try {
       $breakpoint->save();
     }
-    catch (Exception $e) {
+    catch (\Exception $e) {
       $exception = TRUE;
     }
     $this->assertFalse($exception, t('breakpoint_config_name: No exception is thrown when a valid breakpoint is passed.'));

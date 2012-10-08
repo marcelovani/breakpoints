@@ -8,7 +8,7 @@ namespace Drupal\breakpoint\Tests;
 
 use Drupal\simpletest\UnitTestBase;
 use Drupal\breakpoint\Breakpoint;
-use Exception;
+use Drupal\breakpoint\InvalidBreakpointMediaQueryException;
 
 /**
  * Tests for media queries in a breakpoint.
@@ -63,7 +63,7 @@ class BreakpointMediaQueryTest extends UnitTestBase {
       try {
         $this->assertTrue(Breakpoint::isValidMediaQuery($media_query), $media_query . ' is valid.');
       }
-      catch (Exception $e) {
+      catch (InvalidBreakpointMediaQueryException $e) {
         $this->assertTrue(FALSE, $media_query . ' is valid.');
       }
     }
@@ -74,6 +74,7 @@ class BreakpointMediaQueryTest extends UnitTestBase {
    */
   public function testInvalidMediaQueries() {
     $media_queries = array(
+      '',
       'not (orientation)',
       'only (orientation)',
       'all and not all',
@@ -117,7 +118,7 @@ class BreakpointMediaQueryTest extends UnitTestBase {
       try {
         $this->assertFalse(Breakpoint::isValidMediaQuery($media_query), $media_query . ' is not valid.');
       }
-      catch (Exception $e) {
+      catch (InvalidBreakpointMediaQueryException $e) {
         $this->assertTrue(TRUE, $media_query . ' is not valid.');
       }
     }

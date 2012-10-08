@@ -30,12 +30,10 @@ class BreakpointCrudTest extends BreakpointTestBase {
    */
   public function testBreakpointCrud() {
     // Add a breakpoint with minimum data only.
-    $values = array(
+    $breakpoint = entity_create('breakpoint', array(
       'label' => drupal_strtolower($this->randomName()),
       'mediaQuery' => '(min-width: 600px)',
-    );
-
-    $breakpoint = new Breakpoint($values);
+    ));
     $breakpoint->save();
 
     $this->verifyBreakpoint($breakpoint);

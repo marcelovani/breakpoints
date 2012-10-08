@@ -34,23 +34,21 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
     $breakpoints = array();
     for ($i = 0; $i <= 3; $i++) {
       $width = ($i + 1) * 200;
-      $values = array(
+      $breakpoint = entity_create('breakpoint', array(
         'name' => drupal_strtolower($this->randomName()),
         'weight' => $i,
         'mediaQuery' => "(min-width: {$width}px)",
-      );
-      $breakpoint = new Breakpoint($values);
+      ));
       $breakpoint->save();
       $breakpoints[$breakpoint->id()] = $breakpoint;
     }
     // Add a breakpoint group with minimum data only.
     $label = $this->randomName();
-    $values = array(
+
+    $group = entity_create('breakpoint_group', array(
       'label' => $label,
       'id' => drupal_strtolower($label),
-    );
-
-    $group = new BreakpointGroup($values);
+    ));
     $group->save();
     $this->verifyBreakpointGroup($group);
 
@@ -60,8 +58,9 @@ class BreakpointGroupCrudTest extends BreakpointGroupTestBase {
     $this->verifyBreakpointGroup($group);
 
     // Duplicate the breakpoint group.
-    $new_set = new BreakpointGroup();
-    $new_set->breakpoints = $group->breakpoints;
+    $new_set = entity_create('breakpoint_group', array(
+      'breakpoints' => $group->breakpoints,
+    ));
     $duplicated_set = $group->duplicate();
     $this->verifyBreakpointGroup($duplicated_set, $new_set);
 

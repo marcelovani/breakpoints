@@ -8,8 +8,11 @@
 namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Component\Uuid\Uuid;
-use Exception;
+use Drupal\breakpoint\InvalidBreakpointException;
+use Drupal\breakpoint\InvalidBreakpointNameException;
+use Drupal\breakpoint\InvalidBreakpointSourceException;
+use Drupal\breakpoint\InvalidBreakpointSourceTypeException;
+use Drupal\breakpoint\InvalidBreakpointMediaQueryException;
 
 /**
  * Defines the Breakpoint entity.
@@ -60,6 +63,8 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * The original media query.
+   * This is tracked separately, because a user can override a single breakpoint
+   * and reloading the media query from the theme/module is expensive.
    *
    * @var string
    */
@@ -116,10 +121,6 @@ class Breakpoint extends ConfigEntityBase {
    */
   public function __construct(array $values = array(), $entity_type = 'breakpoint') {
     parent::__construct($values, $entity_type);
-    if (!isset($this->uuid)) {
-      $uuid = new Uuid();
-      $this->uuid = $uuid->generate();
-    }
   }
 
   /**
@@ -127,20 +128,20 @@ class Breakpoint extends ConfigEntityBase {
    */
   public function save() {
     if (empty($this->id)) {
-      $this->id = $this->buildConfigName();
+      $this->id = $this->getConfigName();
     }
     if (empty($this->label)) {
       $this->label = drupal_ucfirst($this->name);
     }
 
-    // Check the media query.
+    // Check if everything is valid.
     if (!$this->isValid()) {
-      throw new Exception(t('Invalid media query detected.'));
+      throw new InvalidBreakpointException('Invalid data detected.');
     }
     // Remove ununsed multipliers.
     $this->multipliers = array_filter($this->multipliers);
 
-    // Add '1x' multiplier.
+    // Always add '1x' multiplier.
     if (!array_key_exists('1x', $this->multipliers)) {
       $this->multipliers = array('1x' => '1x') + $this->multipliers;
     }
@@ -151,44 +152,7 @@ class Breakpoint extends ConfigEntityBase {
    * Get config name.
    */
   public function getConfigName() {
-    return $this->sourceType
-      . '.' . $this->source
-      . '.' . $this->name;
-  }
-
-  /**
-   * Build config name.
-   */
-  protected function buildConfigName() {
-    // Check for illegal values in breakpoint source type.
-    if (!in_array($this->sourceType, array(
-        Breakpoint::SOURCE_TYPE_CUSTOM,
-        Breakpoint::SOURCE_TYPE_MODULE,
-        Breakpoint::SOURCE_TYPE_THEME)
-      )) {
-      throw new Exception(
-          t(
-            "Expected one of '@custom', '@module' or '@theme' for breakpoint sourceType property but got '@sourcetype'.",
-            array(
-              '@custom' => Breakpoint::SOURCE_TYPE_CUSTOM,
-              '@module' => Breakpoint::SOURCE_TYPE_MODULE,
-              '@theme' => Breakpoint::SOURCE_TYPE_THEME,
-              '@sourcetype' => $this->sourceType,
-            )
-          )
-      );
-    }
-    // Check for illegal characters in breakpoint source.
-    if (preg_match('/[^a-z_]+/', $this->source)) {
-      throw new Exception(t("Invalid value '@source' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.", array('@source' => $this->source)));
-    }
-    // Check for illegal characters in breakpoint names.
-    if (preg_match('/[^0-9a-z_\-]/', $this->name)) {
-      throw new Exception(t("Invalid value '@name' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).", array('@name' => $this->name)));
-    }
-    return $this->sourceType
-      . '.' . $this->source
-      . '.' . $this->name;
+    return $this->sourceType . '.' . $this->source . '.' . $this->name;
   }
 
   /**
@@ -222,9 +186,9 @@ class Breakpoint extends ConfigEntityBase {
    *
    */
   public function duplicate() {
-    $duplicate = new Breakpoint;
-    $duplicate->mediaQuery = $this->mediaQuery;
-    return $duplicate;
+    return entity_create('breakpoint', array(
+      'mediaQuery' => $this->mediaQuery,
+    ));
   }
 
   /**
@@ -252,11 +216,29 @@ class Breakpoint extends ConfigEntityBase {
   }
 
   /**
-   * Check if the mediaQuery is valid.
+   * Check if the breakpoint is valid.
    *
    * @see isValidMediaQuery()
    */
   public function isValid() {
+    // Check for illegal values in breakpoint source type.
+    if (!in_array($this->sourceType, array(
+        Breakpoint::SOURCE_TYPE_CUSTOM,
+        Breakpoint::SOURCE_TYPE_MODULE,
+        Breakpoint::SOURCE_TYPE_THEME)
+      )) {
+      throw new InvalidBreakpointSourceTypeException(format_string('Invalid source type @source_type', array(
+        '@source_type' => $this->sourceType,
+      )));
+    }
+    // Check for illegal characters in breakpoint source.
+    if (preg_match('/[^a-z_]+/', $this->source)) {
+      throw new InvalidBreakpointSourceException(format_string("Invalid value '@source' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.", array('@source' => $this->source)));
+    }
+    // Check for illegal characters in breakpoint names.
+    if (preg_match('/[^0-9a-z_\-]/', $this->name)) {
+      throw new InvalidBreakpointNameException(format_string("Invalid value '@name' for breakpoint name property. Breakpoint name property can only contain lowercase alphanumeric characters, underscores (_), and hyphens (-).", array('@name' => $this->name)));
+    }
     return $this::isValidMediaQuery($this->mediaQuery);
   }
 
@@ -317,19 +299,19 @@ class Breakpoint extends ConfigEntityBase {
             // Single expression.
             if (isset($matches[1]) && !isset($matches[2])) {
               if (!array_key_exists($matches[1], $media_features)) {
-                return FALSE;
+                throw new InvalidBreakpointMediaQueryException('Invalid media feature detected.');
               }
             }
             // Full expression.
             elseif (isset($matches[3]) && !isset($matches[4])) {
               $value = trim($matches[3]);
               if (!array_key_exists($matches[1], $media_features)) {
-                return FALSE;
+                throw new InvalidBreakpointMediaQueryException('Invalid media feature detected.');
               }
               if (is_array($media_features[$matches[1]])) {
                 // Check if value is allowed.
                 if (!array_key_exists($value, $media_features[$matches[1]])) {
-                  return FALSE;
+                  throw new InvalidBreakpointMediaQueryException('Value is not allowed.');
                 }
               }
               else {
@@ -339,15 +321,15 @@ class Breakpoint extends ConfigEntityBase {
                     if (preg_match('/^(\-)?(\d+)?((?:|em|ex|px|cm|mm|in|pt|pc|deg|rad|grad|ms|s|hz|khz|dpi|dpcm))$/i', trim($value), $length_matches)) {
                       // Only -0 is allowed.
                       if ($length_matches[1] === '-' && $length_matches[2] !== '0') {
-                        return FALSE;
+                        throw new InvalidBreakpointMediaQueryException('Invalid length detected.');
                       }
                       // If there's a unit, a number is needed as well.
                       if ($length_matches[2] === '' && $length_matches[3] !== '') {
-                        return FALSE;
+                        throw new InvalidBreakpointMediaQueryException('Unit found, value is missing.');
                       }
                     }
                     else {
-                      return FALSE;
+                      throw new InvalidBreakpointMediaQueryException('Invalid unit detected.');
                     }
                     break;
                 }
@@ -358,17 +340,17 @@ class Breakpoint extends ConfigEntityBase {
           // Check [ONLY | NOT]? S* media_type
           elseif (preg_match('/^((?:only|not)?\s?)([\w\-]+)$/i', trim($query_part), $matches)) {
             if ($media_type_found) {
-              return FALSE;
+              throw new InvalidBreakpointMediaQueryException('Only one media type is allowed.');
             }
             $media_type_found = TRUE;
           }
           else {
-            return FALSE;
+            throw new InvalidBreakpointMediaQueryException('Invalid media query detected.');
           }
         }
       }
       return TRUE;
     }
-    return FALSE;
+    throw new InvalidBreakpointMediaQueryException('Media query is empty.');
   }
 }

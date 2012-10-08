@@ -8,7 +8,8 @@
 namespace Drupal\breakpoint;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Component\Uuid\Uuid;
+use Drupal\breakpoint\InvalidBreakpointSourceException;
+use Drupal\breakpoint\InvalidBreakpointSourceTypeException;
 
 /**
  * Defines the BreakpointGroup entity.
@@ -78,11 +79,6 @@ class BreakpointGroup extends ConfigEntityBase {
    */
   public function __construct(array $values = array(), $entity_type = 'breakpoint_group') {
     parent::__construct($values, $entity_type);
-    // Assign a new UUID if there is none yet.
-    if (!isset($this->uuid)) {
-      $uuid = new Uuid();
-      $this->uuid = $uuid->generate();
-    }
     $this->loadAllBreakpoints();
   }
 
@@ -90,10 +86,35 @@ class BreakpointGroup extends ConfigEntityBase {
    * Overrides Drupal\Core\Entity::save().
    */
   public function save() {
+    // Check if everything is valid.
+    if (!$this->isValid()) {
+      throw new Exception('Invalid data detected.');
+    }
     // Only save the keys, but return the full objects.
     $this->breakpoints = array_keys($this->breakpoints);
     parent::save();
     $this->loadAllBreakpoints();
+  }
+
+  /**
+   * Check if the breakpoint group is valid.
+   */
+  public function isValid() {
+    // Check for illegal values in breakpoint group source type.
+    if (!in_array($this->sourceType, array(
+        Breakpoint::SOURCE_TYPE_CUSTOM,
+        Breakpoint::SOURCE_TYPE_MODULE,
+        Breakpoint::SOURCE_TYPE_THEME)
+      )) {
+      throw new InvalidBreakpointSourceTypeException(format_string('Invalid source type @source_type', array(
+        '@source_type' => $this->sourceType,
+      )));
+    }
+    // Check for illegal characters in breakpoint source.
+    if (preg_match('/[^a-z_]+/', $this->source)) {
+      throw new InvalidBreakpointSourceException(format_string("Invalid value '@source' for breakpoint source property. Breakpoint source property can only contain lowercase letters and underscores.", array('@source' => $this->source)));
+    }
+    return TRUE;
   }
 
   /**
@@ -143,9 +164,9 @@ class BreakpointGroup extends ConfigEntityBase {
    *
    */
   public function duplicate() {
-    $duplicate = new BreakpointGroup;
-    $duplicate->breakpoints = $this->breakpoints;
-    return $duplicate;
+    return entity_create('breakpoint_group', array(
+      'breakpoints' => $this->breakpoints,
+    ));
   }
 
   /**
@@ -161,6 +182,127 @@ class BreakpointGroup extends ConfigEntityBase {
       return TRUE;
     }
     return FALSE;
+  }
+
+  /**
+   * Add a breakpoint using a name and a media query.
+   *
+   * @param string $name
+   *   The name of the breakpoint.
+   * @param string $media_query
+   *   Media query.
+   */
+  public function addBreakpointFromMediaQuery($name, $media_query) {
+    // Use the existing breakpoint if it exists.
+    $breakpoint = entity_load('breakpoint', $this->sourceType . '.' . $this->id . '.' . $name);
+    if (!$breakpoint) {
+      // Build a new breakpoint.
+      $breakpoint = entity_create('breakpoint', array(
+        'name' => $name,
+        'label' => drupal_ucfirst($name),
+        'mediaQuery' => $media_query,
+        'source' => $this->id,
+        'sourceType' => $this->sourceType,
+        'weight' => count($this->breakpoints),
+      ));
+      $breakpoint->save();
+    }
+    else {
+      // Reset name, label, weight and media query.
+      $breakpoint->name = $name;
+      $breakpoint->label = drupal_ucfirst($name);
+      $breakpoint->mediaQuery = $media_query;
+      $breakpoint->weight = count($this->breakpoints);
+    }
+    $this->breakpoints[$breakpoint->id()] = $breakpoint;
+  }
+
+  /**
+   * Load breakpoints from a theme/module and build a default group.
+   *
+   * @param string $id
+   *   Name of the breakpoint group.
+   * @param string $label
+   *   Human readable name of the breakpoint group.
+   * @param string $sourceType
+   *   Either Breakpoint::SOURCE_TYPE_THEME or Breakpoint::SOURCE_TYPE_MODULE.
+   * @param array $media_queries
+   *   Array of media queries keyed by id.
+   *
+   * @return \Drupal\breakpoint\BreakpointGroup|false
+   *   Return the new breakpoint group containing all breakpoints.
+   */
+  public static function ImportMediaQueries($id, $label, $source_type, $media_queries) {
+    $breakpoint_group = entity_load('breakpoint_group', $source_type . '.' . $id);
+    /* @var $breakpoint_group \Drupal\breakpoint\BreakpointGroup */
+    if (!$breakpoint_group) {
+      // Build a new breakpoint group.
+      $breakpoint_group = entity_create('breakpoint_group', array(
+        'id' => $id,
+        'label' => $label,
+        'source' => $id,
+        'sourceType' => $source_type,
+      ));
+    }
+    else {
+      // Reset label.
+      $breakpoint_group->label = $label;
+    }
+
+    foreach ($media_queries as $name => $media_query) {
+      $breakpoint_group->addBreakpointFromMediaQuery($name, $media_query);
+    }
+    return $breakpoint_group;
+  }
+
+  /**
+   * Import breakpoint groups from theme or module.
+   *
+   * @param string $source
+   *   Source of the breakpoint group, theme_key or module name.
+   * @param string $sourceType
+   *   Either Breakpoint::SOURCE_TYPE_THEME or Breakpoint::SOURCE_TYPE_MODULE.
+   * @param string $name
+   *   Name of the breakpoint group.
+   * @param string $label
+   *   Human readable name of the breakpoint group.
+   * @param array $breakpoints
+   *   Array of breakpoints, using either the short name or the full name.
+   *
+   * @return \Drupal\breakpoint\BreakpointGroup|false
+   *   Return the new breakpoint group containing all breakpoints.
+   */
+  public static function ImportBreakpointGroup($source, $source_type, $name, $label, $breakpoints) {
+    // Use the existing breakpoint group if it exists.
+    $breakpoint_group = entity_load('breakpoint_group', $source_type . '.' . $name);
+    /* @var $breakpoint_group \Drupal\breakpoint\BreakpointGroup */
+    if (!$breakpoint_group) {
+      $breakpoint_group = entity_create('breakpoint_group', array(
+        'id' => $name,
+        'label' => !empty($label) ? $label : $name,
+        'source' => $source,
+        'sourceType' => $source_type,
+      ));
+    }
+    else {
+      // Reset label.
+      $breakpoint_group->label = !empty($label) ? $label : $name;
+    }
+
+    // Add breakpoints to the group.
+    foreach ($breakpoints as $breakpoint_name) {
+      // Check if breakpoint exists, assume short name.
+      $breakpoint = entity_load('breakpoint', $source_type . '.' . $source . '.' . $breakpoint_name);
+      // If the breakpoint doesn't exist, try using the full name.
+      if (!$breakpoint) {
+        $breakpoint = entity_load('breakpoint', $breakpoint_name);
+      }
+      if ($breakpoint) {
+        // Add breakpoint to group.
+        $breakpoint_group->breakpoints[$breakpoint->id()] = $breakpoint;
+      }
+    }
+    return $breakpoint_group;
   }
 
   /**

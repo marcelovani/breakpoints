@@ -2,4 +2,4 @@ name = Breakpoint test theme
 description = Test theme for breakpoint.
 core = 8.x
 base theme = bartik
-hidden = FALSE
+hidden = TRUE
