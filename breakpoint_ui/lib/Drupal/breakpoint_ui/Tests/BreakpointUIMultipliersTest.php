@@ -47,8 +47,8 @@ class BreakpointUIMultipliersTest extends WebTestBase {
   public function testBreakpointMultipliers() {
     // Verify the default multipliers are visible.
     $this->drupalGet('admin/config/media/breakpoint/multipliers');
-    $settings = breakpoint_settings();
-    foreach ($settings->multipliers as $multiplier) {
+    $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
+    foreach ($multipliers as $multiplier) {
       $this->assertRaw($multiplier, t('Default multiplier %multiplier found.', array('%multiplier' => $multiplier)));
       if ($multiplier != '1x') {
         $this->assertFieldByName('multipliers[' . $multiplier . ']', $multiplier);
@@ -69,8 +69,8 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the multiplier was added.
-    $settings = breakpoint_settings();
-    $this->assertTrue(in_array($new_multiplier, $settings->multipliers), t('Multiplier %multiplier was added.', array('%multiplier' => $new_multiplier)));
+    $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
+    $this->assertTrue(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was added.', array('%multiplier' => $new_multiplier)));
 
     // Verify the new multiplier is visible on the multiplier overview page.
     $this->assertFieldByName('multipliers[' . $new_multiplier . ']', $new_multiplier);
@@ -83,9 +83,9 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the multiplier was updated.
-    $settings = breakpoint_settings();
-    $this->assertFalse(in_array($new_multiplier, $settings->multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)));
-    $this->assertTrue(in_array($updated_multiplier, $settings->multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)));
+    $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
+    $this->assertFalse(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)));
+    $this->assertTrue(in_array($updated_multiplier, $multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)));
 
     // Verify the updated multiplier is visible on the multiplier overview page.
     $this->assertNoFieldByName('multipliers[' . $new_multiplier . ']');
@@ -102,8 +102,8 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     $this->assertNoFieldByName('multipliers[' . $new_multiplier . ']');
 
     // Verify the deleted multiplier is deleted.
-    $settings = breakpoint_settings();
-    $this->assertFalse(in_array($new_multiplier, $settings->multipliers), t('Multiplier %multiplier was deleted.', array('%multiplier' => $new_multiplier)));
+    $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
+    $this->assertFalse(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was deleted.', array('%multiplier' => $new_multiplier)));
 
   }
 }

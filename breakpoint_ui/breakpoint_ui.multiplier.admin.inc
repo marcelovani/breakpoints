@@ -95,13 +95,12 @@ function breakpoint_ui_admin_multiplier_delete_form($form, &$form_state, $multip
  * Sumbit callback for breakpoint_ui_admin_multiplier_delete_form().
  */
 function breakpoint_ui_admin_multiplier_delete_form_submit($form, &$form_state) {
-  $settings = breakpoint_settings();
   $multiplier = $form_state['values']['multiplier'];
-  $multipliers = drupal_map_assoc($settings->multipliers);
+  $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
   if (isset($multipliers[$multiplier])) {
     unset($multipliers[$multiplier]);
   }
-  breakpoint_settings_save_multipliers(array_values($multipliers));
+  config('breakpoint')->set('multipliers', $multipliers)->save();
   drupal_set_message(t('Multiplier %multiplier was deleted', array('%multiplier' => $multiplier)));
   $form_state['redirect'] = 'admin/config/media/breakpoint/multipliers';
 }

@@ -48,13 +48,9 @@ class BreakpointFormController extends EntityFormController {
       '#disabled' => !$breakpoint->isEditable(),
     );
 
-    $settings = breakpoint_settings();
-    $multipliers = array();
-    if (isset($settings->multipliers) && !empty($settings->multipliers)) {
-      $multipliers = drupal_map_assoc(array_values($settings->multipliers));
-      if (array_key_exists('1x', $multipliers)) {
-        unset($multipliers['1x']);
-      }
+    $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
+    if (array_key_exists('1x', $multipliers)) {
+      unset($multipliers['1x']);
     }
 
     $form['multipliers'] = array(

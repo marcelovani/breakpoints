@@ -41,13 +41,9 @@ class BreakpointGroupFormController extends EntityFormController {
     $form['#tree'] = TRUE;
 
     // Load all available multipliers.
-    $settings = breakpoint_settings();
-    $multipliers = array();
-    if (isset($settings->multipliers) && !empty($settings->multipliers)) {
-      $multipliers = drupal_map_assoc(array_values($settings->multipliers));
-      if (array_key_exists('1x', $multipliers)) {
-        unset($multipliers['1x']);
-      }
+    $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
+    if (array_key_exists('1x', $multipliers)) {
+      unset($multipliers['1x']);
     }
 
     // Weight for the order of the breakpoints.
@@ -150,7 +146,7 @@ class BreakpointGroupFormController extends EntityFormController {
 
     // Show add another breakpoint if the group isn't read only.
     if ($breakpoint_group->isEditable()) {
-      $options = array_diff_key(breakpoint_select_options(), $breakpoint_group->breakpoints);
+      $options = array_diff_key(breakpoint_labels(), $breakpoint_group->breakpoints);
 
       if (!empty($options)) {
         $form['breakpoint_fieldset']['add_breakpoint_action'] = array(
