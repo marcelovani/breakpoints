@@ -82,7 +82,7 @@ function breakpoint_modules_uninstalled($modules) {
  * Import media queries from a theme or module and create a default group.
  *
  * @param string $id
- *   Name of the breakpoint group.
+ *   Identifier of the breakpoint group.
  * @param string $label
  *   Human readable name of the breakpoint group.
  * @param string $sourceType
@@ -156,14 +156,14 @@ function _breakpoint_delete_breakpoints($ids, $source_type) {
       $breakpoint_group->delete();
 
       // Get all breakpoints defined by this theme/module.
-      $names = drupal_container()->get('config.storage')->listAll('breakpoint.breakpoint.' . $source_type . '.' . $breakpoint_group->id() . '.');
+      $breakpoint_ids = drupal_container()->get('config.storage')->listAll('breakpoint.breakpoint.' . $source_type . '.' . $breakpoint_group->id() . '.');
       $entity_info = entity_get_info('breakpoint');
 
-      // Remove the breakpoint.breakpoint part of the names, before loading.
-      foreach ($names as &$name) {
-        $name = drupal_substr($name, drupal_strlen($entity_info['config prefix']) + 1);
+      // Remove the breakpoint.breakpoint part of the breakpoint identifier.
+      foreach ($breakpoint_ids as &$breakpoint_id) {
+        $breakpoint_id = drupal_substr($breakpoint_id, drupal_strlen($entity_info['config prefix']) + 1);
       }
-      $breakpoints = entity_load_multiple('breakpoint', $names);
+      $breakpoints = entity_load_multiple('breakpoint', $breakpoint_ids);
 
       // Make sure we only delete breakpoints defined by this theme/module.
       foreach ($breakpoints as $breakpoint) {

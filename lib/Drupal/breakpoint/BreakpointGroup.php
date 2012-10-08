@@ -17,7 +17,7 @@ use Drupal\breakpoint\InvalidBreakpointSourceTypeException;
 class BreakpointGroup extends ConfigEntityBase {
 
   /**
-   * The breakpoint group ID (machine name).
+   * The breakpoint group ID.
    *
    * @var string
    */
@@ -257,11 +257,11 @@ class BreakpointGroup extends ConfigEntityBase {
    * Import breakpoint groups from theme or module.
    *
    * @param string $source
-   *   Source of the breakpoint group, theme_key or module name.
+   *   Source of the breakpoint group: theme_key or module name.
    * @param string $sourceType
    *   Either Breakpoint::SOURCE_TYPE_THEME or Breakpoint::SOURCE_TYPE_MODULE.
-   * @param string $name
-   *   Name of the breakpoint group.
+   * @param string $id
+   *   Identifier of the breakpoint group.
    * @param string $label
    *   Human readable name of the breakpoint group.
    * @param array $breakpoints
@@ -270,20 +270,20 @@ class BreakpointGroup extends ConfigEntityBase {
    * @return \Drupal\breakpoint\BreakpointGroup|false
    *   Return the new breakpoint group containing all breakpoints.
    */
-  public static function ImportBreakpointGroup($source, $source_type, $name, $label, $breakpoints) {
+  public static function ImportBreakpointGroup($source, $source_type, $id, $label, $breakpoints) {
     // Use the existing breakpoint group if it exists.
-    $breakpoint_group = entity_load('breakpoint_group', $source_type . '.' . $name);
+    $breakpoint_group = entity_load('breakpoint_group', $source_type . '.' . $id);
     if (!$breakpoint_group) {
       $breakpoint_group = entity_create('breakpoint_group', array(
-        'id' => $name,
-        'label' => !empty($label) ? $label : $name,
+        'id' => $id,
+        'label' => !empty($label) ? $label : $id,
         'source' => $source,
         'sourceType' => $source_type,
       ));
     }
     else {
       // Reset label.
-      $breakpoint_group->label = !empty($label) ? $label : $name;
+      $breakpoint_group->label = !empty($label) ? $label : $id;
     }
 
     // Add breakpoints to the group.
