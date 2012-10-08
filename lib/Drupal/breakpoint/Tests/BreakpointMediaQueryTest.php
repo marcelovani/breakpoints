@@ -52,6 +52,7 @@ class BreakpointMediaQueryTest extends UnitTestBase {
       'screen and (width: 0em)',
       'screen and (min-width: -0)',
       'screen and (max-width: 0)',
+      'screen and (max-width: 0.3)',
       'screen and (min-width)',
       // Multiline and comments.
       'screen and /* this is a comment */ (min-width)',
@@ -60,12 +61,7 @@ class BreakpointMediaQueryTest extends UnitTestBase {
     );
 
     foreach ($media_queries as $media_query) {
-      try {
-        $this->assertTrue(Breakpoint::isValidMediaQuery($media_query), $media_query . ' is valid.');
-      }
-      catch (InvalidBreakpointMediaQueryException $e) {
-        $this->assertTrue(FALSE, $media_query . ' is valid.');
-      }
+      $this->assertTrue(Breakpoint::isValidMediaQuery($media_query), $media_query . ' is valid.');
     }
   }
 
