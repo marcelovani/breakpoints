@@ -4,8 +4,7 @@
  * Multipliers administration form.
  */
 function breakpoint_ui_multipliers_form($form, &$form_state) {
-  $settings = breakpoint_settings();
-  $multipliers = drupal_map_assoc($settings->multipliers);
+  $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
   if (isset($multipliers['1x'])) {
     unset($multipliers['1x']);
   }
@@ -56,6 +55,9 @@ function breakpoint_ui_multipliers_form_validate($form, $form_state) {
       if (isset($saved_multipliers[$multiplier])) {
         form_set_error('multipliers][' . $form_key, t('Label must be unique.'));
       }
+      if (!preg_match('/^(\d+(?:\.\d+)?)x$/i', $multiplier)) {
+        form_set_error('multipliers][' . $form_key, t("Multiplier has to be a number followed by an 'x'."));
+      }
       $saved_multipliers[$multiplier] = $multiplier;
     }
   }
@@ -67,7 +69,7 @@ function breakpoint_ui_multipliers_form_validate($form, $form_state) {
 function breakpoint_ui_multipliers_form_submit($form, &$form_state) {
   $multipliers = array_values(array_filter($form_state['values']['multipliers']));
   array_unshift($multipliers, '1x');
-  breakpoint_settings_save_multipliers($multipliers);
+  config('breakpoint')->set('multipliers', $multipliers)->save();
   drupal_set_message(t('Multipliers are saved.'));
 }
 
