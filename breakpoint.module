@@ -5,8 +5,8 @@
  * Manage breakpoints and breakpoint groups for responsive designs.
  */
 
-use \Drupal\breakpoint\Breakpoint;
-use \Drupal\breakpoint\BreakpointGroup;
+use Drupal\breakpoint\Breakpoint;
+use Drupal\breakpoint\BreakpointGroup;
 
 /**
  * Implements hook_enable().
@@ -56,7 +56,7 @@ function breakpoint_themes_disabled($theme_list) {
  *
  * Import breakpoints from all new enabled modules.
  *
- * @param $modules
+ * @param array $modules
  *   An array of the modules that were enabled.
  */
 function breakpoint_modules_enabled($modules) {
@@ -71,7 +71,7 @@ function breakpoint_modules_enabled($modules) {
  *
  * Remove breakpoints from all uninstalled modules.
  *
- * @param $modules
+ * @param array $modules
  *   An array of the modules that were uninstalled.
  */
 function breakpoint_modules_uninstalled($modules) {
@@ -120,11 +120,9 @@ function _breakpoint_import_media_queries($id, $label, $source_type, $media_quer
  * Import breakpoint groups from theme or module.
  *
  * @param string $group_id
- *   Id of the breakpoint group.
+ *   Identifier of the breakpoint group.
  * @param string $sourceType
  *   Either Breakpoint::SOURCE_TYPE_THEME or Breakpoint::SOURCE_TYPE_MODULE.
- *
- * @return boolean
  */
 function _breakpoint_import_breakpoint_groups($source, $source_type) {
   $breakpoint_groups = config($source . '.breakpoint_groups');
@@ -146,10 +144,9 @@ function _breakpoint_import_breakpoint_groups($source, $source_type) {
  * will not be deleted.
  *
  * @param array $ids
- *   Id's of the breakpoint group.
+ *   Identifiers of the breakpoint group.
  * @param string $sourceType
  *   Either Breakpoint::SOURCE_TYPE_THEME or Breakpoint::SOURCE_TYPE_MODULE.
- *
  */
 function _breakpoint_delete_breakpoints($ids, $source_type) {
   $breakpoint_groups = entity_load_multiple('breakpoint_group', $ids);
@@ -189,10 +186,9 @@ function _breakpoint_delete_breakpoints($ids, $source_type) {
  * Remove breakpoint groups from all disabled themes or uninstalled modules.
  *
  * @param array $group_id
- *   Id of the breakpoint group.
+ *   Identifier of the breakpoint group.
  * @param string $sourceType
  *   Either Breakpoint::SOURCE_TYPE_THEME or Breakpoint::SOURCE_TYPE_MODULE.
- *
  */
 function _breakpoint_delete_breakpoint_groups($group_id, $source_type) {
   $breakpoint_groups = entity_load_multiple('breakpoint_group');
@@ -209,7 +205,7 @@ function _breakpoint_delete_breakpoint_groups($group_id, $source_type) {
  * @param string $theme_key
  *   The name of the theme.
  *
- * @return BreakpointGroup
+ * @return Drupal\breakpoint\BreakpointGroup|false
  *   Returns a BreakpointGroup containing the breakpoints defined by the theme.
  */
 function breakpoint_group_reload_from_theme($theme_key) {
@@ -312,8 +308,7 @@ function breakpoint_entity_info() {
  * @return Drupal\breakpoint\BreakpointGroup|false
  *   The breakpoint group, or FALSE if there is no entity with the given id.
  *
- * @todo Needed for menu_callback and machine_name.
- *
+ * @todo Remove this in a follow-up issue.
  * @see http://drupal.org/node/1798214
  */
 function breakpoint_group_load($id) {
@@ -329,10 +324,8 @@ function breakpoint_group_load($id) {
  * @return Drupal\breakpoint\Breakpoint
  *   The entity object, or FALSE if there is no entity with the given id.
  *
- * @todo Needed for menu_callback and machine_name.
- *
+ * @todo Remove this in a follow-up issue.
  * @see http://drupal.org/node/1798214
- *
  */
 function breakpoint_load($id) {
   return entity_load('breakpoint', $id);

@@ -20,10 +20,18 @@ use Drupal\breakpoint\InvalidBreakpointMediaQueryException;
 class Breakpoint extends ConfigEntityBase {
 
   /**
-   * The possible values for sourceType.
+   * Denotes that a breakpoint or breakpoint group is defined by a theme.
    */
   const SOURCE_TYPE_THEME = 'theme';
+
+  /**
+   * Denotes that a breakpoint or breakpoint group is defined by a module.
+   */
   const SOURCE_TYPE_MODULE = 'module';
+
+  /**
+   * Denotes that a breakpoint or breakpoint group is defined by the user.
+   */
   const SOURCE_TYPE_CUSTOM = 'custom';
 
   /**
@@ -63,8 +71,10 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * The original media query.
-   * This is tracked separately, because a user can override a single breakpoint
-   * and reloading the media query from the theme/module is expensive.
+   *
+   * This is used to store the original media query as defined by the theme or
+   * module, so reverting the breakpoint can be done without reloading
+   * everything from the theme/module yaml files.
    *
    * @var string
    */
@@ -110,7 +120,7 @@ class Breakpoint extends ConfigEntityBase {
   public $multipliers = array();
 
   /**
-   * The Breakpoint overridden status.
+   * The breakpoint overridden status.
    *
    * @var boolean
    */
@@ -157,7 +167,6 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Override a breakpoint and save it.
-   *
    */
   public function override() {
     if (!$this->overridden) {
@@ -169,7 +178,6 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Revert a breakpoint and save it.
-   *
    */
   public function revert() {
     if ($this->overridden) {
@@ -182,8 +190,7 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * Duplicate a breakpoint.
    *
-   * The new breakpoint inherits the media query
-   *
+   * The new breakpoint inherits the media query.
    */
   public function duplicate() {
     return entity_create('breakpoint', array(

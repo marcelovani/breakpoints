@@ -17,28 +17,28 @@ use Drupal\breakpoint\InvalidBreakpointSourceTypeException;
 class BreakpointGroup extends ConfigEntityBase {
 
   /**
-   * The BreakpointGroup ID (machine name).
+   * The breakpoint group ID (machine name).
    *
    * @var string
    */
   public $id;
 
   /**
-   * The BreakpointGroup UUID.
+   * The breakpoint group UUID.
    *
    * @var string
    */
   public $uuid;
 
   /**
-   * The BreakpointGroup label.
+   * The breakpoint group label.
    *
    * @var string
    */
   public $label;
 
   /**
-   * The BreakpointGroup breakpoints.
+   * The breakpoint group breakpoints.
    *
    * @var array
    *   Array containing all breakpoints of this group.
@@ -48,14 +48,14 @@ class BreakpointGroup extends ConfigEntityBase {
   public $breakpoints = array();
 
   /**
-   * The breakpoint source: theme or module name.
+   * The breakpoint group source: theme or module name.
    *
    * @var string
    */
   public $source = '';
 
   /**
-   * The BreakpointGroup source type.
+   * The breakpoint group source type.
    *
    * @var string
    *   Allowed values:
@@ -68,7 +68,7 @@ class BreakpointGroup extends ConfigEntityBase {
   public $sourceType = Breakpoint::SOURCE_TYPE_CUSTOM;
 
   /**
-   * The BreakpointGroup overridden status.
+   * The breakpoint group overridden status.
    *
    * @var boolean
    */
@@ -161,7 +161,6 @@ class BreakpointGroup extends ConfigEntityBase {
    * Duplicate a breakpoint group.
    *
    * The new breakpoint group inherits the breakpoints.
-   *
    */
   public function duplicate() {
     return entity_create('breakpoint_group', array(
@@ -221,7 +220,7 @@ class BreakpointGroup extends ConfigEntityBase {
    * Load breakpoints from a theme/module and build a default group.
    *
    * @param string $id
-   *   Name of the breakpoint group.
+   *   Identifier of the breakpoint group.
    * @param string $label
    *   Human readable name of the breakpoint group.
    * @param string $sourceType
@@ -234,7 +233,6 @@ class BreakpointGroup extends ConfigEntityBase {
    */
   public static function ImportMediaQueries($id, $label, $source_type, $media_queries) {
     $breakpoint_group = entity_load('breakpoint_group', $source_type . '.' . $id);
-    /* @var $breakpoint_group \Drupal\breakpoint\BreakpointGroup */
     if (!$breakpoint_group) {
       // Build a new breakpoint group.
       $breakpoint_group = entity_create('breakpoint_group', array(
@@ -275,7 +273,6 @@ class BreakpointGroup extends ConfigEntityBase {
   public static function ImportBreakpointGroup($source, $source_type, $name, $label, $breakpoints) {
     // Use the existing breakpoint group if it exists.
     $breakpoint_group = entity_load('breakpoint_group', $source_type . '.' . $name);
-    /* @var $breakpoint_group \Drupal\breakpoint\BreakpointGroup */
     if (!$breakpoint_group) {
       $breakpoint_group = entity_create('breakpoint_group', array(
         'id' => $name,
