@@ -223,7 +223,6 @@ function breakpoint_ui_admin_block_page() {
  * Implements hook_entity_info_alter().
  */
 function breakpoint_ui_entity_info_alter(&$entity_info) {
-  watchdog('alter', 'alter!');
   //Breakpoint
   $entity_info['breakpoint']['form controller class']['default'] = 'Drupal\breakpoint_ui\BreakpointFormController';
   $entity_info['breakpoint']['list controller class'] = 'Drupal\breakpoint_ui\BreakpointListController';
