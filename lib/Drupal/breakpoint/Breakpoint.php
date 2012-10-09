@@ -269,6 +269,7 @@ class Breakpoint extends ConfigEntityBase {
    *
    * @see http://www.w3.org/TR/css3-mediaqueries/
    * @see http://www.w3.org/Style/CSS/Test/MediaQueries/20120229/reports/implement-report.html
+   * @see https://github.com/adobe/webkit/blob/master/Source/WebCore/css/
    */
   public static function isValidMediaQuery($media_query) {
     $media_features = array(
