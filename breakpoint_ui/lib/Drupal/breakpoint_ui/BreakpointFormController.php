@@ -10,6 +10,7 @@ namespace Drupal\breakpoint_ui;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
 use Drupal\breakpoint\Breakpoint;
+use Drupal\breakpoint\InvalidBreakpointMediaQueryException;
 
 /**
  * Form controller for the breakpoint edit/add forms.
@@ -96,8 +97,11 @@ class BreakpointFormController extends EntityFormController {
         form_set_error('label', t('The breakpoint label %label is already in use.', array('%label' => $form_state['values']['label'])));
       }
     }
-    if (!Breakpoint::isValidMediaQuery($form_state['values']['mediaQuery'])) {
-      form_set_error('mediaQuery', t('Illegal media query'));
+    try {
+      Breakpoint::isValidMediaQuery($form_state['values']['mediaQuery']);
+    }
+    catch(InvalidBreakpointMediaQueryException $e) {
+      form_set_error('mediaQuery', t($e->getMessage()));
     }
   }
 

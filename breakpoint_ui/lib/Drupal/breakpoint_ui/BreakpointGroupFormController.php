@@ -10,6 +10,7 @@ namespace Drupal\breakpoint_ui;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
 use Drupal\breakpoint\Breakpoint;
+use Drupal\breakpoint\InvalidBreakpointMediaQueryException;
 
 /**
  * Form controller for the breakpoint group edit/add forms.
@@ -207,8 +208,11 @@ class BreakpointGroupFormController extends EntityFormController {
       foreach ($breakpoints as $breakpoint_id => $breakpoint) {
         // Check if the user can edit the media query.
         if ($breakpoint_group->breakpoints[$breakpoint_id]->sourceType == Breakpoint::SOURCE_TYPE_CUSTOM) {
-          if (!Breakpoint::isValidMediaQuery($breakpoints[$breakpoint_id]['mediaQuery'])) {
-            form_set_error('breakpoints][' . $breakpoint_id . '][mediaQuery', t('Illegal media query'));
+          try {
+            Breakpoint::isValidMediaQuery($breakpoints[$breakpoint_id]['mediaQuery']);
+          }
+          catch(InvalidBreakpointMediaQueryException $e) {
+            form_set_error('breakpoints][' . $breakpoint_id . '][mediaQuery', t($e->getMessage()));
           }
         }
       }
