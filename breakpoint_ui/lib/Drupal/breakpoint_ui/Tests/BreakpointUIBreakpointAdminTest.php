@@ -126,7 +126,7 @@ class BreakpointUIBreakpointAdminTest extends BreakpointTestBase {
     theme_enable(array('seven'));
     module_enable(array('breakpoint_ui_test'));
     
-    // Do the tests for both breakpoints that are defined by Seven
+    // Do the tests for all breakpoints defined by Seven and breakpoint_ui_test.
     $breakpoints = entity_load_multiple('breakpoint', array('theme.seven.mobile', 'theme.seven.wide', 'module.breakpoint_ui_test.uitestmobile', 'module.breakpoint_ui_test.uitestwide'));
     
     $this->assertEqual(count($breakpoints), 4, t('All theme- and module-provided breakpoints are loaded.' . count($breakpoints)), $group);

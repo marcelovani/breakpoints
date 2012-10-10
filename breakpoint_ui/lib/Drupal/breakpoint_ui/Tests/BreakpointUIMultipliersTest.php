@@ -45,6 +45,7 @@ class BreakpointUIMultipliersTest extends WebTestBase {
    * Test breakpoints multipliers functionality.
    */
   public function testBreakpointMultipliers() {
+    $group = t('Breakpoint UI');
     // Verify the default multipliers are visible.
     $this->drupalGet('admin/config/media/breakpoint/multipliers');
     $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
@@ -57,12 +58,22 @@ class BreakpointUIMultipliersTest extends WebTestBase {
 
     // Verify the '1x' multiplier can't be deleted.
     $this->drupalGet('admin/config/media/breakpoint/multipliers/1x/delete');
-    $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted.'), t('Breakpoint API'));
+    $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted.'), $group);
     $this->assertNoFieldById('edit-submit');
 
-    // Add a multiplier.
-    $new_multiplier = drupal_strtolower($this->randomName());
+    // Try to add an invalid multiplier
     $this->drupalGet('admin/config/media/breakpoint/multipliers');
+    $invalid_multiplier = $this->randomString();
+    $edit = array(
+      'multipliers[new]' => $invalid_multiplier,
+    );
+    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->assertText(t('Multiplier has to be a number followed by an \'x\'.'), t('An error message is shown when an invalid multiplier is entered.'), $group);
+
+    // Add a new multiplier.
+    $this->drupalGet('admin/config/media/breakpoint/multipliers');
+    // Generate random float (1 decimal) between 2 and 4 followed by 'x'.
+    $new_multiplier = (mt_rand(20, 40) / 10) . 'x';
     $edit = array(
       'multipliers[new]' => $new_multiplier,
     );
@@ -70,13 +81,13 @@ class BreakpointUIMultipliersTest extends WebTestBase {
 
     // Verify the multiplier was added.
     $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
-    $this->assertTrue(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was added.', array('%multiplier' => $new_multiplier)));
+    $this->assertTrue(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was added.', array('%multiplier' => $new_multiplier)), $group);
 
     // Verify the new multiplier is visible on the multiplier overview page.
     $this->assertFieldByName('multipliers[' . $new_multiplier . ']', $new_multiplier);
 
     // Update a multiplier.
-    $updated_multiplier = drupal_strtolower($this->randomName());
+    $updated_multiplier = (mt_rand(20, 40) / 10) . 'x';
     $edit = array(
       'multipliers[' . $new_multiplier . ']' => $updated_multiplier,
     );
@@ -84,8 +95,8 @@ class BreakpointUIMultipliersTest extends WebTestBase {
 
     // Verify the multiplier was updated.
     $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
-    $this->assertFalse(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)));
-    $this->assertTrue(in_array($updated_multiplier, $multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)));
+    $this->assertFalse(in_array($new_multiplier, $multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)), $group);
+    $this->assertTrue(in_array($updated_multiplier, $multipliers), t('Multiplier %multiplier was updated.', array('%multiplier' => $updated_multiplier)), $group);
 
     // Verify the updated multiplier is visible on the multiplier overview page.
     $this->assertNoFieldByName('multipliers[' . $new_multiplier . ']');
