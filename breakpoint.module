@@ -246,7 +246,7 @@ function breakpoint_group_reload_from_module($module, $group_id) {
         if ($id == $group_id) {
           // Breakpoints is mandatory, extra check since this is coming from config.
           if (isset($data['breakpoints']) && !empty($data['breakpoints'])) {
-            if ($breakpoint_group = BreakpointGroup::ImportBreakpointGroup($source, $source_type, $id, isset($data['label']) ? $data['label'] : drupal_ucfirst($data[$id]), $data['breakpoints'])) {
+            if ($breakpoint_group = BreakpointGroup::ImportBreakpointGroup($module, Breakpoint::SOURCE_TYPE_MODULE, $id, isset($data['label']) ? $data['label'] : drupal_ucfirst($data[$id]), $data['breakpoints'])) {
               return $breakpoint_group;
             }
           }
