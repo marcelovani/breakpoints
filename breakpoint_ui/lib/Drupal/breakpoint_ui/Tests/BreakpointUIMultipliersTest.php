@@ -73,8 +73,8 @@ class BreakpointUIMultipliersTest extends WebTestBase {
 
     // Add a new multiplier.
     $this->drupalGet($path);
-    // Generate random float (1 decimal) between 2 and 4 followed by 'x'.
-    $new_multiplier = (mt_rand(20, 40) / 10) . 'x';
+    // Generate random float (1 decimal) between 2.1 and 4 followed by 'x'.
+    $new_multiplier = (mt_rand(21, 40) / 10) . 'x';
     $edit = array(
       'multipliers[new]' => $new_multiplier,
     );
@@ -88,7 +88,7 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     $this->assertFieldByName('multipliers[' . $new_multiplier . ']', $new_multiplier);
 
     // Update a multiplier.
-    $updated_multiplier = (mt_rand(20, 40) / 10) . 'x';
+    $updated_multiplier = (mt_rand(21, 40) / 10) . 'x';
     $edit = array(
       'multipliers[' . $new_multiplier . ']' => $updated_multiplier,
     );
