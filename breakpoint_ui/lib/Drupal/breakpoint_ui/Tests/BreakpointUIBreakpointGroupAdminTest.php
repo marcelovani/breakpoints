@@ -182,6 +182,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     // Do the tests for all the created breakpoint groups.
     $breakpoint_groups = entity_load_multiple('breakpoint_group', array('seven', 'breakpoint_ui_test'));
     foreach ($breakpoint_groups as $machine_name => $breakpoint_group) {
+      $label = $breakpoint_group->label();
       $this->drupalGet($path . '/' . $machine_name . '/edit');
       $this->assertResponse(200, t('Breakpoint group was created.'));
 
@@ -219,7 +220,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
 
       // Try to delete a breakpoint group.
       $this->drupalGet($path . '/' . $machine_name . '/delete');
-      $this->assertResponse(401, t('Theme or module defined groups can not be deleted.'));
+      $this->assertResponse(403, t('Theme or module defined groups can not be deleted.'));
     }
   }
 
