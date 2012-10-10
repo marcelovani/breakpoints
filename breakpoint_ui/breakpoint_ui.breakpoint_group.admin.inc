@@ -47,16 +47,6 @@ function breakpoint_ui_breakpoint_group_page_add() {
 }
 
 /**
- * Page callback: Provides the duplicate breakpoint group form.
- *
- * @see breakpoint_ui_menu()
- */
-function breakpoint_ui_breakpoint_page_duplicate($breakpoint_group) {
-  drupal_set_title(t('<em>Duplicate breakpoint</em> @label', array('@label' => $breakpoint_group->label())), PASS_THROUGH);
-  return entity_get_form($breakpoint_group, 'duplicate');
-}
-
-/**
  * Page callback: Form constructor for breakpoint group action confirmation form.
  *
  * @see breakpoint_ui_menu()

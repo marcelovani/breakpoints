@@ -60,7 +60,7 @@ class BreakpointUIBreakpointAdminTest extends BreakpointTestBase {
 
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    $this->assertText(t('Illegal media query'), t('Entering an illegal media query returns an error'), $group);
+    $this->assertText(t('Invalid media query detected.'), t('Entering an illegal media query returns an error'), $group);
 
     // Try a valid mediaquery.
     $edit['mediaQuery'] = '(min-width: 600px)';
