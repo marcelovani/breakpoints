@@ -67,15 +67,14 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
     $breakpoint_group = entity_load('breakpoint_group', 'breakpoint_test_theme');
     $breakpoint_group = $breakpoint_group->override();
 
-    // Verify the group is overridden.
-    $overridden_set->breakpoints = array(
-      'theme.breakpoint_test_theme.mobile' => array(),
-      'theme.breakpoint_test_theme.narrow' => array(),
-      'theme.breakpoint_test_theme.wide' => array(),
-      'theme.breakpoint_test_theme.tv' => array(),
-    );
     $overridden_set->overridden = 1;
     $this->verifyBreakpointGroup($overridden_set);
+
+    // Verify the breakpoints in this breakpoint group are overridden.
+    foreach (array_keys($breakpoint_group_obj->breakpoints) as $breakpoint_id) {
+      $breakpoint = entity_load('breakpoint', $breakpoint_id);
+      $this->assertTrue($breakpoint->overridden, t('Breakpoint @breakpoint should be overridden', array('@breakpoint' => $breakpoint->label())), t('Breakpoint API'));
+    }
 
     // Revert the breakpoint group.
     $breakpoint_group = entity_load('breakpoint_group', 'breakpoint_test_theme');
@@ -83,6 +82,12 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
 
     // Verify the breakpoint group has its original values again when loaded.
     $this->verifyBreakpointGroup($breakpoint_group_obj);
+
+    // Verify the breakpoints in this breakpoint group are no longer overridden.
+    foreach (array_keys($breakpoint_group_obj->breakpoints) as $breakpoint_id) {
+      $breakpoint = entity_load('breakpoint', $breakpoint_id);
+      $this->assertFalse($breakpoint->overridden, t('Breakpoint @breakpoint should not be overridden', array('@breakpoint' => $breakpoint->label())), t('Breakpoint API'));
+    }
 
     // Disable the test theme and verify the breakpoint group is deleted.
     theme_disable(array('breakpoint_test_theme'));
@@ -140,6 +145,36 @@ class BreakpointThemeTest extends BreakpointGroupTestBase {
 
     // Verify we can load this breakpoint defined by the theme.
     $this->verifyBreakpointGroup($breakpoint_group_obj);
+
+    // Override the breakpoints.
+    $overridden_set = clone $breakpoint_group_obj;
+    $breakpoint_group = entity_load('breakpoint_group', 'module_test');
+    $breakpoint_group = $breakpoint_group->override();
+
+    $overridden_set->overridden = 1;
+    $this->verifyBreakpointGroup($overridden_set);
+
+    // This group uses breakpoints defined by an other theme. This means the
+    // breakpoints should *not* be overridden.
+    foreach (array_keys($breakpoint_group_obj->breakpoints) as $breakpoint_id) {
+      $breakpoint = entity_load('breakpoint', $breakpoint_id, TRUE);
+      $this->assertFalse($breakpoint->overridden, t('Breakpoint @breakpoint should not be overridden.', array('@breakpoint' => $breakpoint->label())), t('Breakpoint API'));
+    }
+
+    // Revert the breakpoint group.
+    $breakpoint_group = entity_load('breakpoint_group', 'module_test');
+    $breakpoint_group = $breakpoint_group->revert();
+    $this->verbose(highlight_string("<?php \n// Object\n" . var_export($breakpoint_group_obj, TRUE), TRUE));
+    $this->verbose(highlight_string("<?php \n// Group\n" . var_export($breakpoint_group, TRUE), TRUE));
+
+    // Verify the breakpoint group has its original values again when loaded.
+    $this->verifyBreakpointGroup($breakpoint_group_obj);
+
+    // Verify the breakpoints in this breakpoint group are not overridden.
+    foreach (array_keys($breakpoint_group_obj->breakpoints) as $breakpoint_id) {
+      $breakpoint = entity_load('breakpoint', $breakpoint_id);
+      $this->assertFalse($breakpoint->overridden, t('Breakpoint @breakpoint should not be overridden.', array('@breakpoint' => $breakpoint->label())), t('Breakpoint API'));
+    }
 
     // Disable the test theme and verify the breakpoint group still exists.
     theme_disable(array('breakpoint_test_theme'));

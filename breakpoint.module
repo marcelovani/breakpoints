@@ -223,6 +223,42 @@ function breakpoint_group_reload_from_theme($theme_key) {
 }
 
 /**
+ * Reload breakpoint groups as they were defined in the module.
+ *
+ * @param string $module
+ *   The name of the module.
+ * @param string $group_id
+ *   Identifier of the breakpoint group.
+ *
+ * @return Drupal\breakpoint\BreakpointGroup|false
+ *   Returns a BreakpointGroup containing the breakpoints defined by the module.
+ */
+function breakpoint_group_reload_from_module($module, $group_id) {
+  // Clear caches so module info is fresh.
+  system_rebuild_module_data();
+  module_list_reset();
+
+  $modules = module_list();
+  if (isset($modules[$module])) {
+    $breakpoint_groups = config($module . '.breakpoint_groups');
+    if ($breakpoint_groups) {
+      foreach ($breakpoint_groups->get() as $id => $data) {
+        if ($id == $group_id) {
+          // Breakpoints is mandatory, extra check since this is coming from config.
+          if (isset($data['breakpoints']) && !empty($data['breakpoints'])) {
+            if ($breakpoint_group = BreakpointGroup::ImportBreakpointGroup($source, $source_type, $id, isset($data['label']) ? $data['label'] : drupal_ucfirst($data[$id]), $data['breakpoints'])) {
+              return $breakpoint_group;
+            }
+          }
+        }
+      }
+    }
+
+  }
+  return FALSE;
+}
+
+/**
  * Get a list of available breakpoints from a specified theme.
  *
  * @param string $theme_key

@@ -58,13 +58,13 @@ class BreakpointCrudTest extends BreakpointTestBase {
     $breakpoint->enable();
     $this->verifyBreakpoint($breakpoint);
 
-    // Override the breakpoint.
-    $breakpoint->enable();
-    $this->verifyBreakpoint($breakpoint);
+    // Try to override the breakpoint.
+    $overridden = $breakpoint->override();
+    $this->assertIdentical(FALSE, $overridden, t('Custom breakpoints can not be overridden.'), t('Breakpoint API'));
 
-    // Revert the breakpoint.
-    $breakpoint->enable();
-    $this->verifyBreakpoint($breakpoint);
+    // Try to revert the breakpoint.
+    $reverted = $breakpoint->revert();
+    $this->assertIdentical(FALSE, $reverted, t('Custom breakpoints can not be reverted.'), t('Breakpoint API'));
 
     // Delete the breakpoint.
     $breakpoint->delete();

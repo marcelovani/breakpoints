@@ -160,6 +160,8 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Get config name.
+   *
+   * @return string
    */
   public function getConfigName() {
     return $this->sourceType . '.' . $this->source . '.' . $this->name;
@@ -167,30 +169,44 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Override a breakpoint and save it.
+   *
+   * @return Drupal\breakpoint\Breakpoint|false
    */
   public function override() {
-    if (!$this->overridden) {
-      $this->overridden = TRUE;
-      $this->originalMediaQuery = $this->mediaQuery;
-      $this->save();
+    // Custom breakpoint can't be overridden.
+    if ($this->overridden || $this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
+      return FALSE;
     }
+
+    // Mark breakpoint as overridden.
+    $this->overridden = TRUE;
+    $this->originalMediaQuery = $this->mediaQuery;
+    $this->save();
+    return $this;
   }
 
   /**
    * Revert a breakpoint and save it.
+   *
+   * @return Drupal\breakpoint\Breakpoint|false
    */
   public function revert() {
-    if ($this->overridden) {
-      $this->overridden = FALSE;
-      $this->mediaQuery = $this->originalMediaQuery;
-      $this->save();
+    if (!$this->overridden || $this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
+      return FALSE;
     }
+
+    $this->overridden = FALSE;
+    $this->mediaQuery = $this->originalMediaQuery;
+    $this->save();
+    return $this;
   }
 
   /**
    * Duplicate a breakpoint.
    *
    * The new breakpoint inherits the media query.
+   *
+   * @return Drupal\breakpoint\Breakpoint
    */
   public function duplicate() {
     return entity_create('breakpoint', array(
@@ -225,6 +241,11 @@ class Breakpoint extends ConfigEntityBase {
   /**
    * Check if the breakpoint is valid.
    *
+   * @throws Drupal\breakpoint\InvalidBreakpointSourceTypeException
+   * @throws Drupal\breakpoint\InvalidBreakpointSourceException
+   * @throws Drupal\breakpoint\InvalidBreakpointNameException
+   * @throws Drupal\breakpoint\InvalidBreakpointMediaQueryException
+   *
    * @see isValidMediaQuery()
    */
   public function isValid() {
@@ -251,6 +272,8 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Is the breakpoint editable.
+   *
+   * @return boolean
    */
   public function isEditable() {
     // Custom breakpoints are always editable.
@@ -266,6 +289,10 @@ class Breakpoint extends ConfigEntityBase {
 
   /**
    * Check if a mediaQuery is valid.
+   *
+   * @throws Drupal\breakpoint\InvalidBreakpointMediaQueryException
+   *
+   * @return true
    *
    * @see http://www.w3.org/TR/css3-mediaqueries/
    * @see http://www.w3.org/Style/CSS/Test/MediaQueries/20120229/reports/implement-report.html

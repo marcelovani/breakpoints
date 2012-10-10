@@ -98,6 +98,11 @@ class BreakpointGroup extends ConfigEntityBase {
 
   /**
    * Check if the breakpoint group is valid.
+   *
+   * @throws Drupal\breakpoint\InvalidBreakpointSourceTypeException
+   * @throws Drupal\breakpoint\InvalidBreakpointSourceException
+   *
+   * @return true
    */
   public function isValid() {
     // Check for illegal values in breakpoint group source type.
@@ -119,10 +124,12 @@ class BreakpointGroup extends ConfigEntityBase {
 
   /**
    * Override a breakpoint group.
+   *
+   * @return Drupal\breakpoint\BreakpointGroup
    */
   public function override() {
     // Custom breakpoint group can't be overridden.
-    if ($this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
+    if ($this->overridden || $this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
       return FALSE;
     }
 
@@ -141,18 +148,35 @@ class BreakpointGroup extends ConfigEntityBase {
 
   /**
    * Revert a breakpoint group after it has been overridden.
+   *
+   * @return Drupal\breakpoint\BreakpointGroup
    */
   public function revert() {
     if (!$this->overridden || $this->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM) {
       return FALSE;
     }
 
-    // Reload all breakpoints from theme.
-    $reloaded_set = breakpoint_group_reload_from_theme($this->id());
-    if ($reloaded_set) {
-      $this->breakpoints = $reloaded_set->breakpoints;
-      $this->overridden = FALSE;
-      $this->save();
+    // Reload all breakpoints from theme or module.
+    switch ($this->sourceType) {
+      case Breakpoint::SOURCE_TYPE_THEME:
+        $reloaded_group = breakpoint_group_reload_from_theme($this->id());
+        if ($reloaded_group) {
+          $this->breakpoints = $reloaded_group->breakpoints;
+          $this->overridden = FALSE;
+          $this->save();
+        }
+        break;
+      case Breakpoint::SOURCE_TYPE_MODULE:
+          $reloaded_group = breakpoint_group_reload_from_module($this->source, $this->id());
+          if ($reloaded_group) {
+            $this->breakpoints = $reloaded_group->breakpoints;
+            $this->overridden = FALSE;
+            $this->save();
+          }
+          else {
+            throw new \Exception("something went wrong :s");
+          }
+        break;
     }
     return $this;
   }
@@ -161,6 +185,8 @@ class BreakpointGroup extends ConfigEntityBase {
    * Duplicate a breakpoint group.
    *
    * The new breakpoint group inherits the breakpoints.
+   *
+   * @return Drupal\breakpoint\BreakpointGroup
    */
   public function duplicate() {
     return entity_create('breakpoint_group', array(
@@ -207,11 +233,14 @@ class BreakpointGroup extends ConfigEntityBase {
       $breakpoint->save();
     }
     else {
-      // Reset name, label, weight and media query.
+      // Reset name, label, weight, overridden and media query.
       $breakpoint->name = $name;
       $breakpoint->label = drupal_ucfirst($name);
       $breakpoint->mediaQuery = $media_query;
+      $breakpoint->originalMediaQuery = '';
+      $breakpoint->overridden = FALSE;
       $breakpoint->weight = count($this->breakpoints);
+      $breakpoint->save();
     }
     $this->breakpoints[$breakpoint->id()] = $breakpoint;
   }
@@ -304,6 +333,9 @@ class BreakpointGroup extends ConfigEntityBase {
 
   /**
    * Load all breakpoints, remove non-existing ones.
+   *
+   * @return array
+   *   Array containing breakpoints keyed by their id.
    */
   protected function loadAllBreakpoints() {
     $breakpoints = $this->breakpoints;
