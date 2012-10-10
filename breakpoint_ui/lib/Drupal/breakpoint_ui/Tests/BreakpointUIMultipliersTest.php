@@ -46,8 +46,9 @@ class BreakpointUIMultipliersTest extends WebTestBase {
    */
   public function testBreakpointMultipliers() {
     $group = t('Breakpoint UI');
+    $path = 'admin/config/media/breakpoint/multipliers';
     // Verify the default multipliers are visible.
-    $this->drupalGet('admin/config/media/breakpoint/multipliers');
+    $this->drupalGet($path);
     $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
     foreach ($multipliers as $multiplier) {
       $this->assertRaw($multiplier, t('Default multiplier %multiplier found.', array('%multiplier' => $multiplier)));
@@ -57,12 +58,12 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     }
 
     // Verify the '1x' multiplier can't be deleted.
-    $this->drupalGet('admin/config/media/breakpoint/multipliers/1x/delete');
+    $this->drupalGet($path . '/1x/delete');
     $this->assertText(t('Multiplier 1x can not be deleted!'), t('Multiplier 1x can not be deleted.'), $group);
     $this->assertNoFieldById('edit-submit');
 
     // Try to add an invalid multiplier
-    $this->drupalGet('admin/config/media/breakpoint/multipliers');
+    $this->drupalGet($path);
     $invalid_multiplier = $this->randomString();
     $edit = array(
       'multipliers[new]' => $invalid_multiplier,
@@ -71,7 +72,7 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     $this->assertText(t('Multiplier has to be a number followed by an \'x\'.'), t('An error message is shown when an invalid multiplier is entered.'), $group);
 
     // Add a new multiplier.
-    $this->drupalGet('admin/config/media/breakpoint/multipliers');
+    $this->drupalGet($path);
     // Generate random float (1 decimal) between 2 and 4 followed by 'x'.
     $new_multiplier = (mt_rand(20, 40) / 10) . 'x';
     $edit = array(
@@ -104,12 +105,12 @@ class BreakpointUIMultipliersTest extends WebTestBase {
     $new_multiplier = $updated_multiplier;
 
     // Delete a multiplier.
-    $this->drupalGet('admin/config/media/breakpoint/multipliers/' . $new_multiplier . '/delete');
+    $this->drupalGet($path . '/' . $new_multiplier . '/delete');
     $this->drupalPost(NULL, array(), t('Confirm'));
     $this->assertText('Multiplier ' . $new_multiplier . ' was deleted');
 
     // Verify the deleted multiplier is no longer visible on the multiplier overview page.
-    $this->drupalGet('admin/config/media/breakpoint/multipliers');
+    $this->drupalGet($path);
     $this->assertNoFieldByName('multipliers[' . $new_multiplier . ']');
 
     // Verify the deleted multiplier is deleted.

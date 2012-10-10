@@ -42,10 +42,11 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
   }
 
   /**
-   * Test breakpoint administration functionality
+   * Test administration functionality for breakpoint groups created by users.
    */
   function testCustomBreakpointGroupAdmin() {
     $group = t('Breakpoint Group UI');
+    $path = 'admin/config/media/breakpoint/breakpoint_group';
     // Add breakpoints.
     $breakpoints = array();
     for ($i = 0; $i <= 3; $i++) {
@@ -59,7 +60,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
       $breakpoints[$breakpoint->id()] = $breakpoint;
     }
     // Add breakpoint group.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/add');
+    $this->drupalGet($path . '/add');
     $label = $this->randomName();
     $machine_name = drupal_strtolower($label);
     $breakpoint = reset($breakpoints);
@@ -79,15 +80,23 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     unset($edit['breakpoint']);
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    // Verify the breakpoint was saved.
+    // Verify the breakpoint group was saved.
     $this->assertText(t('Breakpoint group @group saved.', array('@group' => $label)), t('Breakpoint group was saved.'), $group);
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     $this->assertResponse(200, t('Breakpoint group was saved.'));
     $this->assertField('breakpoints[' . $breakpoint->id() . '][label]', t('The breakpointgroup should contain the right breakpoints.'), $group);
 
+    // Verify the correct links are shown for the user-created breakpoint group.
+    $this->drupalGet($path);
+    $this->assertLinkByHref($path . '/' . $machine_name . '/edit', 0, t('Edit link should be present for @group', array('@group' => $label)), $group);
+    $this->assertLinkByHref($path . '/' . $machine_name . '/duplicate', 0, t('Duplicate link should be present for @group', array('@group' => $label)), $group);
+    $this->assertLinkByHref($path . '/' . $machine_name . '/delete', 0, t('Delete link should be present for @group', array('@group' => $label)), $group);
+    $this->assertNoLinkByHref($path . '/' . $machine_name . '/override', 0, t('Override link should not be present for @group', array('@group' => $label)), $group);
+    $this->assertNoLinkByHref($path . '/' . $machine_name . '/revert', 0, t('Revert link should not be present for @group', array('@group' => $label)), $group);
+
     // Add breakpoints to the breakpoint group.
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     $remaining_breakpoints = array_diff_key($breakpoints, array($breakpoint->id() => ''));
-    $this->verbose(highlight_string("<?php \n" . var_export($remaining_breakpoints, TRUE), TRUE));
     unset($edit['id']);
     foreach ($remaining_breakpoints as $breakpoint) {
       $edit['breakpoint'] = $breakpoint->id();
@@ -99,7 +108,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the breakpoints were attached to the set.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     foreach ($breakpoints as $breakpoint) {
       $this->assertField('breakpoints[' . $breakpoint->id() . '][label]', t('The Breakpoint was added.'), $group);
     }
@@ -112,14 +121,14 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $this->drupalPost(NULL, $edit, t('Save'));
     
     // Verify the weight was saved.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     $this->assertFieldByName("breakpoints[" . $breakpoint->id() . "][weight]", 0, t('Breakpoint weight was saved.'));
 
     // Submit the form.
     $this->drupalPost(NULL, array(), t('Save'));
 
     // Verify that the custom weight of the breakpoint has been retained.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     $this->assertFieldByName("breakpoints[" . $breakpoint->id() . "][weight]", 0, t('Breakpoint weight was retained.'));
 
     // Change the multipliers of the breakpoint within the set.
@@ -127,7 +136,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Verify the multipliers of the breakpoints were saved.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     $id = drupal_clean_css_identifier('edit-breakpoints-' . $breakpoint->id() . '-multipliers-');
     $this->assertFieldChecked($id . '15x', t('Breakpoint multipliers were saved.'));
     $this->assertNoFieldChecked($id . '2x', t('Breakpoint multipliers were saved.'));
@@ -135,14 +144,14 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     // Submit the form.
     $this->drupalPost(NULL, array(), t('Save'));
 
-    // Verify that the multipliers of the breakpoint has been retained.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/edit');
+    // Verify that the multipliers of the breakpoint are retained.
+    $this->drupalGet($path . '/' . $machine_name . '/edit');
     $this->assertFieldChecked($id . '15x', t('Breakpoint multipliers were retained.'));
     $this->assertNoFieldChecked($id . '2x', t('Breakpoint multipliers were retained.'));
 
-    // Attempt to create a breakpoint group of the same machine name as the disabled
-    // breakpoint but with a different human readable name.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/add');
+    // Attempt to create a breakpoint group of the same machine name as the
+    // disabled breakpoint but with a different human readable name.
+    $this->drupalGet($path . '/add');
     $edit = array(
       'label' => $this->randomName(),
       'id' => $machine_name,
@@ -152,11 +161,66 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $this->assertText('The machine-readable name is already in use. It must be unique.', t('Users can\'t add two breakpoint groups with the same machine readable names.'), $group);
 
     // Delete breakpoint.
-    $this->drupalGet('admin/config/media/breakpoint/breakpoint_group/' . $machine_name . '/delete');
+    $this->drupalGet($path . '/' . $machine_name . '/delete');
     $this->drupalPost(NULL, array(), t('Delete'));
 
     // Verify the breakpoint group is not listed anymore.
     $this->assertNoText($machine_name, t('Breakpoint groups that are deleted are no longer listed'), $group);
+  }
+
+  /**
+   * Test administration functionality for breakpoint groups created by users.
+   */
+  function testThemeModuleBreakpointGroupAdmin() {
+    $group = t('Breakpoint Group UI');
+    $path = 'admin/config/media/breakpoint/breakpoint_group';
+
+    // Enable seven and breakpoint_ui_test to create their breapoint groups.
+    theme_enable(array('seven'));
+    module_enable(array('breakpoint_ui_test'));
+
+    // Do the tests for all the created breakpoint groups.
+    $breakpoint_groups = entity_load_multiple('breakpoint_group', array('seven', 'breakpoint_ui_test'));
+    foreach ($breakpoint_groups as $machine_name => $breakpoint_group) {
+      $this->drupalGet($path . '/' . $machine_name . '/edit');
+      $this->assertResponse(200, t('Breakpoint group was created.'));
+
+      // Verify the correct links are shown for the breakpoint group.
+      $this->drupalGet($path);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/edit', 0, t('Edit link should be present for @group', array('@group' => $label)), $group);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/duplicate', 0, t('Duplicate link should be present for @group', array('@group' => $label)), $group);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/override', 0, t('Override link should be present for @group', array('@group' => $label)), $group);
+      $this->assertNoLinkByHref($path . '/' . $machine_name . '/revert', 0, t('Revert link should not be present for @group', array('@group' => $label)), $group);
+      $this->assertNoLinkByHref($path . '/' . $machine_name . '/delete', 0, t('Delete link should not be present for @group', array('@group' => $label)), $group);
+
+      // Override the breakpoint group.
+      $this->drupalGet($path . '/' . $machine_name . '/override');
+      $this->drupalPost(NULL, array(), t('Override'));
+
+      // Verify the correct links are shown for the overridden breakpoint group.
+      $this->drupalGet($path);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/edit', 0, t('Edit link should be present for @group', array('@group' => $label)), $group);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/duplicate', 0, t('Duplicate link should be present for @group', array('@group' => $label)), $group);
+      $this->assertNoLinkByHref($path . '/' . $machine_name . '/override', 0, t('Override link should not be present for @group', array('@group' => $label)), $group);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/revert', 0, t('Revert link should be present for @group', array('@group' => $label)), $group);
+      $this->assertNoLinkByHref($path . '/' . $machine_name . '/delete', 0, t('Delete link should not be present for @group', array('@group' => $label)), $group);
+
+      // Revert the breakpoint group.
+      $this->drupalGet($path . '/' . $machine_name . '/revert');
+      $this->drupalPost(NULL, array(), t('Revert'));
+
+      // Verify the correct links are shown for the reverted breakpoint group.
+      $this->drupalGet($path);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/edit', 0, t('Edit link should be present for @group', array('@group' => $label)), $group);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/duplicate', 0, t('Duplicate link should be present for @group', array('@group' => $label)), $group);
+      $this->assertLinkByHref($path . '/' . $machine_name . '/override', 0, t('Override link should be present for @group', array('@group' => $label)), $group);
+      $this->assertNoLinkByHref($path . '/' . $machine_name . '/revert', 0, t('Revert link should not be present for @group', array('@group' => $label)), $group);
+      $this->assertNoLinkByHref($path . '/' . $machine_name . '/delete', 0, t('Delete link should not be present for @group', array('@group' => $label)), $group);
+
+      // Try to delete a breakpoint group.
+      $this->drupalGet($path . '/' . $machine_name . '/delete');
+      $this->assertResponse(401, t('Theme or module defined groups can not be deleted.'));
+    }
   }
 
 }
