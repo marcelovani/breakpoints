@@ -66,7 +66,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $breakpoint = reset($breakpoints);
     $edit = array(
       'label' => $label,
-      'id' => $machine_name,
+      'name' => $machine_name,
       'breakpoint' => $breakpoint->id(),
     );
 
@@ -97,7 +97,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     // Add breakpoints to the breakpoint group.
     $this->drupalGet($path . '/' . $machine_name . '/edit');
     $remaining_breakpoints = array_diff_key($breakpoints, array($breakpoint->id() => ''));
-    unset($edit['id']);
+    unset($edit['name']);
     foreach ($remaining_breakpoints as $breakpoint) {
       $edit['breakpoint'] = $breakpoint->id();
       $this->drupalPost(NULL, $edit, t('Add breakpoint'));
@@ -154,7 +154,7 @@ class BreakpointUIBreakpointGroupAdminTest extends BreakpointGroupTestBase {
     $this->drupalGet($path . '/add');
     $edit = array(
       'label' => $this->randomName(),
-      'id' => $machine_name,
+      'name' => $machine_name,
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));

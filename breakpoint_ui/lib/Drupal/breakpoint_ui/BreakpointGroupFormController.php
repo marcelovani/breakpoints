@@ -29,9 +29,9 @@ class BreakpointGroupFormController extends EntityFormController {
       '#description' => t("Example: 'Content' or 'Sidebar'."),
       '#required' => TRUE,
     );
-    $form['id'] = array(
+    $form['name'] = array(
       '#type' => 'machine_name',
-      '#default_value' => $breakpoint_group->id(),
+      '#default_value' => $breakpoint_group->name,
       '#machine_name' => array(
         'exists' => 'breakpoint_group_load',
         'source' => array('label'),
