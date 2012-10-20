@@ -41,33 +41,9 @@ class BreakpointGroupListController extends ConfigEntityListController {
    */
   public function getOperations(EntityInterface $entity) {
     $operations = parent::getOperations($entity);
-    $uri = $entity->uri();
-    $operations['duplicate'] = array(
-      'title' => t('Duplicate'),
-      'href' => $uri['path'] . '/duplicate',
-      'options' => $uri['options'],
-      'weight' => 15,
-    );
-    // Theme and module breakpoint groups can be overridden/reverted.
     // Custom breakpoint groups can be deleted.
-    if ($entity->sourceType !== Breakpoint::SOURCE_TYPE_CUSTOM) {
+    if ($entity->sourceType !== Breakpoint::SOURCE_TYPE_USER_DEFINED) {
       unset($operations['delete']);
-      if (!$entity->overridden) {
-        $operations['override'] = array(
-          'title' => t('Override'),
-          'href' => $uri['path'] . '/override',
-          'options' => $uri['options'],
-          'weight' => 15,
-        );
-      }
-      else {
-        $operations['revert'] = array(
-          'title' => t('Revert'),
-          'href' => $uri['path'] . '/revert',
-          'options' => $uri['options'],
-          'weight' => 15,
-        );
-      }
     }
     return $operations;
   }

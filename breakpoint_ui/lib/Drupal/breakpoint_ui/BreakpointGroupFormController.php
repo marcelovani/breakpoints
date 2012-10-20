@@ -97,7 +97,7 @@ class BreakpointGroupFormController extends EntityFormController {
         '#parents' => array('breakpoints', $key, 'mediaQuery'),
         '#required' => TRUE,
         '#size' => 60,
-        '#disabled' => !$breakpoint->isEditable(),
+        '#disabled' => $breakpoint->sourceType !== Breakpoint::SOURCE_TYPE_USER_DEFINED,
       );
       $form['breakpoint_fieldset']['breakpoints'][$key]['multipliers'] = array(
         '#type' => 'checkboxes',
@@ -105,12 +105,12 @@ class BreakpointGroupFormController extends EntityFormController {
         '#options' => $multipliers,
         '#parents' => array('breakpoints', $key, 'multipliers'),
       );
-      if ($breakpoint_group->isEditable()) {
+      if ($breakpoint->sourceType === Breakpoint::SOURCE_TYPE_USER_DEFINED) {
         $form['breakpoint_fieldset']['breakpoints'][$key]['remove'] = array(
           '#type' => 'submit',
           '#value' => t('Remove'),
           '#name' => 'breakpoint_remove_' . $weight,
-          '#access' => $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_CUSTOM,
+          '#access' => $breakpoint->sourceType === Breakpoint::SOURCE_TYPE_USER_DEFINED,
           '#submit' => array(
             array($this, 'removeBreakpointSubmit'),
           ),
@@ -141,12 +141,12 @@ class BreakpointGroupFormController extends EntityFormController {
     );
 
     // Hide remove column for read only groups.
-    if (!$breakpoint_group->isEditable()) {
+    if ($breakpoint->sourceType !== Breakpoint::SOURCE_TYPE_USER_DEFINED) {
       unset($form['breakpoint_fieldset']['breakpoints']['#header']['remove']);
     }
 
     // Show add another breakpoint if the group isn't read only.
-    if ($breakpoint_group->isEditable()) {
+    if ($breakpoint->sourceType === Breakpoint::SOURCE_TYPE_USER_DEFINED) {
       $options = array_diff_key(breakpoint_labels(), $breakpoint_group->breakpoints);
 
       if (!empty($options)) {
@@ -207,7 +207,7 @@ class BreakpointGroupFormController extends EntityFormController {
       $breakpoints = $form_state['values']['breakpoints'];
       foreach ($breakpoints as $breakpoint_id => $breakpoint) {
         // Check if the user can edit the media query.
-        if ($breakpoint_group->breakpoints[$breakpoint_id]->sourceType == Breakpoint::SOURCE_TYPE_CUSTOM) {
+        if ($breakpoint_group->breakpoints[$breakpoint_id]->sourceType == Breakpoint::SOURCE_TYPE_USER_DEFINED) {
           try {
             Breakpoint::isValidMediaQuery($breakpoints[$breakpoint_id]['mediaQuery']);
           }

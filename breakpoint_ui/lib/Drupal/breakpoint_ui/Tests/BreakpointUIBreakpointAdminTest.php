@@ -67,7 +67,7 @@ class BreakpointUIBreakpointAdminTest extends BreakpointTestBase {
     $edit['mediaQuery'] = '(min-width: 600px)';
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    $machine_name = Breakpoint::SOURCE_TYPE_CUSTOM . '.user.' . $name;
+    $machine_name = Breakpoint::SOURCE_TYPE_USER_DEFINED . '.user.' . $name;
     // Verify the breakpoint was saved.
     $this->assertText(t('Breakpoint @breakpoint saved.', array('@breakpoint' => $label)), t('Breakpoint was saved.'), $group);
     $this->assertText($machine_name, t('Breakpoint is displayed in the overview table after it was saved.'), $group);

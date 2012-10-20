@@ -46,7 +46,7 @@ class BreakpointFormController extends EntityFormController {
       '#default_value' => $breakpoint->mediaQuery,
       '#description' => t("Media query without '@media'. Example: '(min-width: 320px)'."),
       '#required' => TRUE,
-      '#disabled' => !$breakpoint->isEditable(),
+      '#disabled' => $breakpoint->sourceType !== Breakpoint::SOURCE_TYPE_USER_DEFINED,
     );
 
     $multipliers = drupal_map_assoc(config('breakpoint')->get('multipliers'));
@@ -92,7 +92,7 @@ class BreakpointFormController extends EntityFormController {
     if (!isset($breakpoint->id)) {
       // Check for duplicates if user adds a new breakpoint.
       // Use $form_state['values']['label'] because $breakpoint->label is empty.
-      $name = Breakpoint::SOURCE_TYPE_CUSTOM . '.user.' . $form_state['values']['label'];
+      $name = Breakpoint::SOURCE_TYPE_USER_DEFINED . '.user.' . $form_state['values']['label'];
       if (entity_load('breakpoint', $name)) {
         form_set_error('label', t('The breakpoint label %label is already in use.', array('%label' => $form_state['values']['label'])));
       }

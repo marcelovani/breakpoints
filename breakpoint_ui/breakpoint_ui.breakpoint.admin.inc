@@ -26,16 +26,6 @@ function breakpoint_ui_breakpoint_page_edit($breakpoint) {
 }
 
 /**
- * Page callback: Presents the breakpoint editing form.
- *
- * @see breakpoint_ui_menu()
- */
-function breakpoint_ui_breakpoint_page_duplicate($breakpoint) {
-  drupal_set_title(t('<em>Duplicate breakpoint</em> @label', array('@label' => $breakpoint->label())), PASS_THROUGH);
-  return entity_get_form($breakpoint->duplicate());
-}
-
-/**
  * Page callback: Provides the new breakpoint addition form.
  *
  * @see breakpoint_ui_menu()
@@ -80,9 +70,6 @@ function breakpoint_ui_breakpoint_action_confirm_submit($form, &$form_state) {
     case 'enable':
     case 'disable':
       $verb = $action . 'd';
-      break;
-    case 'override':
-      $verb = 'overridden';
       break;
     case 'revert':
       $verb = 'reverted';
