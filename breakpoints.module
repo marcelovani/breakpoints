@@ -866,7 +866,7 @@ function breakpoints_form_system_theme_settings_alter_submit(&$form, &$form_stat
 /**
  * Implements hook_features_export().
  */
-function breakpoint_group_features_export($data, &$export, $module_name = '') {
+function breakpoints_group_features_export($data, &$export, $module_name = '') {
   features_include();
   $pipe = ctools_component_features_export('breakpoint_group', $data, $export, $module_name);
   foreach ($data as $group_name) {
